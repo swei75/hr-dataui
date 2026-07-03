@@ -28,12 +28,22 @@ python build.py                    # 构建 → output/index.html
 
 | 路径 | 用途 |
 |---|---|
-| `data/*.xlsx` | Excel 模板（文件名见 REQUIREMENTS §7.1） |
-| `extractors/` | Excel → dict 转换逻辑 |
-| `extractors/mapping.py` | 字段映射（中文表头 → JSON key） |
+| `data/*.xlsx` | Excel 数据源（1 个文件 6 sheet + 1 配置 sheet） |
+| `extractors/` | 数据读取 + 字段映射 + 钻取 |
+| `extractors/reader.py` | `read_workbook()` 读 Excel → dict |
+| `extractors/mapping.py` | sheet→键名 + viz 类型 + 可钻取 配置 |
+| `extractors/drills.py` | 钻取数据加载 |
+| `viz/` | viz 注册表（8 个 viz 文件） |
+| `viz/__init__.py` | `VIZ_REGISTRY` 字典 |
+| `composer.py` | 按 mapping 组合 6 模块 HTML |
+| `templates/` | Python f-string 模板函数（.py 文件，不是 .j2） |
+| `vendor/` | Alpine.js + shanjinki CSS 等 vendored 资源 |
 | `output/index.html` | 最终产物（git ignore） |
-| `docs/REQUIREMENTS.md` | 需求真理源 |
-| `research-demos/` | GitHub 调研 demo 文件（git ignore 可选） |
+| `tests/` | pytest 测试（reader/mapping/viz/build_e2e） |
+| `docs/REQUIREMENTS.md` | v1.1 需求 |
+| `docs/superpowers/specs/` | 设计 spec |
+| `docs/superpowers/plans/` | 实施计划 |
+| `research-demos/` | v1.1 调研 demo |
 
 ---
 
