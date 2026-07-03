@@ -1,23 +1,26 @@
 """KPI 单数字卡。data: {value, sub, tone}"""
 
 TONE_COLORS = {
-    "blue": "#1E5BAA",
-    "green": "#2E7D32",
-    "orange": "#E07B39",
-    "red": "#C62828",
+    "blue": "var(--primary)",
+    "green": "var(--success)",
+    "orange": "var(--orange)",
+    "red": "var(--danger)",
 }
 
 
-def render(data: dict, options: dict) -> str:
-    value = data.get("value", "-") if isinstance(data, dict) else data
-    sub = data.get("sub", "") if isinstance(data, dict) else ""
-    tone = data.get("tone", "blue") if isinstance(data, dict) else "blue"
-    color = TONE_COLORS.get(tone, TONE_COLORS["blue"])
+def render(data, options):
+    if isinstance(data, dict):
+        value = data.get("value", "-")
+        sub = data.get("sub", "")
+        tone = data.get("tone", "blue")
+    else:
+        value = data
+        sub = ""
+        tone = "blue"
+    color_class = f"tone-{tone}"
     return (
-        f'<div class="kpi-card" style="border-left:4px solid {color};'
-        f'padding:12px 16px;background:#fafafa;border-radius:6px;">'
-        f'<div class="kpi-value" style="font-size:2em;font-weight:600;'
-        f'color:{color};">{value}</div>'
-        f'<div class="kpi-sub" style="color:#666;font-size:0.9em;">{sub}</div>'
+        f'<div class="kpi-card">'
+        f'<div class="kpi-value {color_class}">{value}</div>'
+        f'<div class="kpi-sub">{sub}</div>'
         f"</div>"
     )
