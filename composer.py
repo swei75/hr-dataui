@@ -1,20 +1,27 @@
-"""按 mapping 渲染模块 - 现代仪表盘 viz。
+"""按分组 + is_total 渲染模块。
 
-数据驱动 + 类型检测：
-- 2 项占比 → donut
-- 3-14 项数字 → bar-list（带 tone 配色）
-- 含 Top/Bottom 关键词 → rank-list
-- 进度型 → progress bar
-- 表格型 → data-table
-- 大量同类项 → grid-list
+新数据流（来自重构后的 Excel）：
+- 每个 sheet 是 1 个模块的多分组数据
+- 每行：{分组, 名称, 数值, 单位, 备注, 排序, is_total}
+- 相同分组 = 同一逻辑组
+- is_total=TRUE = 该组总数行
+
+自动 viz 选择：
+- 1 行（is_total） → KPI 卡
+- 2-3 行（无 is_total） → donut（组成关系）
+- 4+ 行（无 is_total） → horizontal bar
+- 含 is_total + 子项 → KPI 总数 + bar 子项
+- 多列 table sheet → data-table
 """
-from typing import Any
 import math
+from typing import Any
+from collections import defaultdict
 
 
-# ====== 通用 helpers ======
+# ====== Helpers ======
 
-def _format(v) -> str:
+def _fmt(v) -> str:
+    """格式化数值。"""
     if v is None or v == "":
         return "—"
     if isinstance(v, float):
@@ -32,59 +39,51 @@ def _to_num(v) -> float:
     if isinstance(v, (int, float)):
         return float(v)
     if isinstance(v, str):
-        s = v.rstrip("%").strip()
         try:
-            n = float(s)
-            if v.endswith("%"):
-                return n / 100
-            return n
-        except ValueError:
+            return float(v.rstrip("%").replace(",", ""))
+        except (ValueError, AttributeError):
             return 0.0
     return 0.0
 
 
-def _is_rank(rows: list[dict]) -> bool:
+def _group_by(rows: list[dict], key: str) -> dict[str, list[dict]]:
+    groups = defaultdict(list)
     for r in rows:
-        if any(kw in str(r.get("label", "")) for kw in ["Top", "Bottom", "序时"]):
-            return True
-    return False
+        groups[r.get(key, "")].append(r)
+    return dict(groups)
 
 
-def _get_filtered(data: Any, data_key: str) -> list[dict]:
-    if isinstance(data, list) and data and isinstance(data[0], dict) and "section" in data[0]:
-        return [r for r in data if r.get("section") == data_key]
-    return []
+def _sort_key(r: dict) -> tuple:
+    """按排序字段排序（同序则按名称）。"""
+    s = r.get("排序", 0)
+    try:
+        s = int(s) if s != "" else 0
+    except (ValueError, TypeError):
+        s = 0
+    return (s, r.get("名称", ""))
 
 
-# ====== Viz 渲染函数 ======
+# ====== Viz 渲染 ======
 
-def _render_bar_list(rows: list[dict]) -> str:
-    """横向 bar list：label | bar | value。bar 长度按值归一化。"""
-    nums = [_to_num(r.get("value")) for r in rows]
-    max_v = max(nums) if nums else 1
-    tones = ["", "tone-orange", "tone-green", "tone-purple", "tone-cyan"]
+def _render_kpi(rows: list[dict]) -> str:
+    """KPI 卡（1 行 or 多个 is_total）。"""
+    if not rows:
+        return ""
     items = []
-    for idx, (r, v) in enumerate(zip(rows, nums)):
-        label = r.get("label", "")
-        value = r.get("value", "")
-        sub = r.get("sub", "")
-        width = (v / max_v * 100) if max_v > 0 else 0
-        tone = tones[idx % len(tones)]
+    for r in rows:
         items.append(
-            f'<div class="bar-row">'
-            f'<span class="bar-row-label" title="{label}">{label}</span>'
-            f'<span class="bar-row-track"><span class="bar-row-fill {tone}" style="width:{width:.1f}%"></span></span>'
-            f'<span class="bar-row-value">{_format(value)}</span>'
+            f'<div class="kpi-card">'
+            f'<div class="kpi-card-label">{r.get("名称", "")}</div>'
+            f'<div class="kpi-card-value">{_fmt(r.get("数值"))}</div>'
+            f'<div class="kpi-card-sub">{r.get("备注", "")}</div>'
             f"</div>"
         )
-        if sub:
-            items.append(f'<div class="bar-row-sub">{sub}</div>')
-    return f'<div class="bar-list">{"".join(items)}</div>'
+    return f'<div class="kpi-strip-inner">{"".join(items)}</div>'
 
 
 def _render_donut(rows: list[dict]) -> str:
-    """圆环图 + 图例。"""
-    nums = [_to_num(r.get("value")) for r in rows]
+    """圆环图（2-5 项组成）。"""
+    nums = [_to_num(r.get("数值")) for r in rows]
     total = sum(nums) or 1
     palette = ["#4f46e5", "#f97316", "#10b981", "#8b5cf6", "#06b6d4", "#ec4899", "#f59e0b", "#ef4444"]
 
@@ -107,146 +106,135 @@ def _render_donut(rows: list[dict]) -> str:
             f"M {x1o:.1f} {y1o:.1f} A {r_outer} {r_outer} 0 {large} 1 {x2o:.1f} {y2o:.1f} "
             f"L {x2i:.1f} {y2i:.1f} A {r_inner} {r_inner} 0 {large} 0 {x1i:.1f} {y1i:.1f} Z"
         )
-        parts.append(f'<path d="{path}" fill="{color}"><title>{r.get("label","")}: {v/total*100:.1f}%</title></path>')
+        parts.append(f'<path d="{path}" fill="{color}"><title>{r.get("名称","")}: {v/total*100:.1f}%</title></path>')
 
     legend = "".join(
         f'<div class="donut-leg-row">'
         f'<span class="donut-leg-dot" style="background:{palette[i%len(palette)]}"></span>'
-        f'<span class="donut-leg-label">{r.get("label","")}</span>'
-        f'<span class="donut-leg-value">{_format(r.get("value",0))}</span>'
+        f'<span class="donut-leg-label">{r.get("名称","")}</span>'
+        f'<span class="donut-leg-value">{_fmt(r.get("数值"))}</span>'
         f"</div>"
         for i, r in enumerate(rows)
     )
 
-    total_label = _format(rows[0].get("value")) if len(rows) == 2 else f"{len(rows)} 项"
     return (
         f'<div class="donut-wrap">'
         f'<svg class="donut-svg" viewBox="0 0 120 120">'
         f'<circle cx="60" cy="60" r="50" fill="#f4f4f5"/>'
         f'{"".join(parts)}'
-        f'<text class="donut-center" x="60" y="58" text-anchor="middle">{total_label}</text>'
-        f'<text class="donut-center-sub" x="60" y="74" text-anchor="middle">合计</text>'
+        f'<text x="60" y="58" text-anchor="middle" class="donut-center">{_fmt(rows[0].get("数值"))}</text>'
+        f'<text x="60" y="74" text-anchor="middle" class="donut-center-sub">合计</text>'
         f"</svg>"
         f'<div class="donut-legend">{legend}</div>'
         f"</div>"
     )
 
 
-def _render_progress(rows: list[dict]) -> str:
-    """进度条列表。"""
+def _render_bar(rows: list[dict]) -> str:
+    """横向柱图（4+ 项）。"""
+    nums = [_to_num(r.get("数值")) for r in rows]
+    max_v = max(nums) if nums else 1
+    tones = ["", "tone-orange", "tone-green", "tone-purple", "tone-cyan", "tone-pink"]
     items = []
-    for r in rows:
-        label = r.get("label", "")
-        value = r.get("value", "")
-        sub = r.get("sub", "")
-        pct = _to_num(value) if (isinstance(value, str) and value.endswith("%")) else 0
-        if pct == 0 and isinstance(value, (int, float)) and value <= 1:
-            pct = value
-        tone = "tone-good" if pct >= 0.8 else ("tone-warn" if pct >= 0.5 else "tone-bad")
+    for idx, (r, v) in enumerate(zip(rows, nums)):
+        label = r.get("名称", "")
+        value = r.get("数值", "")
+        unit = r.get("单位", "")
+        sub = r.get("备注", "")
+        width = (v / max_v * 100) if max_v > 0 else 0
+        tone = tones[idx % len(tones)]
+        val_str = _fmt(value)
+        if unit and not val_str.endswith("%"):
+            val_str = f"{val_str} {unit}"
         items.append(
-            f'<div class="prog-row">'
-            f'<div class="prog-row-head">'
-            f'<span class="prog-row-label" title="{label}">{label}</span>'
-            f'<span class="prog-row-value">{_format(value)}</span>'
-            f"</div>"
-            f'<div class="prog-row-bar"><span class="prog-row-fill {tone}" style="width:{pct*100:.1f}%"></span></div>'
+            f'<div class="bar-row">'
+            f'<span class="bar-row-label" title="{label}">{label}</span>'
+            f'<span class="bar-row-track"><span class="bar-row-fill {tone}" style="width:{width:.1f}%"></span></span>'
+            f'<span class="bar-row-value">{val_str}</span>'
             f"</div>"
         )
-    return f'<div class="prog-list">{"".join(items)}</div>'
+        if sub:
+            items.append(f'<div class="bar-row-sub">{sub}</div>')
+    return f'<div class="bar-list">{"".join(items)}</div>'
 
 
-def _render_rank(rows: list[dict]) -> str:
-    """排名列表（gold/silver/bronze badge）。"""
-    items = []
-    for i, r in enumerate(rows):
-        rank = i + 1
-        badge_class = {1: "gold", 2: "silver", 3: "bronze"}.get(rank, "")
-        items.append(
-            f'<div class="rank-row">'
-            f'<span class="rank-badge {badge_class}">{rank}</span>'
-            f'<span class="rank-label">{r.get("label","")}</span>'
-            f'<span class="rank-value">{_format(r.get("value",""))}</span>'
-            f"</div>"
-        )
-    return f'<div class="rank-list">{"".join(items)}</div>'
-
-
-def _render_grid_list(rows: list[dict]) -> str:
-    """网格列表（适合网点等多同类项）。"""
-    items = "".join(
-        f'<div class="grid-item">'
-        f'<span class="grid-item-label">{r.get("label","")}</span>'
-        f'<span class="grid-item-value">{_format(r.get("value",0))}</span>'
-        f"</div>"
-        for r in rows
-    )
-    return f'<div class="grid-list">{items}</div>'
-
-
-def _render_stat_cards(rows: list[dict]) -> str:
-    """Stat 卡片组（适合 3-4 个核心数字）。"""
+def _render_table(rows: list[dict]) -> str:
+    """多列表（从多列 sheet 来）。"""
     if not rows:
         return ""
-    inner = "".join(
-        f'<div class="stat-card">'
-        f'<div class="stat-card-label">{r.get("label","")}</div>'
-        f'<div class="stat-card-value">{_format(r.get("value",0))}</div>'
-        f'<div class="stat-card-sub">{r.get("sub","")}</div>'
-        f"</div>"
-        for r in rows
-    )
-    return f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">{inner}</div>'
-
-
-def _render_table(data_key: str, full_data: list) -> str:
-    """表格。"""
-    rows = _get_filtered(full_data, data_key)
-    if not rows:
-        return ""
-    cols = [k for k in rows[0].keys() if k != "section"]
+    cols = list(rows[0].keys())
     head = "".join(f"<th>{c}</th>" for c in cols)
     body = "".join(
-        "<tr>" + "".join(f"<td>{_format(r.get(c))}</td>" for c in cols) + "</tr>"
+        "<tr>" + "".join(f"<td>{_fmt(r.get(c))}</td>" for c in cols) + "</tr>"
         for r in rows
     )
     return f'<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="data-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
 
 
-# ====== Section 渲染主逻辑 ======
+def _render_total_with_sub(total_rows: list[dict], sub_rows: list[dict]) -> str:
+    """KPI 总数 + 子项 bar。"""
+    kpi = _render_kpi(total_rows)
+    bar = _render_bar(sub_rows) if sub_rows else ""
+    return f'<div class="total-with-sub">{kpi}{bar}</div>'
 
-def render_section(section: dict, data: Any) -> str:
-    """根据 section + data 自动选 viz。"""
-    data_key = section.get("data_key", "")
-    section_type = section.get("type", "stats")
-    title = section.get("title", "")
-    span = section.get("span", 6)
 
-    rows = _get_filtered(data, data_key) if section_type != "table" else []
+# ====== 自动 viz 选择 ======
 
-    if section_type == "table":
-        body = _render_table(data_key, data if isinstance(data, list) else [])
-        if not body:
-            return ""
-    elif section_type == "hierarchy" or (rows and len(rows) >= 12 and all(isinstance(r.get("value"), (int, float)) for r in rows)):
-        body = _render_grid_list(rows)
-    elif _is_rank(rows):
-        body = _render_rank(rows)
-    elif len(rows) == 2:
-        body = _render_donut(rows)
-    elif 3 <= len(rows) <= 4 and all(str(r.get("value", "")).endswith("%") for r in rows):
-        body = _render_progress(rows)
-    elif 3 <= len(rows) <= 14:
-        body = _render_bar_list(rows)
-    else:
-        body = _render_stat_cards(rows) if rows else ""
+def _pick_viz(rows: list[dict]) -> str:
+    """根据分组结构选择 viz。"""
+    if not rows:
+        return "empty"
 
-    if not body:
+    total_rows = [r for r in rows if str(r.get("is_total", "")).upper() == "TRUE"]
+    sub_rows = [r for r in rows if str(r.get("is_total", "")).upper() != "TRUE"]
+
+    # 全部 is_total → KPI
+    if total_rows and not sub_rows:
+        return "kpi"
+
+    # 有 is_total + sub → KPI + bar
+    if total_rows and sub_rows:
+        return "total_sub"
+
+    # 1 项（无 is_total）→ KPI
+    if len(rows) == 1:
+        return "kpi"
+
+    # 2-3 项 → donut
+    if 2 <= len(rows) <= 3:
+        return "donut"
+
+    # 4+ 项 → bar
+    return "bar"
+
+
+# ====== Section 渲染 ======
+
+def render_group(group_name: str, rows: list[dict], span: int = 6) -> str:
+    """渲染单个分组 section。"""
+    if not rows:
         return ""
+    rows = sorted(rows, key=_sort_key)
+    viz = _pick_viz(rows)
+
+    # 渲染 body
+    if viz == "kpi":
+        body = _render_kpi(rows)
+    elif viz == "donut":
+        body = _render_donut(rows)
+    elif viz == "bar":
+        body = _render_bar(rows)
+    elif viz == "total_sub":
+        total_rows = [r for r in rows if str(r.get("is_total", "")).upper() == "TRUE"]
+        sub_rows = [r for r in rows if str(r.get("is_total", "")).upper() != "TRUE"]
+        body = _render_total_with_sub(total_rows, sub_rows)
+    else:
+        body = ""
 
     return (
         f'<div class="section span-{span}">'
         f'<div class="section-head">'
-        f'<span class="section-title"><span class="section-title-dot"></span>{title}</span>'
+        f'<span class="section-title"><span class="section-title-dot"></span>{group_name}</span>'
         f'<span class="section-meta">{len(rows)} 项</span>'
         f"</div>"
         f"{body}"
@@ -254,12 +242,59 @@ def render_section(section: dict, data: Any) -> str:
     )
 
 
-def render_module(module_key: str, module_cfg: dict, module_data: Any) -> str:
+def render_table_sheet(rows: list[dict], title: str, span: int = 12) -> str:
+    """渲染多列 sheet 为表格。"""
+    if not rows:
+        return ""
+    body = _render_table(rows)
+    return (
+        f'<div class="section span-{span}">'
+        f'<div class="section-head">'
+        f'<span class="section-title"><span class="section-title-dot"></span>{title}</span>'
+        f'<span class="section-meta">{len(rows)} 行</span>'
+        f"</div>"
+        f"{body}"
+        f"</div>"
+    )
+
+
+def render_kpi_strip(kpis: list[dict]) -> str:
+    """顶部 KPI 长条。"""
+    if not kpis:
+        return ""
+    cards = "".join(
+        f'<div class="kpi-strip-card">'
+        f'<div class="kpi-strip-label">{k.get("label","")}</div>'
+        f'<div class="kpi-strip-value">{_fmt(k.get("value",0))}</div>'
+        f'<div class="kpi-strip-sub">{k.get("sub","")}</div>'
+        f"</div>"
+        for k in kpis
+    )
+    return f'<div class="kpi-strip">{cards}</div>'
+
+
+def render_module(module_key: str, module_cfg: dict, module_data: list[dict], extra_sheets: dict[str, list[dict]] | None = None) -> str:
+    """渲染模块。"""
+    extra_sheets = extra_sheets or {}
+    groups = _group_by(module_data, "分组")
+
     sections_html = []
-    for section in module_cfg.get("sections", []):
-        rendered = render_section(section, module_data)
+    # 主分组（按 mapping 顺序）
+    for group_cfg in module_cfg.get("groups", []):
+        gname = group_cfg["name"]
+        gspan = group_cfg.get("span", 6)
+        rows = groups.get(gname, [])
+        rendered = render_group(gname, rows, gspan)
         if rendered:
             sections_html.append(rendered)
+
+    # 额外 sheet（多列表等）
+    for sheet_name, span in module_cfg.get("extra_sheets", []):
+        rows = extra_sheets.get(sheet_name, [])
+        rendered = render_table_sheet(rows, sheet_name.split(" ", 1)[-1] if " " in sheet_name else sheet_name, span)
+        if rendered:
+            sections_html.append(rendered)
+
     icon = module_cfg.get("icon", "")
     title = module_cfg.get("title", "")
     sub = module_cfg.get("sub", "")
@@ -274,18 +309,3 @@ def render_module(module_key: str, module_cfg: dict, module_data: Any) -> str:
         f'<div class="module-body">{"".join(sections_html)}</div>'
         f"</section>"
     )
-
-
-def render_kpi_strip(kpis: list[dict]) -> str:
-    """顶部 KPI 长条。"""
-    if not kpis:
-        return ""
-    cards = "".join(
-        f'<div class="kpi-strip-card">'
-        f'<div class="kpi-strip-label">{k.get("label","")}</div>'
-        f'<div class="kpi-strip-value">{_format(k.get("value",0))}</div>'
-        f'<div class="kpi-strip-sub">{k.get("sub","")}</div>'
-        f"</div>"
-        for k in kpis
-    )
-    return f'<div class="kpi-strip">{cards}</div>'
