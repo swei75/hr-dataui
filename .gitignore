@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Output
+output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Excel temp files
+~$*.xlsx
+~$*.xls
+
+# Logs
+*.log
+
+# SDD scratch
+.superpowers/
