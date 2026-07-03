@@ -27,11 +27,11 @@ def main() -> int:
     config = read_config(data_file)
     raw_data = read_workbook(data_file)
 
-    # 拼装 6 模块
+    # 拼装 6 模块（extra_sheets 传 raw_data，让模块能取到多列 sheet 如 干部职数表）
     modules_html = []
     for module_key, module_cfg in sorted(MODULES.items(), key=lambda x: x[1].get("order", 99)):
-        module_data = raw_data.get(module_key, {})
-        modules_html.append(render_module(module_key, module_cfg, module_data))
+        module_data = raw_data.get(module_key, [])
+        modules_html.append(render_module(module_key, module_cfg, module_data, extra_sheets=raw_data))
 
     # 顶部 KPI 长条
     kpi_strip = render_kpi_strip(TOP_KPIS)
