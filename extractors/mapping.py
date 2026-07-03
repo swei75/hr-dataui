@@ -1,16 +1,11 @@
 """字段映射 + viz 配置。
 
-每个模块：
-- title: 显示标题
-- icon: emoji
-- order: 显示顺序
-- sections: section 列表
-  - key: section id
-  - title: section 标题
-  - type: viz 类型（kpi/bar/pie/...）
-  - alt_types: 切换选项
-  - data_key: 从原始数据提取的 key
-  - drillable: 是否可钻取
+按 .docx 内容比重设计排版（size 字段）：
+- "compact" → 进 KPI 行（多列小卡）
+- "half" → 两列并排
+- "full" → 占满整行（重要表/排名）
+
+每个模块的 sections 顺序和 size 基于 .docx 数据重要性。
 """
 
 MODULES = {
@@ -19,21 +14,14 @@ MODULES = {
         "icon": "🏛",
         "order": 1,
         "sections": [
+            # .docx 重点：分行 + 网点分布，1 个 hierarchy 全宽
             {
-                "key": "branch_by_region",
-                "title": "分行网点分布",
+                "key": "branch_hierarchy",
+                "title": "网点分布",
                 "type": "hierarchy",
-                "alt_types": ["table"],
                 "data_key": "region_tree",
+                "size": "full",
                 "drillable": True,
-            },
-            {
-                "key": "branch_status",
-                "title": "网点营业状态",
-                "type": "ranking",
-                "alt_types": [],
-                "data_key": "branch_status",
-                "drillable": False,
             },
         ],
     },
@@ -42,21 +30,36 @@ MODULES = {
         "icon": "👥",
         "order": 2,
         "sections": [
+            # 3 个核心 KPI 数字（.docx 顶部强调数据）
             {
-                "key": "headcount_total",
-                "title": "员工总数",
+                "key": "kpi_total",
+                "title": "正式员工",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "headcount_overview",
-                "drillable": False,
+                "data_key": "headcount_total",
+                "size": "compact",
             },
+            {
+                "key": "kpi_operating",
+                "title": "经营机构",
+                "type": "kpi",
+                "data_key": "headcount_operating",
+                "size": "compact",
+            },
+            {
+                "key": "kpi_ratio",
+                "title": "前中后台比例",
+                "type": "kpi",
+                "data_key": "headcount_ratio",
+                "size": "compact",
+            },
+            # 4 个分布
             {
                 "key": "age_dist",
                 "title": "年龄分布",
                 "type": "bar",
                 "alt_types": ["pie"],
                 "data_key": "age_distribution",
-                "drillable": False,
+                "size": "half",
             },
             {
                 "key": "edu_dist",
@@ -64,7 +67,7 @@ MODULES = {
                 "type": "bar",
                 "alt_types": ["pie"],
                 "data_key": "edu_distribution",
-                "drillable": False,
+                "size": "half",
             },
             {
                 "key": "gender_dist",
@@ -72,7 +75,7 @@ MODULES = {
                 "type": "pie",
                 "alt_types": ["bar"],
                 "data_key": "gender_distribution",
-                "drillable": False,
+                "size": "half",
             },
             {
                 "key": "customer_managers",
@@ -80,6 +83,7 @@ MODULES = {
                 "type": "bar",
                 "alt_types": ["table"],
                 "data_key": "customer_managers",
+                "size": "half",
                 "drillable": True,
             },
         ],
@@ -89,44 +93,51 @@ MODULES = {
         "icon": "📉",
         "order": 3,
         "sections": [
+            # 3 个核心 KPI
             {
-                "key": "social_hire",
+                "key": "kpi_social",
                 "title": "社招入职",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "social_hire",
-                "drillable": False,
+                "data_key": "social_hire_total",
+                "size": "compact",
             },
             {
-                "key": "campus_hire",
+                "key": "kpi_campus",
                 "title": "校招签约",
-                "type": "funnel",
-                "alt_types": ["bar"],
-                "data_key": "campus_hire",
-                "drillable": False,
-            },
-            {
-                "key": "exit_overview",
-                "title": "人员退出",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "exit_overview",
-                "drillable": False,
+                "data_key": "campus_hire_total",
+                "size": "compact",
             },
             {
-                "key": "teng_long_huan_yao",
+                "key": "kpi_exit",
+                "title": "累计退出",
+                "type": "kpi",
+                "data_key": "exit_total",
+                "size": "compact",
+            },
+            # 校招 funnel
+            {
+                "key": "campus_funnel",
+                "title": "校招各阶段",
+                "type": "funnel",
+                "data_key": "campus_funnel",
+                "size": "half",
+            },
+            # 2 个 progress
+            {
+                "key": "teng_long",
                 "title": "腾笼换鸟",
                 "type": "progress",
-                "alt_types": [],
                 "data_key": "teng_long_huan_yao",
+                "size": "half",
                 "drillable": True,
             },
             {
-                "key": "poor_perf_exit",
+                "key": "poor_perf",
                 "title": "绩差退出",
                 "type": "progress",
-                "alt_types": [],
                 "data_key": "poor_perf_exit",
+                "size": "full",
                 "drillable": True,
             },
         ],
@@ -136,29 +147,42 @@ MODULES = {
         "icon": "🎖",
         "order": 4,
         "sections": [
+            # 3 个 KPI
             {
-                "key": "headcount_total",
-                "title": "干部总职数",
+                "key": "kpi_total",
+                "title": "中层总职数",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "headcount_overview",
-                "drillable": False,
+                "data_key": "headcount_total",
+                "size": "compact",
             },
             {
+                "key": "kpi_filled",
+                "title": "已配备",
+                "type": "kpi",
+                "data_key": "headcount_filled",
+                "size": "compact",
+            },
+            {
+                "key": "kpi_vacancy",
+                "title": "尚空缺",
+                "type": "kpi",
+                "data_key": "headcount_vacancy",
+                "size": "compact",
+            },
+            # 1 个核心表（全宽）+ 1 个 ranking
+            {
                 "key": "config_table",
-                "title": "职数与配置",
+                "title": "职数与配置情况",
                 "type": "table",
-                "alt_types": [],
                 "data_key": "config_table",
-                "drillable": False,
+                "size": "full",
             },
             {
                 "key": "adjustments",
-                "title": "调整情况",
+                "title": "新一届党委以来调整",
                 "type": "ranking",
-                "alt_types": [],
                 "data_key": "adjustments",
-                "drillable": False,
+                "size": "full",
             },
         ],
     },
@@ -167,37 +191,42 @@ MODULES = {
         "icon": "💰",
         "order": 5,
         "sections": [
+            # 4 个 KPI（compact row）
             {
-                "key": "salary_total",
-                "title": "工资总额",
+                "key": "kpi_salary",
+                "title": "2025 年工资总额",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "salary_overview",
-                "drillable": False,
+                "data_key": "salary_total",
+                "size": "compact",
             },
             {
-                "key": "pension",
-                "title": "企业年金",
+                "key": "kpi_per_capita",
+                "title": "人均薪酬",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "pension",
-                "drillable": False,
+                "data_key": "salary_per_capita",
+                "size": "compact",
             },
+            {
+                "key": "kpi_pension",
+                "title": "企业年金余额",
+                "type": "kpi",
+                "data_key": "pension_balance",
+                "size": "compact",
+            },
+            {
+                "key": "kpi_tou_lang",
+                "title": "头狼评选",
+                "type": "kpi",
+                "data_key": "tou_lang_count",
+                "size": "compact",
+            },
+            # 1 个 ranking
             {
                 "key": "monitoring",
                 "title": "履职监测黑榜",
                 "type": "ranking",
-                "alt_types": [],
                 "data_key": "monitoring",
-                "drillable": False,
-            },
-            {
-                "key": "tou_lang",
-                "title": "头狼评选",
-                "type": "kpi",
-                "alt_types": [],
-                "data_key": "tou_lang",
-                "drillable": False,
+                "size": "full",
             },
         ],
     },
@@ -206,28 +235,42 @@ MODULES = {
         "icon": "📚",
         "order": 6,
         "sections": [
+            # 3 个 KPI
             {
-                "key": "training_overview",
-                "title": "培训总量",
+                "key": "kpi_total",
+                "title": "能力大提升项目",
                 "type": "kpi",
-                "alt_types": [],
-                "data_key": "training_overview",
-                "drillable": False,
+                "data_key": "training_total",
+                "size": "compact",
             },
             {
-                "key": "key_projects",
+                "key": "kpi_key",
                 "title": "重点培训项目",
-                "type": "progress",
-                "alt_types": [],
+                "type": "kpi",
                 "data_key": "key_projects",
-                "drillable": False,
+                "size": "compact",
+            },
+            {
+                "key": "kpi_exam",
+                "title": "上岗资格人次",
+                "type": "kpi",
+                "data_key": "exam_count",
+                "size": "compact",
+            },
+            # 1 个 progress + 1 个 ranking
+            {
+                "key": "key_projects_progress",
+                "title": "重点项目执行率",
+                "type": "progress",
+                "data_key": "key_projects_pct",
+                "size": "full",
             },
             {
                 "key": "dept_execution",
-                "title": "部门执行率",
+                "title": "部门培训执行率",
                 "type": "ranking",
-                "alt_types": [],
                 "data_key": "dept_execution",
+                "size": "full",
                 "drillable": True,
             },
         ],

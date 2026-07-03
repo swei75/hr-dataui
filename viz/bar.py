@@ -11,6 +11,8 @@ def render(data, options):
         value = d.get("value", 0)
         pct = d.get("pct", 0) or 0
         width = (pct / max_pct * 100) if max_pct > 0 else 0
+        value_str = f"{value:,}" if isinstance(value, (int, float)) else str(value)
+        pct_str = f"{pct * 100:.2f}%" if isinstance(pct, (int, float)) else ""
         rows.append(
             f'<div class="bar-row" style="display:flex;align-items:center;'
             f'gap:8px;margin:6px 0;">'
@@ -20,6 +22,6 @@ def render(data, options):
             f'<div class="bar-fill" style="width:{width:.1f}%;'
             f'background:#1E5BAA;height:100%;"></div></div>'
             f'<div class="bar-value" style="min-width:80px;text-align:right;">'
-            f"{value:,} ({pct * 100:.2f}%)</div></div>"
+            f"{value_str} {pct_str}</div></div>"
         )
     return f'<div class="bar-chart">{"".join(rows)}</div>'
