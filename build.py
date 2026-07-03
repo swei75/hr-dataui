@@ -45,7 +45,7 @@ def main() -> int:
         module_data = raw_data.get(module_key, {})
         modules_html.append(render_module(module_key, module_cfg, module_data))
 
-    # 加载 Alpine.js (inline)
+    # 加载 Alpine.js (inline) - 当前 v1.3 简化为 vanilla JS 内联
     alpine_path = Path("vendor/alpine.min.js")
     alpine_inline = alpine_path.read_text(encoding="utf-8") if alpine_path.exists() else ""
 
@@ -54,7 +54,6 @@ def main() -> int:
     html = render_page(
         body,
         title=title,
-        alpine=alpine_inline,
         drill_data=json.dumps(drill_data, ensure_ascii=False),
     )
 

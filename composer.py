@@ -1,192 +1,186 @@
-"""字段映射 + viz 配置。
+"""字段映射 - 按 .docx 内容分组。
 
-按 .docx 内容比重设计：
-- size="compact" → 关键数字（KPI 行，多列小卡）
-- size="half" → 并排显示
-- size="full" → 占满（重要表/排名）
+每模块的 sections 数量匹配数据点组数。
+所有 section 渲染为紧凑 stat rows，无大卡片。
 """
 from typing import Any
 
 from viz import VIZ_REGISTRY
 
 
+# viz 期望的 data 形状
 VIZ_SHAPE = {
-    "kpi": "dict",
-    "bar": "list",
-    "pie": "list",
-    "funnel": "list",
-    "progress": "dict",
-    "ranking": "list",
-    "hierarchy": "list",
-    "table": "list",
+    "kpi": "dict", "bar": "list", "pie": "list", "funnel": "list",
+    "progress": "dict", "ranking": "list", "hierarchy": "list", "table": "list",
 }
 
 
-def _adapt_and_render(render_fn, viz_type: str, data: Any, options: dict, data_key: str = "") -> str:
+def _adapt(render_fn, viz_type: str, data: Any, data_key: str) -> str:
+    """适配数据 → 调用 viz render。"""
     if data is None:
-        return '<div class="empty">无数据</div>'
+        return ""
 
-    # 数据切片：按 data_key 过滤 section 列
+    # 按 section 字段过滤
     if isinstance(data, list) and data and isinstance(data[0], dict) and "section" in data[0]:
         filtered = [r for r in data if r.get("section") == data_key]
         if filtered:
             data = filtered
 
+    if not data:
+        return ""
+
     expected = VIZ_SHAPE.get(viz_type, "list")
 
     if expected == "dict" and isinstance(data, list):
-        if not data:
-            return '<div class="empty">无数据</div>'
         first = data[0]
         if viz_type == "kpi":
-            num = first.get("value")
-            sub = first.get("sub") or first.get("label") or ""
-            return render_fn({"value": num, "sub": sub, "tone": "blue"}, options)
+            return render_fn(
+                {"value": first.get("value", "-"), "sub": first.get("label", ""), "tone": "blue"},
+                {},
+            )
         if viz_type == "progress":
-            label = first.get("label") or ""
-            current = first.get("value") or 0
-            target_str = first.get("sub", "")
-            # 尝试从 sub 提取数字（如 "全年任务 410"）
+            label = first.get("label", "")
+            current = first.get("value", 0) or 0
+            sub = str(first.get("sub", ""))
             target = 0
-            for word in str(target_str).split():
+            for w in sub.split():
                 try:
-                    target = int(word)
+                    target = int(w)
                     break
                 except ValueError:
                     pass
-            # 计算 pct
-            if target > 0:
-                pct = current / target
-            elif "pct" in first or "完成率" in str(first.get("label", "")):
-                pct = first.get("value", 0) if isinstance(first.get("value"), float) and first.get("value", 0) <= 1 else 0
-            else:
-                pct = 0
-            return render_fn({"label": label, "current": current, "target": target, "pct": pct}, options)
+            pct = current / target if target > 0 else 0
+            return render_fn(
+                {"label": label, "current": current, "target": target, "pct": pct}, {}
+            )
 
     if expected == "list" and isinstance(data, dict):
-        return render_fn([data], options)
+        return render_fn([data], {})
 
-    return render_fn(data, options)
-
-
-def _render_section_body(section: dict, data: Any) -> str:
-    render_fn = VIZ_REGISTRY[section["type"]]
-    return _adapt_and_render(render_fn, section["type"], data, {}, section.get("data_key", ""))
+    return render_fn(data, {})
 
 
-def _section_title_html(title: str) -> str:
-    if not title:
-        return ""
-    return f'<h3 class="section-title">{title}</h3>'
+def _format_value(v) -> str:
+    """数值格式化。"""
+    if v is None:
+        return "—"
+    if isinstance(v, float):
+        if 0 < v < 1:
+            return f"{v * 100:.2f}%"
+        return f"{v:,.2f}"
+    if isinstance(v, int):
+        return f"{v:,}"
+    return str(v)
 
 
-def _section_drill_html(drillable: bool, data_key: str) -> str:
-    if not drillable:
-        return ""
+def _render_compact_stat_row(r: dict, max_pct: float = 0) -> str:
+    """渲染一行紧凑 stat: label | value (with inline bar) | sub"""
+    label = r.get("label", "")
+    value = r.get("value", "")
+    sub = r.get("sub", "")
+
+    # 检测是否有占比可用于 inline bar
+    pct = 0
+    if isinstance(value, float) and 0 < value < 1:
+        pct = value
+    elif isinstance(value, str) and value.endswith("%"):
+        try:
+            pct = float(value.rstrip("%")) / 100
+        except ValueError:
+            pct = 0
+
+    bar_html = ""
+    if pct > 0 and max_pct > 0:
+        width = (pct / max_pct) * 100
+        bar_html = f'<span class="stat-bar"><span class="stat-bar-fill" style="width:{width:.1f}%"></span></span>'
+
     return (
-        '<div class="drill-wrap">'
-        f'<button class="drill-btn" data-key="{data_key}">查看详情</button>'
-        f'<div class="drill-panel" data-key="{data_key}"></div>'
-        "</div>"
-    )
-
-
-def _build_section_card(section: dict, data: Any) -> str:
-    """单个 section 卡片（含 title + viz + 可选 drill）。"""
-    drillable = section.get("drillable", False)
-    data_key = section.get("data_key", "")
-    size = section.get("size", "")
-    body = _render_section_body(section, data)
-    compact = " compact" if size == "compact" else ""
-    return (
-        f'<div class="section-card{compact}" data-section="{section["key"]}">'
-        f'{_section_title_html(section.get("title", ""))}'
-        f'<div class="section-body">{body}</div>'
-        f"{_section_drill_html(drillable, data_key)}"
+        f'<div class="stat-row">'
+        f'<span class="stat-label">{label}</span>'
+        f'<span class="stat-value">{_format_value(value)}</span>'
+        f"{bar_html}"
+        f'<span class="stat-sub">{sub}</span>'
         f"</div>"
     )
 
 
-def _layout_sections(sections: list[tuple[dict, Any]]) -> str:
-    """布局策略：
-    - size="compact" → kpi-grid（多列）
-    - size="half" → two-col
-    - size="full" → full-col
-    - 默认：kpi 进 kpi-grid，其他成对进 two-col
-    """
-    parts = []
-    i = 0
-    n = len(sections)
-    while i < n:
-        section, data = sections[i]
-        size = section.get("size", "")
+def _render_table(section: dict, data: Any) -> str:
+    """渲染紧凑表格。"""
+    if isinstance(data, list) and data and isinstance(data[0], dict) and "section" in data[0]:
+        filtered = [r for r in data if r.get("section") == section.get("data_key")]
+    else:
+        filtered = data if isinstance(data, list) else []
+    if not filtered:
+        return ""
 
-        # 显式 compact：单 section 单独放，标记为 compact；多个连续 compact 才合并
-        if size == "compact":
-            kpi_group = []
-            while i < n and sections[i][0].get("size") == "compact":
-                kpi_group.append(_build_section_card(*sections[i]))
-                i += 1
-            if len(kpi_group) >= 2:
-                parts.append(f'<div class="kpi-grid">{"".join(kpi_group)}</div>')
-            else:
-                parts.append(f'<div class="kpi-grid">{"".join(kpi_group)}</div>')
-            continue
+    # 收集列名（排除 section 列）
+    cols = [k for k in filtered[0].keys() if k != "section"]
+    head = "".join(f"<th>{c}</th>" for c in cols)
+    rows = "".join(
+        "<tr>" + "".join(f"<td>{_format_value(r.get(c))}</td>" for c in cols) + "</tr>"
+        for r in filtered
+    )
+    return f'<div class="table-wrap"><table class="data-table"><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table></div>'
 
-        # 显式 full
-        if size == "full":
-            parts.append(f'<div class="full-col">{_build_section_card(*sections[i])}</div>')
-            i += 1
-            continue
 
-        # 显式 half → 与下一个 half 配对
-        if size == "half":
-            a = _build_section_card(*sections[i])
-            if i + 1 < n and sections[i + 1][0].get("size") == "half":
-                b = _build_section_card(*sections[i + 1])
-                parts.append(f'<div class="two-col">{a}{b}</div>')
-                i += 2
-            else:
-                parts.append(f'<div class="two-col">{a}</div>')
-                i += 1
-            continue
+def render_section(section: dict, data: Any) -> str:
+    """渲染 section：紧凑 stat rows 或 table。"""
+    data_key = section.get("data_key", "")
+    section_type = section.get("type", "")
+    title = section.get("title", "")
 
-        # 默认：kpi 进 grid，其他两两配对
-        if section["type"] == "kpi":
-            kpi_group = []
-            while i < n and (sections[i][0]["type"] == "kpi" or sections[i][0].get("size") == "compact"):
-                kpi_group.append(_build_section_card(*sections[i]))
-                i += 1
-            parts.append(f'<div class="kpi-grid">{"".join(kpi_group)}</div>')
-            continue
+    # 过滤数据
+    if isinstance(data, list) and data and isinstance(data[0], dict) and "section" in data[0]:
+        rows = [r for r in data if r.get("section") == data_key]
+    else:
+        rows = []
 
-        if i + 1 < n and sections[i + 1][0]["type"] != "kpi":
-            a = _build_section_card(*sections[i])
-            b = _build_section_card(*sections[i + 1])
-            parts.append(f'<div class="two-col">{a}{b}</div>')
-            i += 2
-        else:
-            parts.append(f'<div class="full-col">{_build_section_card(*sections[i])}</div>')
-            i += 1
-    return "".join(parts)
+    if not rows:
+        return ""
+
+    # table 类型
+    if section_type == "table":
+        table_html = _render_table(section, data)
+        return f'<div class="section"><h3 class="section-title">{title}</h3>{table_html}</div>'
+
+    # hierarchy 类型：父子结构
+    if section_type == "hierarchy":
+        items = "".join(
+            f'<li><span class="h-name">{r.get("label", "")}</span> '
+            f'<span class="h-count">{_format_value(r.get("value"))}</span></li>'
+            for r in rows
+        )
+        return f'<div class="section"><h3 class="section-title">{title}</h3><ul class="hierarchy-list">{items}</ul></div>'
+
+    # 其他：紧凑 stat rows
+    # 计算 max pct 用于归一化
+    pcts = []
+    for r in rows:
+        v = r.get("value")
+        if isinstance(v, float) and 0 < v < 1:
+            pcts.append(v)
+        elif isinstance(v, str) and v.endswith("%"):
+            try:
+                pcts.append(float(v.rstrip("%")) / 100)
+            except ValueError:
+                pass
+    max_pct = max(pcts) if pcts else 0
+
+    rows_html = "".join(_render_compact_stat_row(r, max_pct) for r in rows)
+    return f'<div class="section"><h3 class="section-title">{title}</h3><div class="stat-list">{rows_html}</div></div>'
 
 
 def render_module(module_key: str, module_cfg: dict, module_data: Any) -> str:
-    sections = []
+    """渲染模块：所有 sections 紧凑排列。"""
+    sections_html = []
     for section in module_cfg.get("sections", []):
-        data_key = section.get("data_key")
-        if isinstance(module_data, dict) and data_key:
-            data = module_data.get(data_key)
-        else:
-            data = module_data
-        sections.append((section, data))
+        rendered = render_section(section, module_data)
+        if rendered:
+            sections_html.append(rendered)
 
-    body = _layout_sections(sections)
     icon = module_cfg.get("icon", "")
     title = module_cfg.get("title", "")
     return f"""<section class="module" id="M-{module_cfg.get('order', '?')}">
 <h2><span class="icon">{icon}</span> {title}</h2>
-<div class="module-body">
-{body}
-</div>
+<div class="module-body">{"".join(sections_html)}</div>
 </section>"""
