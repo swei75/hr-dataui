@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-6 设计 v10：网格卡片墙</title>
+<style>
+:root{
+  --bg:#fbf4e9;--card:#fefcf7;--primary:#9f6b44;--primary-dark:#6b4423;
+  --border:#e8d8c3;--sub:#ead9c3;--text:#241b15;--text2:#7b6653;--body:#3a2e22;
+  --good:#4a7c59;--warn:#a04030;--deco:#c9b299;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--body);font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+.page-shell{max-width:1180px;margin:0 auto;padding:32px 24px 56px}
+.hero{border-left:4px solid var(--primary);padding:18px 22px;background:var(--card);border-radius:0 12px 12px 0;margin-bottom:24px;box-shadow:0 1px 0 var(--border)}
+.eyebrow{font-size:12px;color:var(--primary);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+.hero h1{font-size:26px;color:var(--text);font-weight:700;margin-bottom:6px}
+.subtitle{font-size:14px;color:var(--text2)}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 16px}
+.module-icon{font-size:28px;width:48px;height:48px;background:var(--card);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.narrative-h2{font-size:22px;color:var(--text);font-weight:700;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-size:14px;font-weight:700;width:34px;height:34px;border-radius:8px}
+.narrative-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;box-shadow:0 2px 0 var(--sub)}
+.narrative-card p{font-size:15px;color:var(--body);margin-bottom:12px;padding-left:14px;border-left:2px solid var(--deco)}
+.narrative-card p:last-child{margin-bottom:0}
+.narrative-card strong{color:var(--primary-dark);font-weight:700;background:linear-gradient(transparent 65%,rgba(201,178,153,.45) 65%);padding:0 2px}
+.section-title{font-size:15px;color:var(--text);font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+.section-title .tag{font-size:11px;background:var(--sub);color:var(--primary-dark);padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.5px}
+.section-title .divider{flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
+.main-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.main-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 18px 16px;position:relative;box-shadow:0 2px 0 var(--sub);transition:transform .15s ease,box-shadow .15s ease;cursor:pointer}
+.main-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(107,68,35,.10);border-color:var(--deco)}
+.main-card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.main-card .name{font-size:13px;color:var(--text2);font-weight:600;display:flex;align-items:center;gap:6px}
+.main-card .icon{font-size:18px}
+.main-card .badge-warn{background:rgba(160,64,48,.12);color:var(--warn);font-size:10px;padding:2px 7px;border-radius:8px;font-weight:700}
+.main-card .num{font-size:32px;color:var(--primary-dark);font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:2px}
+.main-card .num small{font-size:14px;color:var(--text2);font-weight:600;margin-left:2px}
+.main-card .spark{margin:8px 0 10px}
+.main-card .spark svg{width:100%;height:28px;display:block}
+.main-card .drill{font-size:12px;color:var(--primary);display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.main-card .drill:hover{text-decoration:underline}
+.sub-section{margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.sub-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:0 2px 0 var(--sub)}
+.sub-block h4{font-size:13px;color:var(--text);font-weight:700;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed var(--border);display:flex;align-items:center;justify-content:space-between}
+.sub-block h4 .count{font-size:11px;background:var(--sub);color:var(--primary-dark);padding:1px 8px;border-radius:8px;font-weight:700}
+.sub-card{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;margin-bottom:6px;background:var(--bg);font-size:12.5px;color:var(--body)}
+.sub-card:last-child{margin-bottom:0}
+.sub-card .left{display:flex;align-items:center;gap:8px}
+.sub-card .dot{width:6px;height:6px;border-radius:50%;background:var(--deco);flex-shrink:0}
+.sub-card .status{font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px}
+.sub-card .status.good{background:rgba(74,124,89,.12);color:var(--good)}
+.sub-card .status.warn{background:rgba(160,64,48,.12);color:var(--warn)}
+.sub-card .status.plan{background:rgba(159,107,68,.10);color:var(--primary)}
+.drill-frame{margin-top:22px;border:1.5px dashed var(--primary);background:rgba(159,107,68,.04);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.drill-frame .hint{display:flex;align-items:center;gap:12px}
+.drill-frame .icon-box{width:40px;height:40px;background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.drill-frame .text strong{display:block;font-size:13px;color:var(--text);font-weight:700;margin-bottom:2px}
+.drill-frame .text small{font-size:12px;color:var(--text2)}
+.drill-frame .actions{display:flex;gap:8px}
+.drill-frame .btn{font-size:12px;padding:8px 14px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;border:none}
+.drill-frame .btn.outline{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+.design-note{margin-top:22px;background:var(--sub);border-radius:12px;padding:18px 22px;border-left:3px solid var(--primary)}
+.design-note h3{font-size:14px;color:var(--primary-dark);font-weight:700;margin-bottom:8px}
+.design-note ul{list-style:none;padding:0}
+.design-note li{font-size:13px;color:var(--body);margin-bottom:6px;padding-left:14px;position:relative}
+.design-note li:before{content:"·";position:absolute;left:4px;color:var(--primary);font-weight:700}
+.design-note li b{color:var(--primary-dark);font-weight:700}
+@media(max-width:900px){
+  .main-grid{grid-template-columns:repeat(2,1fr)}
+  .sub-section{grid-template-columns:1fr}
+}
+@media(max-width:580px){
+  .main-grid{grid-template-columns:1fr}
+  .hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+  <p class="eyebrow">v10 · card grid · 6+12 · drill-down</p>
+  <h1>M-6 设计 v10：网格卡片墙</h1>
+  <p class="subtitle">M-1 用 6 静态卡；本版扩展为"6 主 + 12 次"双层卡片墙，加入钻取入口提示</p>
+</header>
+
+<section class="narrative-head">
+  <span class="module-icon">📚</span>
+  <h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+
+<section class="narrative-card">
+  <p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+  <p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+  <p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+  <p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+
+<h3 class="section-title"><span class="tag">MAIN · 6 主卡</span><span class="divider"></span></h3>
+
+<section class="main-grid">
+
+  <div class="main-card">
+    <div class="top">
+      <div class="name"><span class="icon">📊</span>培训总量</div>
+    </div>
+    <div class="num">983<small>场</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><polyline fill="none" stroke="#c9b299" stroke-width="1.5" points="0,22 25,18 50,20 75,14 100,15 125,10 150,12 175,6 200,4"/><circle cx="200" cy="4" r="2.5" fill="#9f6b44"/></svg></div>
+    <a class="drill">查看月度趋势 →</a>
+  </div>
+
+  <div class="main-card">
+    <div class="top">
+      <div class="name"><span class="icon">🎯</span>重点项目</div>
+    </div>
+    <div class="num">55<small>项</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><polyline fill="none" stroke="#c9b299" stroke-width="1.5" points="0,24 25,22 50,18 75,16 100,12 125,10 150,8 175,5 200,4"/><circle cx="200" cy="4" r="2.5" fill="#9f6b44"/></svg></div>
+    <a class="drill">查看项目清单 →</a>
+  </div>
+
+  <div class="main-card">
+    <div class="top">
+      <div class="name"><span class="icon">📈</span>执行率</div>
+    </div>
+    <div class="num">58.06<small>%</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><line x1="0" y1="20" x2="200" y2="20" stroke="#e8d8c3" stroke-width="1" stroke-dasharray="3,3"/><rect x="0" y="14" width="116" height="6" fill="#9f6b44"/><rect x="116" y="14" width="84" height="6" fill="#ead9c3"/></svg></div>
+    <a class="drill">查看部门明细 →</a>
+  </div>
+
+  <div class="main-card">
+    <div class="top">
+      <div class="name"><span class="icon">✅</span>100% 完成部门</div>
+    </div>
+    <div class="num">8<small>个</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><g fill="#4a7c59"><circle cx="20" cy="14" r="6"/><circle cx="50" cy="14" r="6"/><circle cx="80" cy="14" r="6"/><circle cx="110" cy="14" r="6"/><circle cx="140" cy="14" r="6"/><circle cx="170" cy="14" r="6"/></g><g fill="#ead9c3"><circle cx="185" cy="14" r="5"/></g></svg></div>
+    <a class="drill">查看完整名单 →</a>
+  </div>
+
+  <div class="main-card" style="border-color:rgba(160,64,48,.30)">
+    <div class="top">
+      <div class="name"><span class="icon">⚠️</span>末位部门</div>
+      <span class="badge-warn">预警</span>
+    </div>
+    <div class="num" style="color:var(--warn)">3<small>个</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><line x1="0" y1="6" x2="200" y2="6" stroke="#a04030" stroke-width="1" stroke-dasharray="3,3"/><polyline fill="none" stroke="#a04030" stroke-width="1.5" points="0,4 40,8 80,12 120,18 160,22 200,24"/><circle cx="200" cy="24" r="2.5" fill="#a04030"/></svg></div>
+    <a class="drill" style="color:var(--warn)">查看预警原因 →</a>
+  </div>
+
+  <div class="main-card">
+    <div class="top">
+      <div class="name"><span class="icon">🎓</span>资格考人次</div>
+    </div>
+    <div class="num">1,878<small>人次</small></div>
+    <div class="spark"><svg viewBox="0 0 200 28" preserveAspectRatio="none"><g fill="#4a7c59"><rect x="10" y="14" width="14" height="10"/><rect x="30" y="10" width="14" height="14"/><rect x="50" y="12" width="14" height="12"/><rect x="70" y="8" width="14" height="16"/><rect x="90" y="6" width="14" height="18"/><rect x="110" y="9" width="14" height="15"/><rect x="130" y="4" width="14" height="20"/><rect x="150" y="6" width="14" height="18"/><rect x="170" y="2" width="14" height="22"/></g></svg></div>
+    <a class="drill">查看岗位分布 →</a>
+  </div>
+
+</section>
+
+<h3 class="section-title"><span class="tag">SECONDARY · 12 次卡</span><span class="divider"></span></h3>
+
+<section class="sub-section">
+
+  <div class="sub-block">
+    <h4>5 个重点项目 <span class="count">5/55</span></h4>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#9f6b44"></span>广银大讲堂</div><span class="status good">5 期 · 已完成</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#9f6b44"></span>对公特训营</div><span class="status good">2 期 · 已完成</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#c9b299"></span>个贷铁军培训</div><span class="status good">3 期 · 已完成</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#c9b299"></span>办贷能力提升火线班</div><span class="status good">4 期 · 已完成</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#ead9c3"></span>校招新员工集中培训</div><span class="status plan">1 期 · 进行中</span></div>
+  </div>
+
+  <div class="sub-block">
+    <h4>8 个 100% 完成部门 <span class="count" style="background:rgba(74,124,89,.15);color:var(--good)">8 个</span></h4>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>董事会办公室</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>私人银行与财富管理部</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>金融同业部</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>金融市场部</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>战略客户部</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>消费者权益保护部</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>机关纪委办公室</div><span class="status good">100%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#4a7c59"></span>安全保卫部</div><span class="status good">100%</span></div>
+  </div>
+
+  <div class="sub-block">
+    <h4>3 个末位部门 <span class="count" style="background:rgba(160,64,48,.12);color:var(--warn)">预警</span></h4>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#a04030"></span>金融科技部</div><span class="status warn">0%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#a04030"></span>内控合规部</div><span class="status warn">0%</span></div>
+    <div class="sub-card"><div class="left"><span class="dot" style="background:#a04030"></span>运营管理部</div><span class="status warn">14.29%</span></div>
+  </div>
+
+</section>
+
+<section class="drill-frame">
+  <div class="hint">
+    <div class="icon-box">🔍</div>
+    <div class="text">
+      <strong>钻取入口：部门执行率明细 / 月度趋势</strong>
+      <small>点击任意主卡"查看明细"进入下钻 · 或选择按部门、按项目类型筛选</small>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn outline">按月度趋势</button>
+    <button class="btn">展开部门明细</button>
+  </div>
+</section>
+
+<section class="design-note">
+  <h3>设计说明</h3>
+  <ul>
+    <li><b>覆盖维度</b>：6/6 完整（培训总量 / 重点项目 / 执行率 / 100% 部门 / 末位部门 / 资格考）</li>
+    <li><b>与 M-1~M-5 差异</b>：M-1 用 6 静态卡（无钻取、无层级）；v10 用"6 主 + 12 次"双层网格 + 钻取虚线框</li>
+    <li><b>新增 viz 类型</b>：① tiered card grid（主卡 + 次卡双层网格） ② drill-down affordance（钻取入口提示） ③ section divider（区段分割）</li>
+    <li><b>读图速度</b>：2 秒 - 主卡扫一眼拿汇总、次卡定位具体名单、底部虚线框触发钻取</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

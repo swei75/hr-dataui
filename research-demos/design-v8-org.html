@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v8：多环（嵌套 donut · 3 层）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.nested-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:28px;margin-bottom:24px;display:grid;grid-template-columns:340px 1fr;gap:32px;align-items:center}
+.nested-svg{width:320px;height:320px;margin:0 auto;display:block}
+.nested-svg text{font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif}
+.nested-info{display:flex;flex-direction:column;gap:14px}
+.ring-card{background:#faf3e8;border:1px solid #ead9c3;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px}
+.ring-card .swatch{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.ring-card.r1{border-left:4px solid #6b4423}
+.ring-card.r2{border-left:4px solid #4a7c59}
+.ring-card.r3{border-left:4px solid #a04030}
+.ring-card .rinfo{flex:1}
+.ring-card .rtitle{font-size:13px;font-weight:700;color:#6b4423}
+.ring-card .rsub{font-size:11px;color:#7b6653;margin-top:3px;line-height:1.5}
+.ring-card .rnum{font-size:24px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.breakdown{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.brk{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 20px;border-top:3px solid #9f6b44}
+.brk .h{font-size:12px;color:#6b4423;font-weight:700;margin-bottom:8px;letter-spacing:.04em}
+.brk .b{font-size:30px;font-weight:800;color:#241b15;line-height:1;font-variant-numeric:tabular-nums}
+.brk .b small{font-size:13px;color:#7b6653;font-weight:500;margin-left:3px}
+.brk .m{font-size:11px;color:#7b6653;margin-top:8px;line-height:1.6}
+.brk .mini-track{height:8px;background:#f4eadb;border-radius:3px;overflow:hidden;margin-top:10px;display:flex}
+.brk .mini-track .a{background:#4a7c59}
+.brk .mini-track .b{background:#a04030}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.nested-wrap{grid-template-columns:1fr}.breakdown{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.breakdown{grid-template-columns:1fr}.nested-svg{width:280px;height:280px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v8 · nested donut · 3 layers · one chart</p>
+<h1>M-4 设计 v8：多环（嵌套 donut · 3 层）</h1>
+<p class="subtitle">单个 SVG 内 3 环嵌套：外环"中层总 211"（深棕满色） + 中环"已配 194"（绿色 91.94%） + 内环"空缺 17"（红色 8.06%）。3 环同心 = 一图涵盖"总量/已配/空缺"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>3 环嵌套 · 总量 / 已配 / 空缺</h3><span class="pill">nested donut</span></div>
+<section class="nested-wrap">
+<svg class="nested-svg" viewBox="0 0 200 200">
+<circle cx="100" cy="100" r="90" fill="none" stroke="#6b4423" stroke-width="10"
+  stroke-dasharray="565.48 565.48" transform="rotate(-90 100 100)"/>
+<text x="100" y="32" text-anchor="middle" font-size="9" font-weight="700" fill="#6b4423">中层干部总职数</text>
+<text x="148" y="60" text-anchor="middle" font-size="14" font-weight="800" fill="#6b4423">211</text>
+
+<circle cx="100" cy="100" r="68" fill="none" stroke="#4a7c59" stroke-width="10"
+  stroke-dasharray="392.85 427.26" transform="rotate(-90 100 100)"/>
+<text x="100" y="78" text-anchor="middle" font-size="9" font-weight="700" fill="#4a7c59">实际已配</text>
+<text x="100" y="92" text-anchor="middle" font-size="18" font-weight="800" fill="#4a7c59">194</text>
+<text x="100" y="104" text-anchor="middle" font-size="8" fill="#7b6653">91.94%</text>
+
+<circle cx="100" cy="100" r="46" fill="none" stroke="#a04030" stroke-width="10"
+  stroke-dasharray="23.27 289.03" transform="rotate(-90 100 100)"/>
+<text x="100" y="138" text-anchor="middle" font-size="9" font-weight="700" fill="#a04030">尚空缺</text>
+<text x="100" y="152" text-anchor="middle" font-size="14" font-weight="800" fill="#a04030">17</text>
+<text x="100" y="163" text-anchor="middle" font-size="7" fill="#7b6653">8.06%</text>
+
+<circle cx="100" cy="100" r="36" fill="#fbf4e9"/>
+</svg>
+
+<div class="nested-info">
+<div class="ring-card r1">
+<div class="swatch" style="background:#6b4423"></div>
+<div class="rinfo"><div class="rtitle">外环 · 中层总 211</div><div class="rsub">总行 100 + 经营 111 · 正职 54 + 副职 157 · 满圆 100%</div></div>
+<div class="rnum">211</div>
+</div>
+<div class="ring-card r2">
+<div class="swatch" style="background:#4a7c59"></div>
+<div class="rinfo"><div class="rtitle">中环 · 实际已配 194</div><div class="rsub">总行 93 + 经营 101 · 正职 50 + 副职 144 · 占外环 91.94%</div></div>
+<div class="rnum">194</div>
+</div>
+<div class="ring-card r3">
+<div class="swatch" style="background:#a04030"></div>
+<div class="rinfo"><div class="rtitle">内环 · 尚空缺 17</div><div class="rsub">总行 7 + 经营 10 · 正职 4 + 副职 13 · 占外环 8.06%</div></div>
+<div class="rnum" style="color:#a04030">17</div>
+</div>
+<div style="padding:14px 18px;background:#fff;border:1px dashed #d4b896;border-radius:10px;font-size:12px;color:#5a4a3a;line-height:1.65">
+<b>解读：</b>中层总 211 人，外环深棕占满；中环绿色已配 194 占 91.94%；内环红色空缺 17 占 8.06%。三层同心圆 = 一次看清楚"总量→已配→空缺"的解剖关系。
+</div>
+</div>
+</section>
+
+<div class="section-title"><h3>4 维度细分 · 4 张 mini-bar 卡</h3><span class="pill">mini × 4</span></div>
+<section class="breakdown">
+<article class="brk"><div class="h">🏢 总行部门</div><div class="b">93<small>/100</small></div><div class="m">已配 93 / 空缺 7 · 配备率 93.0%</div><div class="mini-track"><div class="a" style="width:93%"></div><div class="b" style="width:7%"></div></div></article>
+<article class="brk"><div class="h">🏢 经营机构</div><div class="b">101<small>/111</small></div><div class="m">已配 101 / 空缺 10（含 3 纪检） · 90.99%</div><div class="mini-track"><div class="a" style="width:90.99%"></div><div class="b" style="width:9.01%"></div></div></article>
+<article class="brk"><div class="h">🎖 正职 / 副职</div><div class="b">54 / 157</div><div class="m">正 50+空 4 · 副 144+空 13</div><div class="mini-track"><div class="a" style="width:92%"></div><div class="b" style="width:8%"></div></div></article>
+<article class="brk"><div class="h">⚖ 市管/高管/纪检</div><div class="b">8+6+3<small>/8+6</small></div><div class="m">市管满配 8/8 · 高管 6 · 纪检 3/6 ⚠</div><div class="mini-track"><div class="a" style="width:85%"></div><div class="b" style="width:15%"></div></div></article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（中层总 / 总行 / 经营 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 兼任 / 已配 / 空缺 / 市管 / 高管 / 纪检）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个等权 KPI 卡；v8 是单图 3 环嵌套</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 段 stacked-bar；v8 是同心圆（环形 vs 横条）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 是 3 个独立 gauge 半圆；v8 是 1 个同心 3 环（不是 gauge 半圆进度，是 donut 全圆）</li>
+<li><b>新增 viz 类型</b>：① 3 环嵌套（concentric ring，三色同心） ② 同心刻度（外环 100% → 中环 91.94% → 内环 8.06%） ③ 中心数字 ④ 单图三态</li>
+<li><b>信息密度</b>：高 — 1 个 SVG 含 3 环 + 3 字段 × 3 + 4 细分卡 = 13+ 数字</li>
+<li><b>读图速度</b>：5 秒 — 同心圆视觉新颖，需对照右侧 ring-card 理解</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

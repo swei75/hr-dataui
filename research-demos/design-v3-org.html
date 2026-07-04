@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v3：垂直堆叠柱（vertical stacked column）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.chart-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.cols{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;align-items:end;margin-bottom:8px;height:280px}
+.col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.col-stack{display:flex;flex-direction:column;width:42px;border-radius:6px 6px 0 0;overflow:hidden;box-shadow:0 4px 10px rgba(107,68,35,.12)}
+.seg{display:flex;align-items:center;justify-content:center;color:#fefcf7;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.seg.config{background:#4a7c59}
+.seg.gap{background:#a04030}
+.col-lbl{font-size:11px;color:#6b4423;margin-top:8px;font-weight:700;text-align:center;line-height:1.3;max-width:96px}
+.col-lbl small{display:block;font-size:10px;color:#7b6653;font-weight:500;margin-top:2px}
+.col-val{font-size:12px;color:#241b15;margin-bottom:6px;font-weight:800;font-variant-numeric:tabular-nums}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.detail-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 20px;border-top:3px solid #9f6b44}
+.detail-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.detail-card h4{margin:0;font-size:13px;color:#6b4423;font-weight:700}
+.detail-card .total{font-size:11px;color:#7b6653;letter-spacing:.04em}
+.detail-card .total b{color:#9f6b44;font-size:14px}
+.detail-card .r-num{display:grid;grid-template-columns:1fr auto;gap:4px;font-size:12px;line-height:1.7;color:#3a2e22;align-items:center}
+.detail-card .r-num .vl{color:#241b15;font-variant-numeric:tabular-nums;font-weight:700}
+.detail-card .r-num .vl.gap{color:#a04030}
+.detail-card .r-num .vl.fill{color:#4a7c59}
+.mini-bar{height:8px;background:#f4eadb;border-radius:3px;overflow:hidden;margin-top:8px;display:flex}
+.mini-bar .a{background:#4a7c59}
+.mini-bar .b{background:#a04030}
+.legend{display:flex;justify-content:center;gap:22px;padding-top:14px;border-top:1px dashed #e8d8c3;font-size:12px;color:#3a2e22}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.cols{grid-template-columns:repeat(4,1fr);height:auto}.col{height:240px}.detail-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.cols{grid-template-columns:repeat(2,1fr);height:auto}.col{height:200px}.detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v3 · vertical stacked column · 2 segments · banking column</p>
+<h1>M-4 设计 v3：垂直堆叠柱（vertical stacked column）</h1>
+<p class="subtitle">8 行垂直堆叠柱：每根柱子由"绿色已配 + 红色空缺"两段垂直堆叠（不含米色剩余段，避免与 stacked-bar 重复）。柱高 = 总职数绝对值，强调规模与未配比。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>8 大类 · 垂直双段堆叠柱</h3><span class="pill">vertical stacked × 8</span></div>
+<section class="chart-wrap">
+<div class="cols">
+<!-- 市管 -->
+<div class="col"><div class="col-val">8 / 8</div><div class="col-stack" style="height:38%"><div class="seg config" style="flex:8;height:80px">8</div></div><div class="col-lbl">市管干部<small>100% 满配</small></div></div>
+<!-- 高管 -->
+<div class="col"><div class="col-val">0 / 6</div><div class="col-stack" style="height:29%"><div class="seg config" style="flex:6;height:60px">6</div></div><div class="col-lbl">高管人员<small>无职数限</small></div></div>
+<!-- 纪检 -->
+<div class="col"><div class="col-val">3 / 6</div><div class="col-stack" style="height:29%"><div class="seg config" style="flex:3;height:60px">3</div><div class="seg gap" style="flex:3;height:60px">3</div></div><div class="col-lbl">派驻纪检<small>50% 未配</small></div></div>
+<!-- 中层总 -->
+<div class="col"><div class="col-val">194 / 211</div><div class="col-stack" style="height:100%"><div class="seg config" style="flex:194;height:200px">194</div><div class="seg gap" style="flex:17;height:20px">17</div></div><div class="col-lbl">中层总<small>配备 91.94%</small></div></div>
+<!-- 正职 -->
+<div class="col"><div class="col-val">50 / 54</div><div class="col-stack" style="height:54%"><div class="seg config" style="flex:50;height:130px">50</div><div class="seg gap" style="flex:4;height:10px">4</div></div><div class="col-lbl">正职<small>含副总级 17</small></div></div>
+<!-- 副职 -->
+<div class="col"><div class="col-val">144 / 157</div><div class="col-stack" style="height:100%"><div class="seg config" style="flex:144;height:170px">144</div><div class="seg gap" style="flex:13;height:16px">13</div></div><div class="col-lbl">副职<small>副总67/总助74/经理3</small></div></div>
+<!-- 总行 -->
+<div class="col"><div class="col-val">93 / 100</div><div class="col-stack" style="height:80%"><div class="seg config" style="flex:93;height:170px">93</div><div class="seg gap" style="flex:7;height:14px">7</div></div><div class="col-lbl">总行班子<small>已配 93 / 空 7</small></div></div>
+<!-- 经营 -->
+<div class="col"><div class="col-val">101 / 111</div><div class="col-stack" style="height:90%"><div class="seg config" style="flex:101;height:170px">101</div><div class="seg gap" style="flex:10;height:18px">10</div></div><div class="col-lbl">经营班子<small>已配 101 / 空 10</small></div></div>
+</div>
+<div class="legend">
+<span><i style="background:#4a7c59"></i>实际已配（绿色）</span>
+<span><i style="background:#a04030"></i>尚空缺（红色）</span>
+</div>
+</section>
+
+<div class="section-title"><h3>正职 / 副职 / 总行 / 经营 · 4 张细分卡</h3><span class="pill">detail × 4</span></div>
+<section class="detail-grid">
+<article class="detail-card">
+<div class="head"><h4>🎖 正职细分</h4><span class="total">总 <b>54</b></span></div>
+<div class="r-num"><span>实际已配</span><span class="vl fill">50</span></div>
+<div class="r-num"><span>未含兼任</span><span class="vl">3</span></div>
+<div class="r-num"><span>副总级一把手</span><span class="vl fill">17</span></div>
+<div class="r-num"><span>尚空缺</span><span class="vl gap">4</span></div>
+<div class="mini-bar"><div class="a" style="width:92.59%"></div><div class="b" style="width:7.41%"></div></div>
+</article>
+<article class="detail-card">
+<div class="head"><h4>🎖 副职细分</h4><span class="total">总 <b>157</b></span></div>
+<div class="r-num"><span>实际已配</span><span class="vl fill">144</span></div>
+<div class="r-num"><span>副总 / 总助 / 经理</span><span class="vl">67 / 74 / 3</span></div>
+<div class="r-num"><span>尚空缺（含 3 纪检）</span><span class="vl gap">13</span></div>
+<div class="mini-bar"><div class="a" style="width:91.72%"></div><div class="b" style="width:8.28%"></div></div>
+</article>
+<article class="detail-card">
+<div class="head"><h4>🏢 总行班子</h4><span class="total">总 <b>100</b></span></div>
+<div class="r-num"><span>实际已配</span><span class="vl fill">93</span></div>
+<div class="r-num"><span>尚空缺</span><span class="vl gap">7</span></div>
+<div class="r-num"><span>配备率</span><span class="vl">93.0%</span></div>
+<div class="mini-bar"><div class="a" style="width:93%"></div><div class="b" style="width:7%"></div></div>
+</article>
+<article class="detail-card">
+<div class="head"><h4>🏢 经营班子</h4><span class="total">总 <b>111</b></span></div>
+<div class="r-num"><span>实际已配</span><span class="vl fill">101</span></div>
+<div class="r-num"><span>尚空缺（含 3 纪检）</span><span class="vl gap">10</span></div>
+<div class="r-num"><span>配备率</span><span class="vl">90.99%</span></div>
+<div class="mini-bar"><div class="a" style="width:90.99%"></div><div class="b" style="width:9.01%"></div></div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个静态 KPI；v3 用 8 根垂直柱状图承担视觉骨架</li>
+<li><b>与 M-2 差异</b>：M-2 是水平 stacked-bar（每条占满 100% 宽度）；v3 是垂直 stacked-column（绝对值柱高）+ 双色段（绿=已配 / 红=空缺）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 是 gauge 半圆；v3 是完整垂直柱（非进度环，无旋转）</li>
+<li><b>新增 viz 类型</b>：① 垂直堆叠柱（vertical stacked column，绝对值柱高） ② 双色段语义编码（绿=已配 / 红=空缺） ③ 柱顶数字标签 ④ 4 张细分卡内嵌 mini bar</li>
+<li><b>信息密度</b>：高 — 8 柱 × 2 段 + 4 卡片 × 3-4 行 = 32+ 数字</li>
+<li><b>读图速度</b>：3 秒 — 柱高一眼可见规模对比，红色段位置即缺口位置</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

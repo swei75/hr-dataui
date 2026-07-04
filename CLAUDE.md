@@ -128,6 +128,12 @@ python build.py                    # 构建 → output/index.html
 - **缺失值**：空 cell，**不写** "N/A" / "无" / "-"
 - **数字千分位**：统一 `,`（`5,901`）
 - **时段字段**：从 `data/` 目录下 metadata 或专门 sheet 读，不写死
+- **v1.4 Excel 列（10 列）**：`分组 | 名称 | 数值 | 单位 | 备注 | 排序 | is_total | delta | sub_text | metric_note`
+  - is_total: `TRUE`/`FALSE` 字符串（向 v1.3 兼容），识别 KPI 行
+  - delta: 数字绝对差值（由 `composer.calc_delta` 自动计算，写入 record['delta']）
+  - sub_text: 模块级叙述（首个非空值被模块顶部 narrative 框取用）
+  - metric_note: KPI 卡底部说明（`<p class="kpi-note">...</p>`）
+- **v1.4 _prev sheet**：每次 build 自动写回的快照，供下次构建计算环比 delta
 
 ---
 

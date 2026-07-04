@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v5：桑基/流向图（sankey-like flow）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+
+.sankey-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px;overflow-x:auto}
+.sankey{display:flex;align-items:stretch;justify-content:space-between;gap:0;min-height:520px;position:relative}
+
+/* 4 columns */
+.col-lv{display:flex;flex-direction:column;justify-content:center;gap:8px;flex:1;min-width:140px;position:relative;z-index:2}
+.col-lv.lv1{flex:0 0 180px}
+.col-lv.lv4{flex:0 0 200px}
+
+.node{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fefcf7;border:2px solid #9f6b44;border-radius:10px;padding:12px 10px;text-align:center;position:relative}
+.node.brand{background:#6b4423;color:#fefcf7;border-color:#6b4423}
+.node.acc{background:#9f6b44;color:#fefcf7;border-color:#9f6b44}
+.node.ok{background:#fefcf7;color:#241b15;border-color:#4a7c59}
+.node.warn{background:#fefcf7;color:#a04030;border-color:#a04030}
+.node.alert{background:#fefcf7;color:#241b15;border-color:#a04030}
+.node .nl{font-size:11px;letter-spacing:.04em;font-weight:700;margin-bottom:3px}
+.node.brand .nl,.node.acc .nl{color:#fefcf7}
+.node .nv{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.node.brand .nv,.node.acc .nv{color:#fefcf7}
+.node .ns{font-size:10px;color:#7b6653;margin-top:3px;line-height:1.3}
+.node.brand .ns,.node.acc .ns{color:#ead9c3}
+
+/* SVG flow layer */
+.flow-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.flow-svg path{fill-opacity:.5;stroke:none}
+
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.legend{display:flex;justify-content:center;gap:18px;padding-top:14px;border-top:1px dashed #e8d8c3;font-size:11px;color:#7b6653;flex-wrap:wrap;margin-top:14px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px}
+.legend i.s1{background:#6b4423;opacity:.5}
+.legend i.s2{background:#9f6b44;opacity:.5}
+.legend i.s3{background:#c9a883;opacity:.5}
+.legend i.s4{background:#4a7c59;opacity:.5}
+.legend i.s5{background:#a04030;opacity:.5}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.sankey{flex-direction:column;min-height:auto;gap:20px}.col-lv{flex:1 1 100%}.flow-svg{display:none}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.node .nv{font-size:18px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v5 · sankey flow · 4-stage · curving ribbons</p>
+<h1>M-4 设计 v5：桑基/流向图（sankey-like flow）</h1>
+<p class="subtitle">4 阶段桑基图：总职数 211 → 机构拆分（总行/经营）→ 职级拆分（正/副）→ 实际状态（已配/空缺）。SVG 曲带承担流向，宽度对应流量。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>4 阶段桑基流向 · 总职数 → 机构 → 职级 → 状态</h3><span class="pill">sankey × 4 层</span></div>
+<section class="sankey-wrap">
+<div class="sankey">
+<svg class="flow-svg" viewBox="0 0 1100 520" preserveAspectRatio="none">
+<!-- L1 -> L2 flows: 中层总 211 → 总行100 + 经营111 -->
+<path d="M 180,100 C 280,100 280,80 380,80 L 380,180 C 280,180 280,200 180,200 Z" fill="#6b4423" opacity=".35"/>
+<path d="M 180,210 C 280,210 280,230 380,230 L 380,400 C 280,400 280,410 180,410 Z" fill="#6b4423" opacity=".35"/>
+<!-- L2 -> L3 flows: 总行 → 正职28 + 副职72 -->
+<path d="M 540,80 C 640,80 640,140 740,140 L 740,220 C 640,220 640,260 540,260 Z" fill="#9f6b44" opacity=".4"/>
+<path d="M 540,180 C 640,180 640,300 740,300 L 740,460 C 640,460 640,440 540,440 Z" fill="#9f6b44" opacity=".4"/>
+<!-- L2 -> L3: 经营 → 正职26 + 副职85 -->
+<path d="M 540,290 C 640,290 640,260 740,260 L 740,300 C 640,300 640,290 540,290 Z" fill="#c9a883" opacity=".4"/>
+<path d="M 540,330 C 640,330 640,440 740,440 L 740,500 C 640,500 640,430 540,430 Z" fill="#c9a883" opacity=".4"/>
+<!-- L3 -> L4 flows: 正职 54 → 已配50 + 空缺4 -->
+<path d="M 900,160 C 970,160 970,140 1040,140 L 1040,220 C 970,220 970,240 900,240 Z" fill="#4a7c59" opacity=".4"/>
+<path d="M 900,250 C 970,250 970,260 1040,260 L 1040,290 C 970,290 970,260 900,260 Z" fill="#a04030" opacity=".5"/>
+<!-- L3 -> L4: 副职 157 → 已配144 + 空缺13 -->
+<path d="M 900,300 C 970,300 970,290 1040,290 L 1040,470 C 970,470 970,440 900,440 Z" fill="#4a7c59" opacity=".4"/>
+<path d="M 900,460 C 970,460 970,490 1040,490 L 1040,510 C 970,510 970,490 900,490 Z" fill="#a04030" opacity=".5"/>
+</svg>
+
+<!-- LV1: 总中层 -->
+<div class="col-lv lv1">
+<div class="node brand"><div class="nl">中层干部</div><div class="nv">211</div><div class="ns">总职数</div></div>
+</div>
+
+<!-- LV2: 总行 + 经营 -->
+<div class="col-lv">
+<div class="node acc"><div class="nl">总行部门</div><div class="nv">100</div><div class="ns">已配 93 / 空 7</div></div>
+<div class="node acc" style="margin-top:130px"><div class="nl">经营机构</div><div class="nv">111</div><div class="ns">已配 101 / 空 10</div></div>
+</div>
+
+<!-- LV3: 正职 + 副职（每个机构分别展开） -->
+<div class="col-lv">
+<div class="node ok"><div class="nl">总行正职</div><div class="nv">28</div><div class="ns">含副总级一把手 17</div></div>
+<div class="node ok"><div class="nl">总行副职</div><div class="nv">72</div><div class="ns">副总 30 + 总助 42</div></div>
+<div class="node ok"><div class="nl">经营正职</div><div class="nv">26</div><div class="ns">副总级 0</div></div>
+<div class="node ok"><div class="nl">经营副职</div><div class="nv">85</div><div class="ns">副总37+总助32+经理3+兼任3</div></div>
+</div>
+
+<!-- LV4: 已配 / 空缺 -->
+<div class="col-lv lv4">
+<div class="node ok"><div class="nl">正职已配</div><div class="nv">50</div><div class="ns">占总正职 92.6%</div></div>
+<div class="node warn" style="padding:6px"><div class="nl">正职空缺</div><div class="nv" style="font-size:16px">4</div></div>
+<div class="node ok"><div class="nl">副职已配</div><div class="nv">144</div><div class="ns">副总67+总助74+经理3</div></div>
+<div class="node warn"><div class="nl">副职空缺</div><div class="nv">13</div><div class="ns">含 3 纪检</div></div>
+</div>
+</div>
+
+<div class="legend">
+<span><i class="s1"></i>中层总（深棕）</span>
+<span><i class="s2"></i>总行（红棕）</span>
+<span><i class="s3"></i>经营（米色）</span>
+<span><i class="s4"></i>已配（绿色）</span>
+<span><i class="s5"></i>空缺（红色）</span>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（中层总 / 总行 / 经营 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 兼任 / 已配 / 空缺）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个独立 KPI；v5 是 4 列层级 + 12 条流向带，强调路径</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar 占比卡；v5 是流图，关注起点→终点</li>
+<li><b>与 M-3 差异</b>：M-3 v2 是流程图（4 节点 + 箭头，强调步骤）；v5 是桑基（曲带宽度映射流量）</li>
+<li><b>新增 viz 类型</b>：① 桑基曲线（cubic bezier ribbon） ② 4 阶段流向（总→机构→职级→状态） ③ 流量宽度编码（带粗 = 流量大） ④ 多列节点（11 节点跨 4 列）</li>
+<li><b>信息密度</b>：高 — 11 节点 + 12 条流 + 节点内 2-3 字段 = 50+ 数字</li>
+<li><b>读图速度</b>：5-7 秒 — 需要追踪曲带，理解逐级拆分</li>
+<li><b>取舍</b>：纯 CSS 无法画曲线，用 SVG path + cubic bezier 实现；窄屏（<980px）切换为纵向排列并隐藏流层</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

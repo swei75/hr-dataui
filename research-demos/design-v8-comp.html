@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v8：薪酬时序 5 阶段时间线</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.phase-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:22px;position:relative}
+.phase-track{position:relative;padding:20px 0 0}
+.phase-track::before{content:"";position:absolute;left:0;right:0;top:62px;height:4px;background:linear-gradient(90deg,#9f6b44 0%,#9f6b44 60%,#a04030 60%,#a04030 100%);border-radius:2px}
+.phase-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.phase-node{position:relative;text-align:center;padding-top:0}
+.phase-dot{width:22px;height:22px;border-radius:50%;background:#9f6b44;border:4px solid #fbf4e9;margin:50px auto 12px;position:relative;z-index:2;box-shadow:0 0 0 2px #9f6b44}
+.phase-dot.warn{background:#a04030;box-shadow:0 0 0 2px #a04030}
+.phase-dot.ok{background:#4a7c59;box-shadow:0 0 0 2px #4a7c59}
+.phase-month{font-size:14px;color:#6b4423;font-weight:700;margin-bottom:4px}
+.phase-event{font-size:11px;color:#3a2e22;line-height:1.5;padding:0 6px}
+.phase-event b{color:#9f6b44;font-weight:700;display:block;font-size:13px;margin-bottom:3px}
+.phase-tag{display:inline-block;font-size:10px;background:#ead9c3;color:#9f6b44;padding:2px 8px;border-radius:999px;font-weight:700;margin-top:4px}
+
+.phase-card-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:22px;padding-top:18px;border-top:1px dashed #e8d8c3}
+.pcard{background:#fdf7ec;border:1px solid #e8d8c3;border-radius:10px;padding:12px 12px 10px;text-align:center}
+.pcard .ico{font-size:18px;margin-bottom:4px}
+.pcard .nm{font-size:11px;color:#6b4423;font-weight:700;margin-bottom:2px}
+.pcard .vl{font-size:14px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.pcard .sub{font-size:10px;color:#7b6653;margin-top:2px}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.phase-grid,.phase-card-row{grid-template-columns:repeat(2,1fr);gap:12px}.phase-track::before{display:none}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.phase-grid,.phase-card-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v8 · 5-phase timeline · year-journey</p>
+<h1>M-5 设计 v8：薪酬时序 5 阶段时间线</h1>
+<p class="subtitle">5 阶段时间线（年初预算 → 季末监测 → 半年结算 → 9 月兑现 → 年终奖），每阶段含主事件 + 下方 5 子方向关联卡。讲"薪酬年度故事"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>（人均 24.3 万元），1-5 月已发 4.2 亿元；2026 年开门红预发 0.3 亿元。</p>
+<p>企业年金余额 17.44 亿元（个 2% / 单位 8%）；补充医疗节余 <strong>1.9 亿元</strong>（个人 1.6 + 单位 0.30）。</p>
+<p>2026Q1 监测 95 班（113 人次），<strong>16 人次</strong>黑榜；同期评选<strong>头狼 129 人</strong>。</p>
+<p>时序节奏：1 月预算下达 → Q1 监测通报 → 6 月半年结算 → 9 月开门红兑现 → 12 月年终奖发放。</p>
+</section>
+
+<div class="section-title"><h3>5 阶段时间线 · 2026 薪酬时序</h3><span class="pill">timeline × 5 阶段</span></div>
+<section class="phase-wrap">
+<div class="phase-track">
+<div class="phase-grid">
+<div class="phase-node"><div class="phase-dot"></div><div class="phase-month">1 月</div><div class="phase-event"><b>年初预算</b>工资总额 15 亿下达<br/>人均 24.3 万<br/>开门红 0.3 亿预发<span class="phase-tag">START</span></div></div>
+<div class="phase-node"><div class="phase-dot warn"></div><div class="phase-month">3 月</div><div class="phase-event"><b>季度监测</b>95 班成员监测<br/>113 人次业绩评估<br/><b>16 人次黑榜</b><span class="phase-tag" style="background:#a0403022;color:#a04030">RISK</span></div></div>
+<div class="phase-node"><div class="phase-dot ok"></div><div class="phase-month">5 月</div><div class="phase-event"><b>半年结算</b>1-5 月已发 <b>4.2 亿</b><br/>年金 <b>17.44 亿</b><br/>医疗节余 <b>1.9 亿</b><span class="phase-tag" style="background:#4a7c5922;color:#4a7c59">MID</span></div></div>
+<div class="phase-node"><div class="phase-dot"></div><div class="phase-month">9 月</div><div class="phase-event"><b>开门红兑现</b>预发 0.3 亿结算<br/>头狼 <b>129 人</b>激励兑现<br/>一/二/三等<span class="phase-tag">PAYOUT</span></div></div>
+<div class="phase-node"><div class="phase-dot"></div><div class="phase-month">12 月</div><div class="phase-event"><b>年终奖</b>绩效奖金包发放<br/>全员 <b>100%</b> 覆盖<br/>下年度预算编制<span class="phase-tag">END</span></div></div>
+</div>
+</div>
+
+<div class="phase-card-row">
+<div class="pcard"><div class="ico">💵</div><div class="nm">薪酬</div><div class="vl">15 亿</div><div class="sub">人均 24.3 万</div></div>
+<div class="pcard"><div class="ico">📡</div><div class="nm">监测</div><div class="vl">113</div><div class="sub">人次</div></div>
+<div class="pcard"><div class="ico">🏦</div><div class="nm">年金</div><div class="vl">17.44</div><div class="sub">亿元</div></div>
+<div class="pcard"><div class="ico">🐺</div><div class="nm">头狼</div><div class="vl">129</div><div class="sub">人</div></div>
+<div class="pcard"><div class="ico">🏥</div><div class="nm">医疗</div><div class="vl">1.9</div><div class="sub">亿元</div></div>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 8 行表；v8 是 5 阶段时间线（无表格）</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar；v8 是水平 5 节点时间线（讲时序故事）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 是 5 月度时间线（人员优化）；v8 是 5 年度阶段时间线（薪酬时序），内容维度不同</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树；v8 是时间线</li>
+<li><b>新增 viz 类型</b>：① 5 阶段年度时间线（年初预算→季末监测→半年结算→9 月兑现→年终奖） ② 阶段颜色编码（start 棕/mid 绿/risk 红/end 棕） ③ 时间线下方 5 子方向迷你卡</li>
+<li><b>信息密度</b>：中 — 5 节点 × 3 行 + 5 迷你卡 = 20 数据点</li>
+<li><b>读图速度</b>：5 秒 — 时间线左右扫读，5 阶段按月定位</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

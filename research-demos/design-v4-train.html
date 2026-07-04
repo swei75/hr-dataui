@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-6 设计 v4：多列对比表 + 排名条</title>
+<style>
+:root{
+  --bg:#fbf4e9;--card:#fefcf7;--primary:#9f6b44;--primary-dark:#6b4423;
+  --border:#e8d8c3;--subtle-bg:#ead9c3;--text:#241b15;--text-muted:#7b6653;
+  --body:#3a2e22;--good:#4a7c59;--warn:#a04030;--accent:#c9b299;
+  --font:"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--font);color:var(--body);line-height:1.65;padding:24px 16px 60px;-webkit-font-smoothing:antialiased}
+.page-shell{max-width:980px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px 36px 40px;box-shadow:0 4px 18px rgba(107,68,35,.06)}
+.hero{border-bottom:1px dashed var(--border);padding-bottom:18px;margin-bottom:20px}
+.eyebrow{display:inline-block;font-size:12px;letter-spacing:.15em;color:var(--primary);text-transform:uppercase;background:var(--subtle-bg);padding:4px 12px;border-radius:99px;margin-bottom:10px}
+.hero h1{font-size:24px;color:var(--text);font-weight:600;margin-bottom:6px}
+.hero .subtitle{font-size:14px;color:var(--text-muted);max-width:720px}
+.narrative-head{display:flex;align-items:center;gap:12px;margin:22px 0 14px}
+.module-icon{font-size:28px}
+.narrative-h2{font-size:20px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:var(--primary);color:#fff;border-radius:8px;font-size:16px;font-weight:600}
+.narrative-card{background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:8px;padding:18px 22px;margin-bottom:24px}
+.narrative-card p{font-size:14px;color:var(--body);line-height:1.85;margin-bottom:8px}
+.narrative-card p:last-child{margin-bottom:0}
+.narrative-card strong{color:var(--primary-dark);font-weight:600;background:linear-gradient(transparent 60%,rgba(159,107,68,.18) 60%);padding:0 2px}
+
+.viz-block{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px 22px 18px;margin-bottom:24px}
+.cmp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.cmp-table th{text-align:left;padding:10px 12px;font-size:12px;color:var(--text-muted);font-weight:600;border-bottom:2px solid var(--border);letter-spacing:.05em;text-transform:uppercase;background:#faf5e9}
+.cmp-table th.col-rank{width:130px}
+.cmp-table th.col-pct{width:200px}
+.cmp-table td{padding:14px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.cmp-table tbody tr:last-child td{border-bottom:none}
+.cmp-table tbody tr:hover{background:#faf5e9}
+.sub-label{display:block;font-size:11px;color:var(--text-muted);margin-top:2px}
+.cur-val b{font-size:18px;color:var(--text);font-weight:700;display:inline-block;margin-right:4px}
+.cur-val .unit{font-size:12px;color:var(--text-muted)}
+.tgt-val{color:var(--body)}
+
+.pct-row{display:flex;align-items:center;gap:10px}
+.pct-num{font-size:14px;font-weight:700;width:56px;flex-shrink:0;text-align:right}
+.pct-num.good{color:var(--good)}
+.pct-num.mid{color:var(--primary)}
+.pct-num.warn{color:var(--warn)}
+.pct-num.inv{color:var(--text-muted)}
+.mini-bar{flex:1;height:10px;background:var(--subtle-bg);border-radius:6px;overflow:hidden;border:1px solid var(--border)}
+.mini-bar .bar-fill{height:100%;display:block;border-radius:6px 0 0 6px;transition:none}
+.mini-bar .bar-fill.good{background:linear-gradient(90deg,#4a7c59,#5d9270)}
+.mini-bar .bar-fill.mid{background:linear-gradient(90deg,#9f6b44,#b88862)}
+.mini-bar .bar-fill.warn{background:linear-gradient(90deg,#a04030,#b85545)}
+
+.rank-row{display:flex;align-items:center;gap:10px}
+.rank-chip{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:24px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:700;border:1px solid var(--border);background:#fff;color:var(--text-muted)}
+.rank-chip.gold{background:#ead9c3;color:#6b4423;border-color:#9f6b44}
+.rank-chip.silver{background:#f5ece1;color:#7b6653;border-color:#c9b299}
+.rank-chip.bronze{background:#faf0e2;color:#9f6b44;border-color:#c9b299}
+.rank-bar{flex:1;height:8px;background:#f3ead9;border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.rank-bar .rank-fill{height:100%;display:block;background:linear-gradient(90deg,#6b4423,#9f6b44)}
+
+.tag-section{margin-top:20px;padding:14px 16px;background:#faf5e9;border:1px solid var(--border);border-radius:8px}
+.tag-section h4{font-size:13px;color:var(--primary-dark);font-weight:600;margin-bottom:10px;letter-spacing:.05em}
+.tag-section h4 span.aux{color:var(--text-muted);font-weight:400;margin-left:6px;font-size:11px}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-flex;align-items:center;padding:5px 10px;font-size:12px;border-radius:14px;border:1px solid var(--border);background:#fff;color:var(--body)}
+.tag-good{background:#eef4ef;color:#3a6246;border-color:#c9d8cb}
+.tag-warn{background:#f5e6e1;color:#803828;border-color:#dfb8af;font-weight:600}
+
+.design-note{background:var(--subtle-bg);border-radius:10px;padding:18px 22px;border:1px solid var(--border)}
+.design-note h3{font-size:15px;color:var(--primary-dark);margin-bottom:10px;font-weight:600;letter-spacing:.05em}
+.design-note ul{list-style:none;padding:0}
+.design-note li{font-size:13px;color:var(--body);margin-bottom:6px;padding-left:18px;position:relative}
+.design-note li::before{content:'◆';position:absolute;left:0;color:var(--primary);font-size:10px;top:6px}
+.design-note li b{color:var(--primary-dark);font-weight:600}
+@media (max-width:640px){.page-shell{padding:20px 18px 28px}.hero h1{font-size:20px}.narrative-h2{font-size:17px}.cmp-table{font-size:12px}.cmp-table th,.cmp-table td{padding:10px 8px}.cur-val b{font-size:15px}.pct-num{width:48px;font-size:12px}.th-hide{display:none}.cmp-table .col-rank,.cmp-table .col-pct{width:auto}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v4 · comparison table · rank-bar</p>
+<h1>M-6 设计 v4：多列对比表 + 排名条</h1>
+<p class="subtitle">M-2 是 5 张 stacked-bar 卡；本版用 dense table + 行内 mini bar + tag 列表，适合"对比与排名"场景。</p>
+</header>
+<section class="narrative-head">
+<span class="module-icon">📚</span>
+<h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+<section class="narrative-card">
+<p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+<p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+<p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+<p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+<section class="viz-block">
+<table class="cmp-table" role="table">
+<thead>
+<tr>
+<th>子方向</th>
+<th>当前值</th>
+<th class="th-hide">目标值</th>
+<th class="col-pct">完成率</th>
+<th class="col-rank">排名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><b>培训总量</b><span class="sub-label">能力大提升场次</span></td>
+<td class="cur-val"><b>983</b><span class="unit">场</span></td>
+<td class="tgt-val th-hide">1,500 场</td>
+<td>
+<div class="pct-row">
+<span class="pct-num good">65.5%</span>
+<div class="mini-bar"><span class="bar-fill good" style="width:65.5%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip gold">#1</span>
+<div class="rank-bar"><span class="rank-fill" style="width:100%"></span></div>
+</div>
+</td>
+</tr>
+<tr>
+<td><b>资格考</b><span class="sub-label">上岗资格参考人次</span></td>
+<td class="cur-val"><b>1,878</b><span class="unit">人次</span></td>
+<td class="tgt-val th-hide">3,000 人次</td>
+<td>
+<div class="pct-row">
+<span class="pct-num good">62.6%</span>
+<div class="mini-bar"><span class="bar-fill good" style="width:62.6%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip gold">#2</span>
+<div class="rank-bar"><span class="rank-fill" style="width:83.3%"></span></div>
+</div>
+</td>
+</tr>
+<tr>
+<td><b>执行率</b><span class="sub-label">55 重点项目落地</span></td>
+<td class="cur-val"><b>58.06</b><span class="unit">%</span></td>
+<td class="tgt-val th-hide">100%</td>
+<td>
+<div class="pct-row">
+<span class="pct-num mid">58.06%</span>
+<div class="mini-bar"><span class="bar-fill mid" style="width:58.06%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip silver">#3</span>
+<div class="rank-bar"><span class="rank-fill" style="width:66.6%"></span></div>
+</div>
+</td>
+</tr>
+<tr>
+<td><b>重点项目</b><span class="sub-label">广银大讲堂等</span></td>
+<td class="cur-val"><b>55</b><span class="unit">项</span></td>
+<td class="tgt-val th-hide">100 项</td>
+<td>
+<div class="pct-row">
+<span class="pct-num mid">55.0%</span>
+<div class="mini-bar"><span class="bar-fill mid" style="width:55%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip silver">#4</span>
+<div class="rank-bar"><span class="rank-fill" style="width:50%"></span></div>
+</div>
+</td>
+</tr>
+<tr>
+<td><b>末位部门 ↓</b><span class="sub-label">反向计分（越少越好）</span></td>
+<td class="cur-val"><b style="color:var(--warn)">3</b><span class="unit">个</span></td>
+<td class="tgt-val th-hide">0 个</td>
+<td>
+<div class="pct-row">
+<span class="pct-num warn">40.0%</span>
+<div class="mini-bar"><span class="bar-fill warn" style="width:40%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip bronze">#5</span>
+<div class="rank-bar"><span class="rank-fill" style="width:33.3%"></span></div>
+</div>
+</td>
+</tr>
+<tr>
+<td><b>100% 部门</b><span class="sub-label">已按计划完成</span></td>
+<td class="cur-val"><b>8</b><span class="unit">个</span></td>
+<td class="tgt-val th-hide">24 个</td>
+<td>
+<div class="pct-row">
+<span class="pct-num warn">33.3%</span>
+<div class="mini-bar"><span class="bar-fill warn" style="width:33.3%"></span></div>
+</div>
+</td>
+<td>
+<div class="rank-row">
+<span class="rank-chip">#6</span>
+<div class="rank-bar"><span class="rank-fill" style="width:16.6%"></span></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tag-section">
+<h4>100% 完成部门 <span class="aux">8 个 / 已按计划完成培训</span></h4>
+<div class="tag-list">
+<span class="tag tag-good">董事会办公室</span>
+<span class="tag tag-good">私人银行与财富管理部</span>
+<span class="tag tag-good">金融同业部</span>
+<span class="tag tag-good">金融市场部</span>
+<span class="tag tag-good">战略客户部</span>
+<span class="tag tag-good">消费者权益保护部</span>
+<span class="tag tag-good">机关纪委办公室</span>
+<span class="tag tag-good">安全保卫部</span>
+</div>
+</div>
+
+<div class="tag-section">
+<h4>末位部门 <span class="aux">3 个 / 执行率后三位</span></h4>
+<div class="tag-list">
+<span class="tag tag-warn">⚠ 金融科技部 0%</span>
+<span class="tag tag-warn">⚠ 内控合规部 0%</span>
+<span class="tag tag-warn">⚠ 运营管理部 14.29%</span>
+</div>
+</div>
+</section>
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：6/6 完整（培训总量 / 重点项目 / 执行率 / 100% 部门 / 末位部门 / 资格考）</li>
+<li><b>与 M-1~M-5 差异</b>：M-1 是 6 静态 KPI 卡（散点数字）/ M-2 是 stacked-bar 客户网格（占比堆积）/ M-3 是 gauge ring + 颁奖台（环形与阶梯）/ M-4 是 13 节点分类树（层级结构）/ M-5 是大数字 + sparkline 财务卡（趋势）。本版把 6 维压成单张 dense table，行内 mini bar 做完成率，行末 rank-bar 做排名，紧凑呈现"对比 + 排序"信息密度。</li>
+<li><b>新增 viz 类型</b>：① 多列对比矩阵（5 列 dense table：子方向 / 当前值 / 目标值 / 完成率 / 排名）；② 行内 mini horizontal bar（颜色按 ≥80%/50-80%/&lt;50% 分档）；③ 反向排名条（行末 rank-bar，排名越靠前条越长）；④ mini-tag chip list（100% 部门绿底，末位部门红底 ⚠）</li>
+<li><b>读图速度</b>：4 秒 — 表头五行将"现状 / 目标 / 完成 / 排名"一次性扫完，末位 3 部门和 100% 部门再用 chip 集中列出，便于快速锁定优劣两端。</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

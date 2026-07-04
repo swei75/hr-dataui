@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-6 设计 v1：培训项目卡片墙</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fbf4e9;--card:#fefcf7;--pri:#9f6b44;--deep:#6b4423;
+  --border:#e8d8c3;--sub:#ead9c3;--tx:#241b15;--tx2:#7b6653;
+  --body:#3a2e22;--good:#4a7c59;--warn:#a04030;--deco:#c9b299;
+}
+html,body{background:var(--bg);color:var(--body);font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;line-height:1.55;font-size:14px}
+.page-shell{max-width:1240px;margin:0 auto;padding:28px 24px 56px}
+.hero{background:linear-gradient(135deg,var(--pri) 0%,var(--deep) 100%);border-radius:14px;padding:28px 32px;color:#fbf4e9;margin-bottom:24px;border:1px solid var(--deep)}
+.hero .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.78;margin-bottom:10px}
+.hero h1{font-size:26px;font-weight:700;margin-bottom:6px;letter-spacing:.02em}
+.hero .subtitle{font-size:13px;opacity:.88;max-width:760px}
+.eyebrow-mini{font-size:11px;color:var(--tx2);letter-spacing:.1em;text-transform:uppercase}
+.narrative-head{display:flex;align-items:center;gap:14px;padding:18px 22px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:14px}
+.module-icon{width:42px;height:42px;background:var(--sub);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.narrative-h2{font-size:20px;font-weight:700;color:var(--deep)}
+.narrative-badge{display:inline-block;background:var(--pri);color:#fefcf7;padding:2px 10px;border-radius:6px;font-size:14px;margin-right:8px;letter-spacing:.05em}
+.narrative-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:28px}
+.narrative-card p{font-size:14.5px;color:var(--body);margin-bottom:10px;line-height:1.85}
+.narrative-card p:last-child{margin-bottom:0}
+.narrative-card strong{color:var(--deep);font-weight:700;background:linear-gradient(transparent 64%,rgba(159,107,68,.16) 64%);padding:0 3px}
+.card-wall{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:32px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 22px 20px;position:relative;transition:transform .2s ease, box-shadow .2s ease}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 22px -8px rgba(107,68,35,.18)}
+.kpi-card .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kpi-card .hd .left{display:flex;align-items:center;gap:9px}
+.kpi-card .ic{width:30px;height:30px;background:var(--sub);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--deep)}
+.kpi-card .ttl{font-size:13.5px;font-weight:600;color:var(--deep);letter-spacing:.03em}
+.kpi-card .num-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.kpi-card .num{font-family:"SF Mono","Consolas",monospace;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums;font-size:46px;font-weight:800;color:var(--tx);letter-spacing:-.02em;line-height:1}
+.kpi-card .unit{font-size:13px;color:var(--tx2);font-weight:500}
+.kpi-card .delta{position:absolute;top:22px;right:22px;display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:14px;font-size:11.5px;font-weight:600;letter-spacing:.02em}
+.delta.up{background:rgba(74,124,89,.13);color:var(--good)}
+.delta.flat{background:rgba(123,102,83,.13);color:var(--tx2)}
+.delta.warn{background:rgba(160,64,48,.13);color:var(--warn)}
+.delta .arr{font-size:13px;line-height:1}
+.mini-seg{margin-top:14px;height:8px;background:var(--sub);border-radius:4px;overflow:hidden;display:flex;border:1px solid var(--border)}
+.mini-seg .seg{height:100%;transition:width .5s ease}
+.seg-a{background:linear-gradient(90deg,var(--pri),var(--deep))}
+.seg-b{background:var(--deco)}
+.seg-c{background:var(--good)}
+.kpi-card .ft{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);font-size:12px;color:var(--tx2)}
+.kpi-card .ft .tag{font-weight:600}
+.tag-good{color:var(--good)}
+.tag-warn{color:var(--warn)}
+.tag-flat{color:var(--tx2)}
+.tags-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.mini-tag{font-size:11px;padding:2px 7px;background:var(--sub);color:var(--deep);border-radius:4px;border:1px solid var(--border)}
+.design-note{background:var(--sub);border-radius:12px;padding:20px 24px;border-left:4px solid var(--pri)}
+.design-note h3{font-size:14px;font-weight:700;color:var(--deep);margin-bottom:10px;letter-spacing:.06em}
+.design-note ul{list-style:none}
+.design-note li{font-size:13px;color:var(--body);margin-bottom:6px;padding-left:14px;position:relative}
+.design-note li:before{content:"•";color:var(--pri);position:absolute;left:0;font-weight:700}
+.design-note b{color:var(--deep);font-weight:600}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:24px;padding:12px 18px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:12.5px;color:var(--tx2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:14px;height:8px;border-radius:2px}
+@media (max-width:980px){.card-wall{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:22px}}
+@media (max-width:640px){.card-wall{grid-template-columns:1fr}.kpi-card .num{font-size:38px}.narrative-h2{font-size:17px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+  <p class="eyebrow">v1 · card-wall · delta-arrows · inline mini-bar</p>
+  <h1>M-6 设计 v1：培训项目卡片墙</h1>
+  <p class="subtitle">M-1 是 6 张静态 KPI 卡；本版升级为「6 张大卡墙」，每卡含主指标 + 同比箭头徽章 + 卡内 mini 分段条，强化「对比与趋势」维度</p>
+</header>
+
+<section class="narrative-head">
+  <span class="module-icon">📚</span>
+  <h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+
+<section class="narrative-card">
+  <p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+  <p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+  <p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+  <p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+
+<div class="legend">
+  <span><span class="sw" style="background:linear-gradient(90deg,#9f6b44,#6b4423)"></span>主指标段</span>
+  <span><span class="sw" style="background:#4a7c59"></span>达标段</span>
+  <span><span class="sw" style="background:#c9b299"></span>构成段</span>
+  <span><span class="sw" style="background:rgba(74,124,89,.4);border:1px solid #4a7c59"></span>同比↑</span>
+  <span><span class="sw" style="background:rgba(160,64,48,.4);border:1px solid #a04030"></span>需治理⚠</span>
+</div>
+
+<section class="card-wall">
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">📊</span><span class="ttl">培训总量</span></div>
+  </div>
+  <span class="delta up"><span class="arr">↑</span> +12%</span>
+  <div class="num-row">
+    <span class="num">983</span><span class="unit">场</span>
+  </div>
+  <div class="mini-seg" title="能力大提升 983 / 历史同期 877">
+    <div class="seg seg-a" style="width:52.8%"></div>
+    <div class="seg seg-b" style="width:25%"></div>
+    <div class="seg seg-c" style="width:12%"></div>
+  </div>
+  <div class="ft"><span>能力大提升累计</span><span class="tag tag-good">超目标 12%</span></div>
+</article>
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">🎯</span><span class="ttl">重点项目</span></div>
+  </div>
+  <span class="delta flat"><span class="arr">→</span> 持平</span>
+  <div class="num-row">
+    <span class="num">55</span><span class="unit">项</span>
+  </div>
+  <div class="mini-seg" title="已落地 32 / 筹备中 23">
+    <div class="seg seg-a" style="width:58%"></div>
+    <div class="seg seg-b" style="width:42%"></div>
+  </div>
+  <div class="ft"><span>已落地 / 筹备中</span><span class="tag tag-flat">稳步推进</span></div>
+</article>
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">⚙️</span><span class="ttl">执行率</span></div>
+  </div>
+  <span class="delta flat"><span class="arr">→</span> 待提升</span>
+  <div class="num-row">
+    <span class="num">58.06</span><span class="unit">%</span>
+  </div>
+  <div class="mini-seg" title="已执行 58.06% / 缺口 41.94%">
+    <div class="seg seg-a" style="width:58.06%"></div>
+    <div class="seg seg-b" style="width:41.94%"></div>
+  </div>
+  <div class="ft"><span>完成 / 重点项目</span><span class="tag tag-flat">距 100% 差 41.94pp</span></div>
+</article>
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">🏅</span><span class="ttl">100% 部门</span></div>
+  </div>
+  <span class="delta up"><span class="arr">↑</span> +2</span>
+  <div class="num-row">
+    <span class="num">8</span><span class="unit">个</span>
+  </div>
+  <div class="mini-seg" title="达标 8 / 全行 24 个部门">
+    <div class="seg seg-c" style="width:33.33%"></div>
+    <div class="seg seg-b" style="width:66.67%"></div>
+  </div>
+  <div class="ft"><span>较上月增加 2 个</span><span class="tag tag-good">达标率 33.3%</span></div>
+  <div class="tags-row">
+    <span class="mini-tag">董事会办公室</span>
+    <span class="mini-tag">私人银行部</span>
+    <span class="mini-tag">金融同业部</span>
+    <span class="mini-tag">金融市场部</span>
+    <span class="mini-tag">战略客户部</span>
+    <span class="mini-tag">消保部</span>
+    <span class="mini-tag">机关纪委</span>
+    <span class="mini-tag">安全保卫部</span>
+  </div>
+</article>
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">⚠️</span><span class="ttl">末位部门</span></div>
+  </div>
+  <span class="delta warn"><span class="arr">⚠</span> 待治理</span>
+  <div class="num-row">
+    <span class="num">3</span><span class="unit">个</span>
+  </div>
+  <div class="mini-seg" title="金融科技 0% / 内控合规 0% / 运营管理 14.29%">
+    <div class="seg seg-a" style="width:0%"></div>
+    <div class="seg seg-a" style="width:0%;background:#a04030"></div>
+    <div class="seg seg-a" style="width:14.29%;background:#a04030"></div>
+  </div>
+  <div class="ft"><span>执行率后 3 位</span><span class="tag tag-warn">建议专项督导</span></div>
+  <div class="tags-row">
+    <span class="mini-tag" style="border-color:#a04030;color:#a04030">金融科技部 0%</span>
+    <span class="mini-tag" style="border-color:#a04030;color:#a04030">内控合规部 0%</span>
+    <span class="mini-tag" style="border-color:#a04030;color:#a04030">运营管理部 14.29%</span>
+  </div>
+</article>
+
+<article class="kpi-card">
+  <div class="hd">
+    <div class="left"><span class="ic">📝</span><span class="ttl">资格考</span></div>
+  </div>
+  <span class="delta up"><span class="arr">↑</span> +30%</span>
+  <div class="num-row">
+    <span class="num">1878</span><span class="unit">人次</span>
+  </div>
+  <div class="mini-seg" title="35 场覆盖 8 大岗位">
+    <div class="seg seg-c" style="width:70%"></div>
+    <div class="seg seg-b" style="width:30%"></div>
+  </div>
+  <div class="ft"><span>35 场 · 8 大岗位</span><span class="tag tag-good">同比增长 30%</span></div>
+</article>
+
+</section>
+
+<section class="design-note">
+  <h3>设计说明</h3>
+  <ul>
+    <li><b>覆盖维度</b>：6/6 完整 — 培训总量 / 重点项目 / 执行率 / 100% 部门 / 末位部门 / 资格考</li>
+    <li><b>与 M-1~M-5 差异</b>：M-1 是 6 张静态 KPI 卡无对比；本版升级为 6 张大卡墙，每卡嵌入同比箭头徽章 + 卡内 mini 分段条，新增可钻取锚点</li>
+    <li><b>新增 viz 类型</b>：① 大型卡片墙 card-wall（3×2 grid 大卡布局）② delta arrow badge（同比箭头徽章 ↑→↓⚠）③ inline mini-segmented-bar（卡内 8px 高细分段条）④ mini-tag 列表（达标题 / 警示题）</li>
+    <li><b>读图速度</b>：6 秒 — 主指标 + 同比箭头瞬间抓取，mini-bar 提供"距离目标"视觉，tags 行直指责任主体</li>
+    <li><b>视觉重心</b>：46-48px tabular-nums 主数字 + 角落 delta 徽章，永远是"先看哪一张都秒懂"</li>
+  </ul>
+</section>
+
+</main>
+</body>
+</html>

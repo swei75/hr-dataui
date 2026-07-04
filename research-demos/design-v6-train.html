@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-6 设计 v6：数字大屏 + 垂直温度计</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* big-number tile + vertical thermometer */
+.bignum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+.tile{background:#fefcf7;border:1px solid #e8d8c3;border-radius:18px;padding:24px 22px;position:relative;overflow:hidden;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start}
+.tile.warn{border-top:5px solid #a04030}
+.tile.ok{border-top:5px solid #4a7c59}
+.tile.idle{border-top:5px solid #9f6b44}
+.tile-icon{font-size:22px;margin-bottom:6px;display:block}
+.tile-lbl{font-size:13px;color:#7b6653;font-weight:700;letter-spacing:.04em}
+.tile-num{font-size:52px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1.05;margin:8px 0 6px}
+.tile-num .u{font-size:18px;color:#7b6653;font-weight:600;margin-left:2px}
+.tile-foot{font-size:12px;color:#3a2e22;line-height:1.5}
+.tile-foot b{color:#9f6b44}
+
+/* vertical thermometer */
+.therm{position:relative;width:24px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.therm-tube{width:14px;height:100px;background:#ead9c3;border-radius:7px;overflow:hidden;position:relative;border:1px solid #c9b299}
+.therm-fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#4a7c59 0%,#9f6b44 100%);border-radius:6px 6px 0 0;transition:height .8s ease}
+.therm-fill.warn{background:linear-gradient(180deg,#a04030,#7a2f23)}
+.therm-bulb{width:24px;height:24px;border-radius:50%;background:#9f6b44;margin-top:-4px;box-shadow:0 2px 6px rgba(107,68,35,.18)}
+.therm-bulb.warn{background:#a04030}
+.therm-tick{position:absolute;left:18px;font-size:9px;color:#7b6653;white-space:nowrap;font-weight:600}
+.therm-tick.t1{top:-4px}
+.therm-tick.t2{top:42px}
+
+/* bottom responsibility grid */
+.resp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.resp-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px}
+.resp-card.ok{border-top:4px solid #4a7c59}
+.resp-card.crit{border-top:4px solid #a04030}
+.resp-card h4{margin:0 0 12px;font-size:14px;color:#6b4423;display:flex;justify-content:space-between;align-items:center}
+.resp-card .pill-s{font-size:10px;background:#ead9c3;color:#9f6b44;padding:3px 8px;border-radius:999px;font-weight:700}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;font-size:12px;padding:5px 10px;border-radius:999px;background:#ead9c3;color:#6b4423;font-weight:600}
+.chip.ok{background:#dcebe1;color:#2c5a3c}
+.chip.crit{background:#f0d4cc;color:#7a2f23}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.bignum-grid,.resp-grid{grid-template-columns:1fr 1fr}.tile{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.bignum-grid,.resp-grid{grid-template-columns:1fr}.tile-num{font-size:42px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v6 · big-number KPI · vertical thermometer · scale-side label</p>
+<h1>M-6 设计 v6：数字大屏 + 垂直温度计</h1>
+<p class="subtitle">M-1 用 6 静态 KPI 卡无达成度可视化；本版每卡内置垂直温度计（顶端满、底端空），3×2 大屏指挥中心布局，数字+温度双重视觉锚点。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📚</span>
+<h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+<p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+<p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+<p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+
+<div class="section-title"><h3>6 维度 · 大屏指挥数字 + 温度计达成度</h3><span class="pill">big-number + thermometer × 6</span></div>
+<section class="bignum-grid">
+<article class="tile idle">
+<div>
+  <span class="tile-icon">📚</span>
+  <div class="tile-lbl">培训总量</div>
+  <div class="tile-num">983<span class="u">场</span></div>
+  <div class="tile-foot">能力大提升项目 · <b>累计</b></div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑</span><span class="therm-tick t2">0</span><div class="therm-tube"><div class="therm-fill" style="height:65%"></div></div><div class="therm-bulb"></div></div>
+</article>
+
+<article class="tile idle">
+<div>
+  <span class="tile-icon">🎯</span>
+  <div class="tile-lbl">重点项目</div>
+  <div class="tile-num">55<span class="u">项</span></div>
+  <div class="tile-foot">含 5 大讲堂 / 2 特训 / 3 铁军等</div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑</span><span class="therm-tick t2">0</span><div class="therm-tube"><div class="therm-fill" style="height:58%"></div></div><div class="therm-bulb"></div></div>
+</article>
+
+<article class="tile idle">
+<div>
+  <span class="tile-icon">⚙</span>
+  <div class="tile-lbl">执行率</div>
+  <div class="tile-num">58.06<span class="u">%</span></div>
+  <div class="tile-foot">已完成 / 重点项目</div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑100</span><span class="therm-tick t2">0</span><div class="therm-tube"><div class="therm-fill" style="height:58%"></div></div><div class="therm-bulb"></div></div>
+</article>
+
+<article class="tile ok">
+<div>
+  <span class="tile-icon">✅</span>
+  <div class="tile-lbl">100% 完成部门</div>
+  <div class="tile-num">8<span class="u">/ 24</span></div>
+  <div class="tile-foot">目标部门 <b>33.3%</b></div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑24</span><span class="therm-tick t2">0</span><div class="therm-tube"><div class="therm-fill" style="height:33%"></div></div><div class="therm-bulb"></div></div>
+</article>
+
+<article class="tile warn">
+<div>
+  <span class="tile-icon">⚠</span>
+  <div class="tile-lbl">末位部门</div>
+  <div class="tile-num">3<span class="u">/ 24</span></div>
+  <div class="tile-foot">执行率 ≤14.29% · <b>需治理</b></div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑0</span><span class="therm-tick t2">危险</span><div class="therm-tube"><div class="therm-fill warn" style="height:80%"></div></div><div class="therm-bulb warn"></div></div>
+</article>
+
+<article class="tile idle">
+<div>
+  <span class="tile-icon">🎓</span>
+  <div class="tile-lbl">资格考参考</div>
+  <div class="tile-num">1,878<span class="u">人次</span></div>
+  <div class="tile-foot">35 场 · 8 大岗位</div>
+</div>
+<div class="therm"><span class="therm-tick t1">↑</span><span class="therm-tick t2">0</span><div class="therm-tube"><div class="therm-fill" style="height:62%"></div></div><div class="therm-bulb"></div></div>
+</article>
+</section>
+
+<div class="section-title"><h3>责任主体 · 部门完成情况</h3><span class="pill">chip × 2</span></div>
+<section class="resp-grid">
+<article class="resp-card ok">
+<h4>🏆 100% 完成部门 <span class="pill-s">8 / 24 · 33.3%</span></h4>
+<div class="chip-list">
+<span class="chip ok">董事会办公室</span>
+<span class="chip ok">私人银行与财富管理部</span>
+<span class="chip ok">金融同业部</span>
+<span class="chip ok">金融市场部</span>
+<span class="chip ok">战略客户部</span>
+<span class="chip ok">消费者权益保护部</span>
+<span class="chip ok">机关纪委办公室</span>
+<span class="chip ok">安全保卫部</span>
+</div>
+</article>
+
+<article class="resp-card crit">
+<h4>⚠ 末位部门 · 待治理 <span class="pill-s">3 / 24 · 12.5%</span></h4>
+<div class="chip-list">
+<span class="chip crit">金融科技部 · 0%</span>
+<span class="chip crit">内控合规部 · 0%</span>
+<span class="chip crit">运营管理部 · 14.29%</span>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：6/6 完整（每维度 1 张大卡 + chip 区再覆盖 100% 与末位部门）</li>
+<li><b>与 M-1~M-5 差异</b>：M-1 用 6 静态 KPI 卡无达成度可视化；M-3 用 ring gauge 是圆环形式；M-5 用 sparkline 是细线条。本版用 52px 大数字 + 垂直温度计（linear vertical bar + bulb），更像大屏指挥中心。</li>
+<li><b>新增 viz 类型</b>：① big-number KPI tile（52px 大数字 + 单位 + 评注）② vertical thermometer（垂直温度计 + bulb + 0/中/满刻度）③ scale-side label（侧标 0 / 上限刻度）</li>
+<li><b>信息密度</b>：中 — 6 个核心数字 + 8 + 3 责任主体</li>
+<li><b>读图速度</b>：2 秒 — 数字一眼识别，温度计一眼看出达成高度</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v11：4 KPI + 5 段 stacked 卡片 + 8 客户网格</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:#9f6b44;color:#fefcf7;border-radius:14px;padding:22px 20px;position:relative;overflow:hidden}
+.kpi.alt{background:#6b4423}
+.kpi.acc{background:#a04030}
+.kpi.ok{background:#4a7c59}
+.kpi::before{content:"";position:absolute;top:0;right:0;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%;transform:translate(40px,-40px)}
+.kpi .glyph{font-size:22px;opacity:.85;margin-bottom:8px}
+.kpi .label{font-size:12px;letter-spacing:.04em;opacity:.85;margin-bottom:8px}
+.kpi .big{font-size:42px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .unit{font-size:13px;opacity:.75;margin-left:4px;font-weight:500}
+.kpi .sub{font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);opacity:.85}
+.section-title{display:flex;align-items:center;gap:10px;margin:28px 0 14px}
+.section-title h3{margin:0;font-size:18px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.dim-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.dim-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 18px 14px;border-top:4px solid #9f6b44}
+.dim-card.b{border-top-color:#6b4423}
+.dim-card.c{border-top-color:#a04030}
+.dim-card.d{border-top-color:#4a7c59}
+.dim-card.e{border-top-color:#c9a883}
+.dim-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.dim-card .head h4{margin:0;font-size:14px;color:#6b4423;font-weight:700}
+.dim-card .head .ttl{font-size:11px;color:#7b6653;letter-spacing:.06em}
+.stacked-bar{height:38px;display:flex;border-radius:6px;overflow:hidden;background:#f4eadb;margin-bottom:12px}
+.stacked-bar .seg{display:flex;align-items:center;justify-content:center;color:#fefcf7;font-size:11px;font-weight:700}
+.stacked-bar .s1{background:#6b4423}.stacked-bar .s2{background:#9f6b44}.stacked-bar .s3{background:#a04030}.stacked-bar .s4{background:#c9a883}.stacked-bar .s5{background:#4a7c59}
+.dim-list{display:flex;flex-direction:column;gap:5px}
+.dim-list .row{display:grid;grid-template-columns:14px 1fr auto;font-size:12px;color:#3a2e22;align-items:center;gap:6px}
+.dim-list .row .dot{width:10px;height:10px;border-radius:3px}
+.dim-list .row .vl{color:#7b6653;font-variant-numeric:tabular-nums;font-weight:600}
+.dot1{background:#6b4423}.dot2{background:#9f6b44}.dot3{background:#a04030}.dot4{background:#c9a883}.dot5{background:#4a7c59}
+.cs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.cs-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:16px 18px;border-left:5px solid #9f6b44}
+.cs-card.b{border-left-color:#6b4423}
+.cs-card.c{border-left-color:#a04030}
+.cs-card.d{border-left-color:#4a7c59}
+.cs-card .tag{font-size:11px;color:#9f6b44;letter-spacing:.06em;font-weight:700;margin-bottom:6px}
+.cs-card .num{font-size:30px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.cs-card .num small{font-size:14px;color:#7b6653;margin-left:4px;font-weight:500}
+.cs-card .name{font-size:14px;color:#241b15;font-weight:600;margin:8px 0 4px}
+.cs-card .meta{font-size:12px;color:#7b6653;line-height:1.6}
+.cs-card .mini-stk{height:8px;display:flex;border-radius:4px;overflow:hidden;background:#f4eadb;margin-top:10px}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.kpi-row,.dim-grid,.cs-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}.kpi-row,.dim-grid,.cs-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v11 · kpi · stacked-cards · customer-grid</p>
+<h1>M-2 设计 v11：4 KPI + 5 段 stacked 卡片 + 8 客户网格</h1>
+<p class="subtitle">顶部 4 大数字 KPI · 中部 5 维度 stacked-bar 卡片（总占比 100% 水平堆叠）· 底部 8 网格（客户经理 4 + 客服经理 2 + 总计 2）覆盖全部 8 维度。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人，含劳务派遣的合计总人数为 <strong>6,589 人</strong>）。</p>
+<p>其中，<strong>总行机关 716 人</strong>（占比 12.13%），<strong>总行直属机构 476 人</strong>（占比 8.07%），<strong>经营机构 4,709 人</strong>（占比 79.80%），经营机构为绝对主力。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，前台与中后台比例为 1:0.73，前台占比偏高、贴近一线业务。</p>
+<p>本行在岗员工平均年龄 <strong>36 岁</strong>；<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%）为最大群体，41-50 岁 1,123 人（19.03%），51 岁以上 401 人（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>（女 53.95% / 男 46.05%）。</p>
+<p>本行在岗员工<strong>硕士研究生及以上 1,031 人</strong>（17.47%），<strong>本科 4,514 人</strong>（76.50%）为最大群体，专科 326 人（5.52%），专科以下 30 人（0.51%）；本科及以上合计 93.97%。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>（对公 850 / 个人 390 / 个贷 359 / 微贷 93），<strong>客服经理 1,165 人</strong>（非临柜 163 / 临柜 1,002），一线服务队伍合计 2,857 人。</p>
+</section>
+
+<section class="kpi-row">
+<article class="kpi"><div class="glyph">👥</div><div class="label">正式员工总数</div><div class="big">5,901<span class="unit">人</span></div><div class="sub">含派遣 6,589</div></article>
+<article class="kpi alt"><div class="glyph">📅</div><div class="label">平均年龄</div><div class="big">36<span class="unit">岁</span></div><div class="sub">主力 31-40 占 48.31%</div></article>
+<article class="kpi acc"><div class="glyph">⚖</div><div class="label">男女比例</div><div class="big">0.85<span class="unit">:1</span></div><div class="sub">女 53.95% / 男 46.05%</div></article>
+<article class="kpi ok"><div class="glyph">🎓</div><div class="label">本科及以上</div><div class="big">93.97<span class="unit">%</span></div><div class="sub">主力本科 76.50%</div></article>
+</section>
+
+<div class="section-title"><h3>中部 5 维度 · stacked-bar 卡片</h3><span class="pill">5/5 维度</span></div>
+<section class="dim-grid">
+<article class="dim-card">
+<div class="head"><h4>🏢 机构层级</h4><span class="ttl">总 5,901</span></div>
+<div class="stacked-bar">
+<div class="seg s1" style="width:79.80%">经营 79.80%</div>
+<div class="seg s2" style="width:12.13%">机关 12.13%</div>
+<div class="seg s3" style="width:8.07%">直属 8.07%</div>
+</div>
+<div class="dim-list">
+<div class="row"><span class="dot dot1"></span><span>经营机构</span><span class="vl">4,709 人</span></div>
+<div class="row"><span class="dot dot2"></span><span>总行机关</span><span class="vl">716 人</span></div>
+<div class="row"><span class="dot dot3"></span><span>总行直属</span><span class="vl">476 人</span></div>
+</div>
+</article>
+
+<article class="dim-card b">
+<div class="head"><h4>⚙ 前中后台</h4><span class="ttl">总 5,626</span></div>
+<div class="stacked-bar">
+<div class="seg s2" style="width:57.84%">前台 57.84%</div>
+<div class="seg s1" style="width:42.16%">中后台 42.16%</div>
+</div>
+<div class="dim-list">
+<div class="row"><span class="dot dot2"></span><span>前台部门</span><span class="vl">3,254 人 · 55.16%</span></div>
+<div class="row"><span class="dot dot1"></span><span>中后台部门</span><span class="vl">2,372 人 · 40.20%</span></div>
+<div class="row"><span class="dot dot4"></span><span>前后台比</span><span class="vl">1 : 0.73</span></div>
+</div>
+</article>
+
+<article class="dim-card c">
+<div class="head"><h4>📅 年龄分布</h4><span class="ttl">均龄 36</span></div>
+<div class="stacked-bar">
+<div class="seg s1" style="width:48.31%">31-40</div>
+<div class="seg s2" style="width:25.86%">&lt;30</div>
+<div class="seg s3" style="width:19.03%">41-50</div>
+<div class="seg s4" style="width:6.80%">51+</div>
+</div>
+<div class="dim-list">
+<div class="row"><span class="dot dot1"></span><span>&lt;30 岁</span><span class="vl">1,526 · 25.86%</span></div>
+<div class="row"><span class="dot dot2"></span><span>31-40 岁</span><span class="vl">2,851 · 48.31%</span></div>
+<div class="row"><span class="dot dot3"></span><span>41-50 岁</span><span class="vl">1,123 · 19.03%</span></div>
+<div class="row"><span class="dot dot4"></span><span>51+ 岁</span><span class="vl">401 · 6.80%</span></div>
+</div>
+</article>
+
+<article class="dim-card d">
+<div class="head"><h4>⚖ 性别比例</h4><span class="ttl">0.85:1</span></div>
+<div class="stacked-bar">
+<div class="seg s5" style="width:53.95%">女 53.95%</div>
+<div class="seg s2" style="width:46.05%">男 46.05%</div>
+</div>
+<div class="dim-list">
+<div class="row"><span class="dot dot5"></span><span>女性员工</span><span class="vl">3,184 · 53.95%</span></div>
+<div class="row"><span class="dot dot2"></span><span>男性员工</span><span class="vl">2,717 · 46.05%</span></div>
+<div class="row"><span class="dot dot4"></span><span>合计</span><span class="vl">5,901</span></div>
+</div>
+</article>
+
+<article class="dim-card e">
+<div class="head"><h4>🎓 学历分布</h4><span class="ttl">本科主力</span></div>
+<div class="stacked-bar">
+<div class="seg s2" style="width:76.50%">本科 76.50%</div>
+<div class="seg s1" style="width:17.47%">硕 17.47%</div>
+<div class="seg s3" style="width:5.52%">专科 5.52%</div>
+<div class="seg s4" style="width:0.51%">↓</div>
+</div>
+<div class="dim-list">
+<div class="row"><span class="dot dot2"></span><span>本科</span><span class="vl">4,514 · 76.50%</span></div>
+<div class="row"><span class="dot dot1"></span><span>硕及以上</span><span class="vl">1,031 · 17.47%</span></div>
+<div class="row"><span class="dot dot3"></span><span>专科</span><span class="vl">326 · 5.52%</span></div>
+<div class="row"><span class="dot dot4"></span><span>专科以下</span><span class="vl">30 · 0.51%</span></div>
+</div>
+</article>
+</section>
+
+<div class="section-title"><h3>底部 8 项 · 客户/客服经理细分</h3><span class="pill">8 项</span></div>
+<section class="cs-grid">
+<article class="cs-card">
+<div class="tag">一线 · 客户经理</div>
+<div class="num">1,692<small>人</small></div>
+<div class="name">客户经理合计</div>
+<div class="meta">占正式员工 28.67% · 未含 172 名派遣</div>
+<div class="mini-stk"><div style="width:50.24%;background:#6b4423"></div><div style="width:23.05%;background:#9f6b44"></div><div style="width:21.22%;background:#a04030"></div><div style="width:5.50%;background:#c9a883"></div></div>
+</article>
+<article class="cs-card b">
+<div class="tag">细分 · 对公</div>
+<div class="num">850<small>人</small></div>
+<div class="name">对公客户经理</div>
+<div class="meta">占客户经理 50.24%</div>
+<div class="mini-stk"><div style="width:100%;background:#6b4423"></div></div>
+</article>
+<article class="cs-card c">
+<div class="tag">细分 · 个人</div>
+<div class="num">390<small>人</small></div>
+<div class="name">个人客户经理</div>
+<div class="meta">占客户经理 23.05%</div>
+<div class="mini-stk"><div style="width:100%;background:#a04030"></div></div>
+</article>
+<article class="cs-card d">
+<div class="tag">细分 · 个贷</div>
+<div class="num">359<small>人</small></div>
+<div class="name">个贷客户经理</div>
+<div class="meta">占客户经理 21.22% · 未含 172 派遣</div>
+<div class="mini-stk"><div style="width:100%;background:#4a7c59"></div></div>
+</article>
+<article class="cs-card b">
+<div class="tag">细分 · 微贷</div>
+<div class="num">93<small>人</small></div>
+<div class="name">微贷客户经理</div>
+<div class="meta">占客户经理 5.50%</div>
+<div class="mini-stk"><div style="width:100%;background:#6b4423"></div></div>
+</article>
+<article class="cs-card c">
+<div class="tag">一线 · 客服经理</div>
+<div class="num">1,165<small>人</small></div>
+<div class="name">客服经理合计</div>
+<div class="meta">占正式员工 19.74%</div>
+<div class="mini-stk"><div style="width:85.92%;background:#a04030"></div><div style="width:14.08%;background:#9f6b44"></div></div>
+</article>
+<article class="cs-card d">
+<div class="tag">细分 · 临柜</div>
+<div class="num">1,002<small>人</small></div>
+<div class="name">客服经理（临柜）</div>
+<div class="meta">占客服经理 85.92%</div>
+<div class="mini-stk"><div style="width:100%;background:#4a7c59"></div></div>
+</article>
+<article class="cs-card">
+<div class="tag">细分 · 非临柜</div>
+<div class="num">163<small>人</small></div>
+<div class="name">客服经理（非临柜）</div>
+<div class="meta">占客服经理 14.08%</div>
+<div class="mini-stk"><div style="width:100%;background:#9f6b44"></div></div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：8/8 完整（机构/前中后台/年龄/性别/学历/客户/客服/总人数）</li>
+<li><b>信息密度</b>：高 — 4 KPI + 5 维度 16 段 + 8 项细分 = 28 个数字组合</li>
+<li><b>视觉冲击</b>：强 — 顶部 4 色块 KPI + 中部 5 段 stacked-bar（占比横条 + 垂直图例）+ 底部 8 网格</li>
+<li><b>读图速度</b>：3 秒 — 横条总长即占比，比例感强</li>
+<li><b>借鉴 v7</b>：4 KPI 顶部布局 + 卡片化分组</li>
+<li><b>新增 viz 类型</b>：stacked-bar（水平堆叠横条） · KPI 块 · 8 网格细分卡 · 4 色阶图例</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

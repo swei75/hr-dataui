@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-6 设计 v9：Sankey 流向图</title>
+<style>
+:root{
+  --bg:#fbf4e9;--card:#fefcf7;--primary:#9f6b44;--primary-dark:#6b4423;
+  --border:#e8d8c3;--sub:#ead9c3;--text:#241b15;--text2:#7b6653;--body:#3a2e22;
+  --good:#4a7c59;--warn:#a04030;--deco:#c9b299;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--body);font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+.page-shell{max-width:1100px;margin:0 auto;padding:32px 24px 56px}
+.hero{border-left:4px solid var(--primary);padding:18px 22px;background:var(--card);border-radius:0 12px 12px 0;margin-bottom:24px;box-shadow:0 1px 0 var(--border)}
+.eyebrow{font-size:12px;color:var(--primary);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:6px}
+.hero h1{font-size:26px;color:var(--text);font-weight:700;margin-bottom:6px}
+.subtitle{font-size:14px;color:var(--text2)}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 16px}
+.module-icon{font-size:28px;width:48px;height:48px;background:var(--card);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.narrative-h2{font-size:22px;color:var(--text);font-weight:700;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--primary);color:#fff;font-size:14px;font-weight:700;width:34px;height:34px;border-radius:8px}
+.narrative-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;box-shadow:0 2px 0 var(--sub)}
+.narrative-card p{font-size:15px;color:var(--body);margin-bottom:12px;padding-left:14px;border-left:2px solid var(--deco)}
+.narrative-card p:last-child{margin-bottom:0}
+.narrative-card strong{color:var(--primary-dark);font-weight:700;background:linear-gradient(transparent 65%,rgba(201,178,153,.45) 65%);padding:0 2px}
+.viz-block{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:22px;box-shadow:0 2px 0 var(--sub)}
+.viz-title{font-size:16px;color:var(--text);font-weight:700;margin-bottom:4px}
+.viz-sub{font-size:12px;color:var(--text2);margin-bottom:18px}
+.sankey-svg{width:100%;height:auto;display:block}
+.sankey-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--body)}
+.legend-swatch{width:18px;height:10px;border-radius:2px}
+.chip-section{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chip-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.chip-card h4{font-size:13px;color:var(--text);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.chip-card h4 .count{display:inline-flex;align-items:center;justify-content:center;background:var(--sub);color:var(--primary-dark);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:5px 10px;border-radius:14px;background:var(--bg);border:1px solid var(--border);color:var(--body)}
+.chip.good{background:rgba(74,124,89,.10);border-color:rgba(74,124,89,.35);color:var(--good)}
+.chip.warn{background:rgba(160,64,48,.08);border-color:rgba(160,64,48,.30);color:var(--warn)}
+.design-note{margin-top:22px;background:var(--sub);border-radius:12px;padding:18px 22px;border-left:3px solid var(--primary)}
+.design-note h3{font-size:14px;color:var(--primary-dark);font-weight:700;margin-bottom:8px}
+.design-note ul{list-style:none;padding:0}
+.design-note li{font-size:13px;color:var(--body);margin-bottom:6px;padding-left:14px;position:relative}
+.design-note li:before{content:"·";position:absolute;left:4px;color:var(--primary);font-weight:700}
+.design-note li b{color:var(--primary-dark);font-weight:700}
+.node-label{font-size:11px;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif}
+.node-name{fill:var(--text);font-weight:700;font-size:12px}
+.node-num{fill:var(--primary-dark);font-weight:700;font-size:14px}
+.col-label{font-size:11px;fill:var(--text2);font-weight:600;letter-spacing:1px}
+@media(max-width:780px){
+  .chip-section{grid-template-columns:1fr}
+  .hero h1{font-size:22px}
+  .page-shell{padding:20px 14px 40px}
+}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+  <p class="eyebrow">v9 · sankey flow · 3-segment</p>
+  <h1>M-6 设计 v9：Sankey 带宽流图</h1>
+  <p class="subtitle">M-3 用简单流程图（4 节点串接）；本版用 sankey 流向图（带宽代表流量），呈现"投入 → 过程 → 产出"全链路</p>
+</header>
+
+<section class="narrative-head">
+  <span class="module-icon">📚</span>
+  <h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+
+<section class="narrative-card">
+  <p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+  <p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+  <p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+  <p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+
+<section class="viz-block">
+  <p class="viz-title">培训赋能全链路 Sankey 流向图</p>
+  <p class="viz-sub">带宽 ∝ 流量 · 三段：培训投入 → 培训执行层 → 资格认证产出</p>
+
+<svg class="sankey-svg" viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<style>
+.s-flow1{stroke:rgba(159,107,68,.40);fill:none}
+.s-flow2{stroke:rgba(201,178,153,.55);fill:none}
+.s-flow3{stroke:rgba(74,124,89,.40);fill:none}
+.s-flow4{stroke:rgba(201,178,153,.40);fill:none}
+</style>
+</defs>
+
+<!-- 列标签 -->
+<text class="col-label" x="60" y="30">SOURCE · 培训投入</text>
+<text class="col-label" x="430" y="30">HUB · 培训执行层</text>
+<text class="col-label" x="800" y="30">SINK · 资格认证产出</text>
+
+<!-- Source → Hub 流量 (rgba 159,107,68 段) -->
+<!-- 培训总量(983) y=70..230 → 已完成 y=60..170 -->
+<path class="s-flow1" stroke-width="58" d="M 80 100 C 255 100, 255 110, 420 110"/>
+<path class="s-flow1" stroke-width="32" d="M 80 165 C 255 165, 255 200, 420 200"/>
+<path class="s-flow1" stroke-width="28" d="M 80 210 C 255 210, 255 340, 420 340"/>
+<!-- 重点项目(55) y=280..360 -->
+<path class="s-flow1" stroke-width="20" d="M 80 295 C 255 295, 255 155, 420 155"/>
+<path class="s-flow1" stroke-width="10" d="M 80 320 C 255 320, 255 220, 420 220"/>
+<path class="s-flow1" stroke-width="8" d="M 80 345 C 255 345, 255 360, 420 360"/>
+
+<!-- Source 节点矩形 -->
+<rect x="68" y="70" width="12" height="160" fill="#9f6b44" rx="2"/>
+<rect x="68" y="280" width="12" height="80" fill="#6b4423" rx="2"/>
+<!-- Source 标签 -->
+<text class="node-name" x="56" y="86" text-anchor="end">培训总量</text>
+<text class="node-num" x="56" y="104" text-anchor="end">983 场</text>
+<text class="node-name" x="56" y="296" text-anchor="end">重点项目</text>
+<text class="node-num" x="56" y="314" text-anchor="end">55 项</text>
+
+<!-- Hub 节点矩形 -->
+<rect x="420" y="60" width="12" height="110" fill="#c9b299" rx="2"/>
+<rect x="420" y="195" width="12" height="65" fill="#c9b299" rx="2"/>
+<rect x="420" y="295" width="12" height="80" fill="#c9b299" rx="2"/>
+<!-- Hub 标签 -->
+<text class="node-name" x="436" y="76">已完成</text>
+<text class="node-num" x="436" y="94">58.06%</text>
+<text class="node-label" x="436" y="108">执行率</text>
+<text class="node-name" x="436" y="212">100% 部门</text>
+<text class="node-num" x="436" y="230">8 个</text>
+<text class="node-name" x="436" y="312">待提升部门</text>
+<text class="node-num" x="436" y="330">含末位 3</text>
+<text class="node-label" x="436" y="344">⚠ 预警</text>
+
+<!-- Hub → Sink 流量 (rgba 201,178,153 → 74,124,89) -->
+<path class="s-flow2" stroke-width="50" d="M 432 100 C 615 100, 615 130, 800 130"/>
+<path class="s-flow2" stroke-width="30" d="M 432 150 C 615 150, 615 320, 800 320"/>
+<path class="s-flow4" stroke-width="20" d="M 432 215 C 615 215, 615 160, 800 160"/>
+<path class="s-flow4" stroke-width="22" d="M 432 245 C 615 245, 615 350, 800 350"/>
+<path class="s-flow2" stroke-width="14" d="M 432 310 C 615 310, 615 185, 800 185"/>
+<path class="s-flow4" stroke-width="20" d="M 432 350 C 615 350, 615 370, 800 370"/>
+
+<!-- Sink 节点矩形 (rgba 74,124,89 段) -->
+<rect x="800" y="80" width="12" height="120" fill="#4a7c59" rx="2"/>
+<rect x="800" y="270" width="12" height="110" fill="#4a7c59" rx="2"/>
+<!-- Sink 标签 -->
+<text class="node-name" x="816" y="96">上岗资格考</text>
+<text class="node-num" x="816" y="114">35 场</text>
+<text class="node-label" x="816" y="128">8 大岗位</text>
+<text class="node-name" x="816" y="286">参考人次</text>
+<text class="node-num" x="816" y="304">1878</text>
+<text class="node-label" x="816" y="318">人次累计</text>
+
+<!-- 底部刻度 -->
+<line x1="60" y1="400" x2="820" y2="400" stroke="#e8d8c3" stroke-width="1"/>
+<text class="node-label" x="60" y="418" fill="#7b6653">流量比例 →</text>
+</svg>
+
+<div class="sankey-legend">
+  <div class="legend-item"><span class="legend-swatch" style="background:rgba(159,107,68,.55);border:1px solid #9f6b44"></span>培训投入段流（Source → Hub）</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:rgba(201,178,153,.70);border:1px solid #c9b299"></span>培训执行段流（Hub 中转）</div>
+  <div class="legend-item"><span class="legend-swatch" style="background:rgba(74,124,89,.55);border:1px solid #4a7c59"></span>资格认证段流（Hub → Sink）</div>
+</div>
+</section>
+
+<section class="chip-section">
+  <div class="chip-card">
+    <h4>已 100% 完成培训部门 <span class="count">8 个</span></h4>
+    <div class="chip-list">
+      <span class="chip good">董事会办公室</span>
+      <span class="chip good">私人银行与财富管理部</span>
+      <span class="chip good">金融同业部</span>
+      <span class="chip good">金融市场部</span>
+      <span class="chip good">战略客户部</span>
+      <span class="chip good">消费者权益保护部</span>
+      <span class="chip good">机关纪委办公室</span>
+      <span class="chip good">安全保卫部</span>
+    </div>
+  </div>
+  <div class="chip-card">
+    <h4>执行率末位部门 <span class="count" style="background:rgba(160,64,48,.12);color:var(--warn)">3 个</span></h4>
+    <div class="chip-list">
+      <span class="chip warn">金融科技部 · 0%</span>
+      <span class="chip warn">内控合规部 · 0%</span>
+      <span class="chip warn">运营管理部 · 14.29%</span>
+    </div>
+  </div>
+</section>
+
+<section class="design-note">
+  <h3>设计说明</h3>
+  <ul>
+    <li><b>覆盖维度</b>：6/6 完整（培训总量 / 重点项目 / 执行率 / 100% 部门 / 末位部门 / 资格考）</li>
+    <li><b>与 M-1~M-5 差异</b>：M-1~M-5 走"汇总卡 + 列表/网格"路线；v9 走"全链路带宽流图"，一眼看清流量大小关系</li>
+    <li><b>新增 viz 类型</b>：① sankey / flow diagram（带宽流图） ② layered segment band（带宽段 / ribbon）</li>
+    <li><b>读图速度</b>：3 秒 - 左看投入、中看分流、右看出产，直观理解"流量从哪来、到哪去、有多粗"</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

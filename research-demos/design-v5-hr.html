@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-3 设计 v5：数字塔 + 关系图</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* Big number tower */
+.tower-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.tower{background:linear-gradient(180deg,#fefcf7 0%,#fbf4e9 100%);border:1px solid #e8d8c3;border-radius:18px;padding:24px 14px;text-align:center;position:relative;overflow:hidden}
+.tower::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:#9f6b44}
+.tower.in::before{background:#4a7c59}
+.tower.out::before{background:#a04030}
+.tower.warn::before{background:#a04030}
+.tower.ok::before{background:#4a7c59}
+.tower .t-num{font-size:64px;font-weight:900;color:#241b15;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tower .t-num span{font-size:18px;color:#7b6653;font-weight:500;margin-left:4px}
+.tower .t-lbl{font-size:13px;color:#6b4423;margin-top:10px;font-weight:700;letter-spacing:.04em}
+.tower .t-sub{font-size:10px;color:#7b6653;margin-top:6px;line-height:1.4}
+.tower .t-pct{font-size:11px;color:#9f6b44;font-weight:800;margin-top:4px}
+
+/* Relationship / Sankey-style flow diagram */
+.flow-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.flow-wrap h4{margin:0 0 4px;font-size:15px;color:#6b4423}
+.flow-wrap .sub{font-size:11px;color:#7b6653;margin-bottom:14px}
+.flow-svg{display:block;margin:0 auto;max-width:100%}
+
+/* Breakdown bar */
+.brk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.brk-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 24px;border-top:4px solid #9f6b44}
+.brk-card.b{border-top-color:#6b4423}
+.brk-card.c{border-top-color:#a04030}
+.brk-card.d{border-top-color:#4a7c59}
+.brk-card h4{margin:0 0 12px;font-size:14px;color:#6b4423;display:flex;justify-content:space-between;align-items:center}
+.brk-card h4 .pill-s{font-size:10px;background:#ead9c3;color:#9f6b44;padding:3px 8px;border-radius:999px;font-weight:700}
+.brk-list{display:flex;flex-direction:column;gap:7px}
+.brk-list .bl{display:grid;grid-template-columns:100px 1fr 70px;font-size:12px;align-items:center;gap:10px;padding:4px 0}
+.brk-list .bl .nm{color:#3a2e22;font-weight:600}
+.brk-list .bl .trk{height:18px;background:#f4eadb;border-radius:4px;overflow:hidden}
+.brk-list .bl .fl{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;color:#fefcf7;font-size:10px;font-weight:700}
+.brk-list .bl .vl{color:#241b15;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.brk-list .bl .vl small{color:#7b6653;font-weight:500;margin-left:3px}
+
+/* Highlight cards (3 callouts) */
+.hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.hl-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px;border-left:5px solid #9f6b44}
+.hl-card.ok{border-left-color:#4a7c59}
+.hl-card.bad{border-left-color:#a04030}
+.hl-card .num{font-size:30px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.hl-card .num span{font-size:14px;color:#7b6653;font-weight:500;margin-left:4px}
+.hl-card .lbl{font-size:13px;color:#6b4423;font-weight:700;margin-top:8px;margin-bottom:4px}
+.hl-card .desc{font-size:11px;color:#7b6653;line-height:1.5}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.tower-row{grid-template-columns:repeat(3,1fr)}.brk-grid,.hl-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.tower-row{grid-template-columns:repeat(2,1fr)}.tower .t-num{font-size:48px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v5 · tower · relationship-flow · bar</p>
+<h1>M-3 设计 v5：数字塔 + 关系图 + 条形分布</h1>
+<p class="subtitle">顶部 5 大巨型数字（64px）+ 中部"Sankey 风格"人才流动关系图（社招/校招 → 总行/经营 → 离职/退休）+ 4 张条形分布明细 + 3 张亮点 callout。强调"数据冲击力"和"流动故事"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📉</span>
+<h2 class="narrative-h2"><span class="narrative-badge">三</span>人员优化情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2026 年以来，<strong>社招入职 34 人</strong>，校招签约 721 人（目标 659 已超额），<strong>一本及以上 73%</strong>。</p>
+<p><strong>全行累计退出 202 人</strong>：总行直属 30 / 经营机构 172。</p>
+<p>分支行"腾笼换鸟"<strong>完成率 50%</strong>（1-5 月退出 201 / 全年 410）；<strong>绩差退出 44 人</strong>（46%）；1-5 月劳动仲裁 15 人（胜 2 / 败 2 / 进行中 11）。</p>
+</section>
+
+<div class="section-title"><h3>顶部 · 5 大数字塔</h3><span class="pill">tower × 5</span></div>
+<section class="tower-row">
+<article class="tower in">
+<div class="t-num">34<span>人</span></div>
+<div class="t-lbl">社招入职</div>
+<div class="t-sub">总行 2 / 分支行 4 / 网点 4 / 客户经理 9 / 其他 15</div>
+<div class="t-pct">结构补强</div>
+</article>
+<article class="tower in">
+<div class="t-num">721<span>人</span></div>
+<div class="t-lbl">校招签约</div>
+<div class="t-sub">目标 659 已超额 · 一本以上 73% (+7pp)</div>
+<div class="t-pct">109% 完成</div>
+</article>
+<article class="tower out">
+<div class="t-num">202<span>人</span></div>
+<div class="t-lbl">累计退出</div>
+<div class="t-sub">总行直属 30 / 经营机构 172</div>
+<div class="t-pct">自然 + 优化</div>
+</article>
+<article class="tower ok">
+<div class="t-num">50<span>%</span></div>
+<div class="t-lbl">腾笼换鸟</div>
+<div class="t-sub">1-5 月退出 201 / 全年 410</div>
+<div class="t-pct">序时达标</div>
+</article>
+<article class="tower warn">
+<div class="t-num">15<span>人</span></div>
+<div class="t-lbl">劳动仲裁</div>
+<div class="t-sub">胜 2 / 败 2 / 进行中 11</div>
+<div class="t-pct">需关注</div>
+</article>
+</section>
+
+<div class="section-title"><h3>人才流动关系图 · 引进 → 落地 → 退出</h3><span class="pill">sankey-style flow</span></div>
+<section class="flow-wrap">
+<h4>2026 年人员流动全景 · 引进 → 内部落地 → 退出</h4>
+<div class="sub">左侧为引进源（社招 + 校招），中部为组织落地（总行 + 经营），右侧为退出（离职 + 退休）</div>
+<svg class="flow-svg" width="1100" height="320" viewBox="0 0 1100 320">
+<!-- 左侧：引进源 -->
+<rect x="20" y="30" width="160" height="60" rx="8" fill="#4a7c59" />
+<text x="100" y="55" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">社招引进</text>
+<text x="100" y="76" text-anchor="middle" fill="#fefcf7" font-size="20" font-weight="900">34 人</text>
+
+<rect x="20" y="110" width="160" height="100" rx="8" fill="#4a7c59" />
+<text x="100" y="138" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">校招签约</text>
+<text x="100" y="166" text-anchor="middle" fill="#fefcf7" font-size="28" font-weight="900">721 人</text>
+<text x="100" y="195" text-anchor="middle" fill="#d9e8de" font-size="10">目标 659 已超额</text>
+
+<rect x="20" y="230" width="160" height="60" rx="8" fill="#9f6b44" />
+<text x="100" y="255" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">在岗基数</text>
+<text x="100" y="276" text-anchor="middle" fill="#fefcf7" font-size="20" font-weight="900">5,901</text>
+
+<!-- 中部：组织落地 -->
+<rect x="380" y="40" width="180" height="80" rx="8" fill="#9f6b44" />
+<text x="470" y="68" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">总行机关 + 直属</text>
+<text x="470" y="98" text-anchor="middle" fill="#fefcf7" font-size="22" font-weight="900">1,192</text>
+
+<rect x="380" y="160" width="180" height="120" rx="8" fill="#6b4423" />
+<text x="470" y="190" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">经营机构</text>
+<text x="470" y="225" text-anchor="middle" fill="#fefcf7" font-size="32" font-weight="900">4,709</text>
+<text x="470" y="258" text-anchor="middle" fill="#d9c5b0" font-size="11">占比 79.80%</text>
+
+<!-- 右侧：退出 -->
+<rect x="780" y="40" width="160" height="60" rx="8" fill="#a04030" />
+<text x="780" y="65" font-size="13" font-weight="700" fill="#fefcf7" text-anchor="middle">总行离职 / 退休</text>
+<text x="780" y="86" font-size="20" font-weight="900" fill="#fefcf7" text-anchor="middle">30 人</text>
+
+<rect x="780" y="120" width="160" height="60" rx="8" fill="#a04030" />
+<text x="860" y="146" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">经营离职</text>
+<text x="860" y="167" text-anchor="middle" fill="#fefcf7" font-size="20" font-weight="900">153 人</text>
+
+<rect x="780" y="200" width="160" height="60" rx="8" fill="#c08a7e" />
+<text x="860" y="225" text-anchor="middle" fill="#fefcf7" font-size="13" font-weight="700">经营退休</text>
+<text x="860" y="247" text-anchor="middle" fill="#fefcf7" font-size="20" font-weight="900">19 人</text>
+
+<rect x="960" y="160" width="120" height="60" rx="8" fill="#9f6b44" />
+<text x="1020" y="183" text-anchor="middle" fill="#fefcf7" font-size="11" font-weight="700">劳动仲裁</text>
+<text x="1020" y="206" text-anchor="middle" fill="#fefcf7" font-size="20" font-weight="900">15 人</text>
+
+<!-- 连接线（贝塞尔曲线，宽度代表人数）-->
+<!-- 社招 → 总行 -->
+<path d="M 180 60 C 280 60, 280 80, 380 80" stroke="#9f6b44" stroke-width="2" fill="none" opacity="0.6" />
+<!-- 校招 → 总行 -->
+<path d="M 180 130 C 280 130, 280 100, 380 100" stroke="#9f6b44" stroke-width="6" fill="none" opacity="0.6" />
+<!-- 校招 → 经营 -->
+<path d="M 180 180 C 280 180, 280 220, 380 220" stroke="#6b4423" stroke-width="48" fill="none" opacity="0.5" />
+<!-- 在岗 → 总行 -->
+<path d="M 180 250 C 280 250, 280 110, 380 110" stroke="#9f6b44" stroke-width="10" fill="none" opacity="0.4" />
+<!-- 在岗 → 经营 -->
+<path d="M 180 260 C 280 260, 280 240, 380 240" stroke="#6b4423" stroke-width="36" fill="none" opacity="0.4" />
+<!-- 总行 → 退出 -->
+<path d="M 560 80 C 670 80, 670 70, 780 70" stroke="#a04030" stroke-width="4" fill="none" opacity="0.6" />
+<!-- 经营 → 经营离职 -->
+<path d="M 560 200 C 670 200, 670 150, 780 150" stroke="#a04030" stroke-width="30" fill="none" opacity="0.55" />
+<!-- 经营 → 经营退休 -->
+<path d="M 560 230 C 670 230, 670 230, 780 230" stroke="#c08a7e" stroke-width="5" fill="none" opacity="0.55" />
+<!-- 经营 → 仲裁 -->
+<path d="M 560 240 C 750 240, 750 190, 960 190" stroke="#a04030" stroke-width="3" fill="none" opacity="0.6" stroke-dasharray="3 3" />
+
+<!-- 图例 -->
+<text x="20" y="305" font-size="11" fill="#7b6653">线宽代表人数 · 虚线 = 仲裁关联 · 实线 = 直接流动</text>
+</svg>
+</section>
+
+<div class="section-title"><h3>3 大亮点 · callout</h3><span class="pill">highlight × 3</span></div>
+<section class="hl-grid">
+<article class="hl-card ok">
+<div class="num">+7<span>pp</span></div>
+<div class="lbl">校招学历提升</div>
+<div class="desc">一本及以上院校占比 <strong>73%</strong>，较去年提升 7pp，反映校园招聘质量显著提升</div>
+</article>
+<article class="hl-card bad">
+<div class="num">44<span>%</span></div>
+<div class="lbl">佛山分行腾笼换鸟</div>
+<div class="desc">序时完成率 <strong>排名末位</strong>，与领先的总营 295% 差距达 251pp，需重点关注</div>
+</article>
+<article class="hl-card">
+<div class="num">2 / 2<span>结案</span></div>
+<div class="lbl">仲裁胜诉</div>
+<div class="desc">已结案 4 人中胜诉 2 人（广分 + 信用卡），败诉 2 人（汕头 + 信用卡）</div>
+</article>
+</section>
+
+<div class="section-title"><h3>明细条形 · 4 张分布</h3><span class="pill">bar × 4</span></div>
+<section class="brk-grid">
+<article class="brk-card">
+<h4>📥 社招 34 人 <span class="pill-s">岗位</span></h4>
+<div class="brk-list">
+<div class="bl"><span class="nm">总行干部</span><div class="trk"><div class="fl" style="width:13%;background:#6b4423">2</div></div><span class="vl">2<small>人</small></span></div>
+<div class="bl"><span class="nm">分支行部门</span><div class="trk"><div class="fl" style="width:27%;background:#6b4423">4</div></div><span class="vl">4<small>人</small></span></div>
+<div class="bl"><span class="nm">网点班子</span><div class="trk"><div class="fl" style="width:27%;background:#6b4423">4</div></div><span class="vl">4<small>人</small></span></div>
+<div class="bl"><span class="nm">客户经理</span><div class="trk"><div class="fl" style="width:60%;background:#9f6b44">9</div></div><span class="vl">9<small>人</small></span></div>
+<div class="bl"><span class="nm">其他</span><div class="trk"><div class="fl" style="width:100%;background:#9f6b44">15</div></div><span class="vl">15<small>人</small></span></div>
+</div>
+</article>
+
+<article class="brk-card b">
+<h4>🎓 校招 721 人 <span class="pill-s">岗位</span></h4>
+<div class="brk-list">
+<div class="bl"><span class="nm">总行管培</span><div class="trk"><div class="fl" style="width:9.6%;background:#6b4423">45</div></div><span class="vl">45<small>人</small></span></div>
+<div class="bl"><span class="nm">金融科技</span><div class="trk"><div class="fl" style="width:11.5%;background:#6b4423">54</div></div><span class="vl">54<small>人</small></span></div>
+<div class="bl"><span class="nm">分行管培</span><div class="trk"><div class="fl" style="width:23.9%;background:#6b4423">112</div></div><span class="vl">112<small>人</small></span></div>
+<div class="bl"><span class="nm">英才岗</span><div class="trk"><div class="fl" style="width:100%;background:#9f6b44">469</div></div><span class="vl">469<small>人</small></span></div>
+<div class="bl"><span class="nm">微贷/特资</span><div class="trk"><div class="fl" style="width:8.7%;background:#c9a883">41</div></div><span class="vl">41<small>人</small></span></div>
+</div>
+</article>
+
+<article class="brk-card c">
+<h4>📤 退出 202 人 <span class="pill-s">职级</span></h4>
+<div class="brk-list">
+<div class="bl"><span class="nm">高管退休</span><div class="trk"><div class="fl" style="width:0.5%;background:#6b4423">1</div></div><span class="vl">1<small>人</small></span></div>
+<div class="bl"><span class="nm">中层干部</span><div class="trk"><div class="fl" style="width:1%;background:#6b4423">2</div></div><span class="vl">2<small>人</small></span></div>
+<div class="bl"><span class="nm">员工离职</span><div class="trk"><div class="fl" style="width:100%;background:#a04030">175</div></div><span class="vl">175<small>人</small></span></div>
+<div class="bl"><span class="nm">员工退休</span><div class="trk"><div class="fl" style="width:13.7%;background:#c08a7e">24</div></div><span class="vl">24<small>人</small></span></div>
+<div class="bl"><span class="nm">机构-总行直属</span><div class="trk"><div class="fl" style="width:17.4%;background:#a04030">30</div></div><span class="vl">30<small>人</small></span></div>
+</div>
+</article>
+
+<article class="brk-card d">
+<h4>⚖ 仲裁 15 人 <span class="pill-s">状态</span></h4>
+<div class="brk-list">
+<div class="bl"><span class="nm">胜诉</span><div class="trk"><div class="fl" style="width:13.3%;background:#4a7c59">2</div></div><span class="vl">2<small>人</small></span></div>
+<div class="bl"><span class="nm">败诉</span><div class="trk"><div class="fl" style="width:13.3%;background:#a04030">2</div></div><span class="vl">2<small>人</small></span></div>
+<div class="bl"><span class="nm">进行中</span><div class="trk"><div class="fl" style="width:73.3%;background:#c9a883">11</div></div><span class="vl">11<small>人</small></span></div>
+<div class="bl"><span class="nm">结案率</span><div class="trk"><div class="fl" style="width:26.7%;background:#9f6b44">26.7%</div></div><span class="vl">4<small>结案</small></span></div>
+<div class="bl"><span class="nm">仲裁率</span><div class="trk"><div class="fl" style="width:0.25%;background:#6b4423">0.25%</div></div><span class="vl">15/5901</span></div>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：10/10 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 静态小 KPI；v5 是 5 个 64px 巨型数字 + 内嵌 SVG Sankey 风格流动关系图</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 个 stacked-bar + 8 客户网格；v5 用横向 bar 细分 + 关系图 + 3 张 callout 亮点</li>
+<li><b>新增 viz 类型</b>：① 巨型数字塔（giant number tower, 64px）② SVG 关系流动图（Sankey-style flow, 线宽=人数）③ callout 亮点卡 ④ 横向条形分布（horizontal bar）</li>
+<li><b>信息密度</b>：中-高 — 5 巨数 + 1 关系图 + 3 callout + 20 条形 = 30+ 数据点</li>
+<li><b>读图速度</b>：5 秒 — 数字塔 1 秒，关系图 3 秒理解流动，callout 1 秒抓重点</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

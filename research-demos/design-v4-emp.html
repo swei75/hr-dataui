@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v4：学历分布 horizontal bar</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.viz-block{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:32px 28px;margin-bottom:8px}
+.viz-head{margin-bottom:6px}
+.viz-head h3{margin:0;font-size:18px;color:#6b4423}
+.viz-head p{font-size:13px;color:#7b6653;margin:4px 0 0}
+.headline-strip{display:flex;align-items:baseline;gap:24px;margin:14px 0 26px;padding:14px 18px;background:#f4eadb;border-radius:12px;border:1px dashed #c9b299}
+.headline-strip .label{font-size:14px;color:#6b4423;font-weight:600}
+.headline-strip .value{font-size:30px;font-weight:800;color:#9f6b44;font-variant-numeric:tabular-nums}
+.headline-strip .ctx{font-size:13px;color:#7b6653}
+.bar-row{display:grid;grid-template-columns:160px 1fr 130px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px dashed #e8d8c3}
+.bar-row:last-child{border-bottom:none}
+.bar-label{display:flex;flex-direction:column}
+.bar-label .name{font-size:16px;color:#241b15;font-weight:600}
+.bar-label .meta{font-size:12px;color:#7b6653;margin-top:3px}
+.bar-track{position:relative;height:36px;background:#f4eadb;border-radius:8px;overflow:hidden}
+.bar-fill{position:absolute;top:0;left:0;bottom:0;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;color:#fefcf7;font-weight:700;font-size:13px;min-width:60px}
+.bar-fill.dark{background:linear-gradient(90deg,#6b4423 0%,#9f6b44 100%)}
+.bar-fill.brown{background:#9f6b44}
+.bar-fill.tan{background:#c9a883}
+.bar-fill.light{background:#e8d8c3;color:#6b4423}
+.bar-meta{text-align:right}
+.bar-meta .count{font-size:22px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums}
+.bar-meta .pct{display:block;font-size:14px;color:#9f6b44;font-weight:600;margin-top:2px}
+.scale-line{display:flex;justify-content:space-between;font-size:11px;color:#7b6653;margin:6px 0 0 178px;padding-right:148px}
+.scale-line span{position:relative}
+.scale-line span::before{content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:1px;height:5px;background:#c9b299}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px;padding-top:22px;border-top:1px dashed #e8d8c3}
+.sum-card{padding:16px 18px;background:#fefcf7;border:1px solid #e8d8c3;border-radius:12px}
+.sum-card .lbl{font-size:12px;color:#7b6653;letter-spacing:.04em}
+.sum-card .num{font-size:24px;font-weight:800;color:#241b15;margin-top:4px}
+.sum-card .ctx{font-size:12px;color:#7b6653;margin-top:4px}
+.sum-card.primary{background:#9f6b44;color:#fefcf7;border-color:#9f6b44}
+.sum-card.primary .lbl,.sum-card.primary .ctx{color:#fefcf7;opacity:.85}
+.sum-card.primary .num{color:#fefcf7}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.bar-row{grid-template-columns:130px 1fr 100px;gap:12px}.scale-line{margin-left:148px;padding-right:118px}.summary{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}.bar-row{grid-template-columns:1fr;gap:6px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v4 · horizontal-bar · education</p>
+<h1>M-2 设计 v4：学历分布 horizontal bar</h1>
+<p class="subtitle">4 行水平条按数量降序排列，强调"本科 76.50%"主力群体。配合顶部 head strip + 底部 3 张汇总卡。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人）。</p>
+<p>本行在岗员工<strong>硕士研究生及以上 1,031 人</strong>，占比 17.47%；<strong>本科 4,514 人</strong>，占比 76.50%；专科 326 人，占比 5.52%；专科以下 30 人，占比 0.51%。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>本行在岗员工平均年龄 36 岁，<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%），<strong>41-50 岁 1,123 人</strong>（19.03%），<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>（对公 850 / 个人 390 / 个贷 359 / 微贷 93）；<strong>客服经理 1,165 人</strong>（非临柜 163 / 临柜 1002）。</p>
+</section>
+
+<section class="viz-block">
+<div class="viz-head">
+<h3>学历分布</h3>
+<p>5,901 人按最高学历划分 · 主力群体一目了然</p>
+</div>
+
+<div class="headline-strip">
+<span class="label">本科及以上</span>
+<span class="value">5,545 人</span>
+<span class="ctx">占总人数 93.97%（硕及以上 + 本科）</span>
+</div>
+
+<div class="bar-row">
+<div class="bar-label"><span class="name">本科</span><span class="meta">主力群体</span></div>
+<div class="bar-track"><div class="bar-fill brown" style="width:76.50%">76.50%</div></div>
+<div class="bar-meta"><span class="count">4,514</span><span class="pct">76.50%</span></div>
+</div>
+<div class="bar-row">
+<div class="bar-label"><span class="name">硕士研究生及以上</span><span class="meta">研究生学历</span></div>
+<div class="bar-track"><div class="bar-fill dark" style="width:17.47%">17.47%</div></div>
+<div class="bar-meta"><span class="count">1,031</span><span class="pct">17.47%</span></div>
+</div>
+<div class="bar-row">
+<div class="bar-label"><span class="name">专科</span><span class="meta">大专学历</span></div>
+<div class="bar-track"><div class="bar-fill tan" style="width:5.52%">5.52%</div></div>
+<div class="bar-meta"><span class="count">326</span><span class="pct">5.52%</span></div>
+</div>
+<div class="bar-row">
+<div class="bar-label"><span class="name">专科以下</span><span class="meta">高中 / 中专及以下</span></div>
+<div class="bar-track"><div class="bar-fill light" style="width:0.51%">0.51%</div></div>
+<div class="bar-meta"><span class="count">30</span><span class="pct">0.51%</span></div>
+</div>
+
+<div class="scale-line"><span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span></div>
+
+<div class="summary">
+<div class="sum-card primary"><div class="lbl">本科+研究生合计</div><div class="num">5,545 人</div><div class="ctx">占总人数 93.97%</div></div>
+<div class="sum-card"><div class="lbl">研究生密度</div><div class="num">17.47%</div><div class="ctx">高于同业一般水平</div></div>
+<div class="sum-card"><div class="lbl">专科及以下</div><div class="num">356 人</div><div class="ctx">仅占 6.03% · 学历结构优</div></div>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：学历画像展示、招聘画像、人才盘点</li>
+<li><b>信息密度</b>：高 — 4 行条 + 头标 + 底部 3 卡 + 比例尺</li>
+<li><b>视觉冲击</b>：中 — 单条主力段（76.50%）主导视觉</li>
+<li><b>读图速度</b>：3 秒</li>
+<li><b>借鉴来源</b>：shanjinki-finance horizontal-bar + 数据简报样式</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

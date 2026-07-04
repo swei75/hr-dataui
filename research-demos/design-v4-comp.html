@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v4：横向 100% stacked 占比图</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.s100-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 24px;margin-bottom:22px}
+.s100-row{display:grid;grid-template-columns:140px 1fr 140px;gap:14px;align-items:center;margin-bottom:14px}
+.s100-row:last-child{margin-bottom:0}
+.s100-lbl{display:flex;align-items:center;gap:8px;font-size:13px;color:#3a2e22;font-weight:700}
+.s100-lbl i{font-size:18px}
+.s100-bar{height:36px;display:flex;border-radius:8px;overflow:hidden;background:#f4eadb;border:1px solid #e8d8c3}
+.s100-bar .seg{display:flex;align-items:center;justify-content:center;color:#fefcf7;font-size:11px;font-weight:700;padding:0 4px;white-space:nowrap;overflow:hidden}
+.s1{background:#6b4423}.s2{background:#9f6b44}.s3{background:#a04030}.s4{background:#4a7c59}.s5{background:#c9a883}.s6{background:#d4a574}
+.s100-meta{font-size:11px;color:#7b6653;text-align:right;line-height:1.5}
+.s100-meta b{color:#6b4423;font-size:13px;display:block}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:#7b6653;margin:14px 0 0;padding-top:12px;border-top:1px dashed #e8d8c3}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.s100-row{grid-template-columns:110px 1fr 110px;gap:8px}.s100-bar .seg{font-size:10px}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.s100-row{grid-template-columns:90px 1fr;gap:6px}.s100-meta{display:none}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v4 · 100pct-stacked · 5 rows · share-of-cost</p>
+<h1>M-5 设计 v4：横向 100% stacked 占比图</h1>
+<p class="subtitle">5 子方向各占 1 行（=1 个 100% stacked 横条），条内分段表示该方向的成本/覆盖构成（工资+奖金+年金+医疗+节余），行右侧同比箭头。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>（人均 24.3 万元），1-5 月已发 4.2 亿元；企业年金 17.44 亿（个 2% / 单位 8%）。</p>
+<p>补充医疗 2025 年缴费 7,979 万，节余 2 亿；2026 年 5 月节余 <strong>1.9 亿元</strong>（个人 1.6 + 单位 0.30）。</p>
+<p>2026Q1 监测 95 班（113 人次），<strong>16 人次触发黑榜</strong>（14.16%）；同季评选头狼 <strong>129 人</strong>。</p>
+<p>成本构成：工资 82% + 年金 12% + 医疗 5% + 其他 1%（全行口径）；其中工资段细分基本 65% + 绩效 25% + 开门红 2% + 其他 8%。</p>
+</section>
+
+<div class="section-title"><h3>5 子方向 · 100% 横向 stacked</h3><span class="pill">5/5 子方向</span></div>
+<section class="s100-wrap">
+
+<div class="s100-row">
+<div class="s100-lbl"><i>💵</i>薪酬</div>
+<div class="s100-bar">
+<div class="seg s1" style="width:50%">基本 50%</div>
+<div class="seg s2" style="width:30%">绩效 30%</div>
+<div class="seg s3" style="width:12%">开门红 12%</div>
+<div class="seg s5" style="width:8%">津补 8%</div>
+</div>
+<div class="s100-meta"><b>15.0 亿</b>同比 ▲ +2%</div>
+</div>
+
+<div class="s100-row">
+<div class="s100-lbl"><i>🏦</i>企业年金</div>
+<div class="s100-bar">
+<div class="seg s2" style="width:80%">单位 8% 缴费</div>
+<div class="seg s4" style="width:18%">个人 2% 缴费</div>
+<div class="seg s6" style="width:2%">利息</div>
+</div>
+<div class="s100-meta"><b>17.44 亿</b>同比 ▲ +6.5%</div>
+</div>
+
+<div class="s100-row">
+<div class="s100-lbl"><i>🏥</i>补充医疗</div>
+<div class="s100-bar">
+<div class="seg s4" style="width:84%">个人节余 1.6</div>
+<div class="seg s2" style="width:14%">单位节余 0.30</div>
+<div class="seg s6" style="width:2%">利息</div>
+</div>
+<div class="s100-meta"><b>1.9 亿</b>同比 ▼ -5%</div>
+</div>
+
+<div class="s100-row">
+<div class="s100-lbl"><i>📡</i>履职监测</div>
+<div class="s100-bar">
+<div class="seg s5" style="width:86%">正常 97 人次</div>
+<div class="seg s3" style="width:14%">黑榜 16 人次</div>
+</div>
+<div class="s100-meta"><b>113 人次</b>黑榜率 14.2%</div>
+</div>
+
+<div class="s100-row">
+<div class="s100-lbl"><i>🐺</i>头狼评选</div>
+<div class="s100-bar">
+<div class="seg s1" style="width:45%">一等 58 人</div>
+<div class="seg s2" style="width:30%">二等 39 人</div>
+<div class="seg s6" style="width:25%">三等 32 人</div>
+</div>
+<div class="s100-meta"><b>129 人</b>占中层 61.1%</div>
+</div>
+
+</section>
+
+<div class="legend">
+<span><i style="background:#6b4423"></i>主段（基本/一等）</span>
+<span><i style="background:#9f6b44"></i>次段（绩效/单位）</span>
+<span><i style="background:#a04030"></i>警示（开门红/黑榜）</span>
+<span><i style="background:#4a7c59"></i>正向（个人/正常）</span>
+<span><i style="background:#c9a883"></i>中性（津补/利息）</span>
+<span><i style="background:#d4a574"></i>其他</span>
+</div>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 表格；v4 是 5 行 100% stacked 横条，无表格</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 维度卡片每张含独立 stacked-bar；v4 是 5 行 stacked，每行代表一个子方向的内部构成</li>
+<li><b>与 M-3 差异</b>：v4 无圆环、无流程、无颁奖台、无案例卡</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树形；v4 是横向并排 5 行 stacked</li>
+<li><b>新增 viz 类型</b>：① 100% 横向 stacked-by-row（行级分段总占比） ② 行内分段数 ≤ 5（避免堆叠过密） ③ 行级同比徽章（▲▼ 右侧色编码） ④ 6 色共享图例（底部统一索引）</li>
+<li><b>信息密度</b>：中 — 5 行 × 3-4 段 + 行右侧 2 标签 = 25 数据点</li>
+<li><b>读图速度</b>：4 秒 — 横向扫读各行占比</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

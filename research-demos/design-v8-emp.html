@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v8：4 维网格卡片</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.grid-section{margin:24px 0}
+.dim-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;padding:0 4px}
+.dim-head h3{margin:0;font-size:18px;color:#6b4423}
+.dim-head .meta{font-size:13px;color:#7b6653}
+.card-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:8px}
+.card-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.card-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.tile{background:#fefcf7;border:1px solid #e8d8c3;border-radius:12px;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;min-height:138px;position:relative;overflow:hidden;border-left:4px solid #9f6b44}
+.tile.dark{border-left-color:#6b4423;background:#fefcf7}
+.tile.warn{border-left-color:#a04030}
+.tile.main{background:#9f6b44;color:#fefcf7;border:none}
+.tile.main .t-name,.tile.main .t-num,.tile.main .t-pct{color:#fefcf7}
+.tile.light{border-left-color:#c9a883}
+.tile-deep{background:#6b4423;color:#fefcf7;border:none}
+.tile-deep .t-name,.tile-deep .t-num,.tile-deep .t-pct{color:#fefcf7}
+.tile-divider{height:24px}
+.t-name{font-size:13px;color:#7b6653;margin-bottom:8px;line-height:1.3}
+.tile .t-num{font-size:34px;font-weight:800;line-height:1;color:#241b15;font-variant-numeric:tabular-nums}
+.tile .t-unit{font-size:13px;color:#7b6653;margin-left:3px;font-weight:500}
+.tile .t-pct{display:inline-block;margin-top:8px;padding:3px 10px;background:#f4eadb;color:#6b4423;border-radius:999px;font-size:12px;font-weight:700}
+.tile.main .t-pct,.tile-deep .t-pct{background:rgba(255,255,255,.18);color:#fefcf7}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.card-grid,.card-grid.cols-4{grid-template-columns:repeat(3,1fr)}.card-grid.cols-2{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}.card-grid,.card-grid.cols-4,.card-grid.cols-2{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v8 · grid · 4-dimensions</p>
+<h1>M-2 设计 v8：4 维网格卡片</h1>
+<p class="subtitle">四个独立维度的网格卡片视图：机构 3 卡、年龄 4 卡、学历 4 卡、性别 2 卡。主力深色高亮，次要淡色铺垫。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人，含劳务派遣的合计总人数为 6,589 人）。</p>
+<p>其中，<strong>总行机关 716 人</strong>，占比 12.13%；<strong>总行直属机构 476 人</strong>，占比 8.07%；<strong>经营机构 4,709 人</strong>，占比 79.80%。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>本行在岗员工平均年龄 36 岁，<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%），<strong>41-50 岁 1,123 人</strong>（19.03%），<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>本行在岗员工硕士研究生及以上共 1,031 人（17.47%），<strong>本科 4,514 人</strong>（76.50%）为最大群体，专科 326 人（5.52%），专科以下 30 人（0.51%）。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>；<strong>客服经理 1,165 人</strong>。</p>
+</section>
+
+<section class="grid-section">
+<div class="dim-head"><h3>🏢 机构分布</h3><span class="meta">总人数 5,901</span></div>
+<div class="card-grid">
+<div class="tile main"><div class="t-name">经营机构 · 主力</div><div class="t-num">4,709</div><span class="t-pct">79.80%</span></div>
+<div class="tile"><div class="t-name">总行机关</div><div class="t-num">716</div><span class="t-pct">12.13%</span></div>
+<div class="tile dark"><div class="t-name">总行直属机构</div><div class="t-num">476</div><span class="t-pct">8.07%</span></div>
+</div>
+</section>
+
+<section class="grid-section">
+<div class="dim-head"><h3>📅 年龄分布</h3><span class="meta">平均 36 岁</span></div>
+<div class="card-grid cols-4">
+<div class="tile"><div class="t-name">&lt; 30 岁 · 青年</div><div class="t-num">1,526</div><span class="t-pct">25.86%</span></div>
+<div class="tile main"><div class="t-name">31-40 岁 · 主力</div><div class="t-num">2,851</div><span class="t-pct">48.31%</span></div>
+<div class="tile light"><div class="t-name">41-50 岁 · 中坚</div><div class="t-num">1,123</div><span class="t-pct">19.03%</span></div>
+<div class="tile dark"><div class="t-name">51 岁以上</div><div class="t-num">401</div><span class="t-pct">6.80%</span></div>
+</div>
+</section>
+
+<section class="grid-section">
+<div class="dim-head"><h3>🎓 学历分布</h3><span class="meta">本科为主</span></div>
+<div class="card-grid cols-4">
+<div class="tile main"><div class="t-name">本科 · 主力</div><div class="t-num">4,514</div><span class="t-pct">76.50%</span></div>
+<div class="tile"><div class="t-name">硕及以上</div><div class="t-num">1,031</div><span class="t-pct">17.47%</span></div>
+<div class="tile light"><div class="t-name">专科</div><div class="t-num">326</div><span class="t-pct">5.52%</span></div>
+<div class="tile warn"><div class="t-name">专科以下</div><div class="t-num">30</div><span class="t-pct">0.51%</span></div>
+</div>
+</section>
+
+<section class="grid-section">
+<div class="dim-head"><h3>⚖ 性别分布</h3><span class="meta">0.85 : 1</span></div>
+<div class="card-grid cols-2">
+<div class="tile"><div class="t-name">男性员工</div><div class="t-num">2,717<span class="t-unit">人</span></div><span class="t-pct">46.05%</span></div>
+<div class="tile warn"><div class="t-name">女性员工</div><div class="t-num">3,184<span class="t-unit">人</span></div><span class="t-pct">53.95%</span></div>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：分组浏览 / 多维度概览 / 月报章节</li>
+<li><b>信息密度</b>：高 — 4 段共 13 张卡片，含全部维度细分</li>
+<li><b>视觉冲击</b>：中 — 主力卡深底高亮，单维度逐行阅读</li>
+<li><b>读图速度</b>：10 秒 — 多卡多维度需要扫读</li>
+<li><b>借鉴来源</b>：shanjinki-HR 卡片网格 + shanjinki-finance 主力高亮样式</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

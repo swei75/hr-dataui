@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v10：可展开分类卡（accordion）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.hint{background:#f4eadb;border-radius:8px;padding:8px 12px;font-size:11px;color:#5a4a3a;margin-bottom:14px;line-height:1.5}
+
+.acc-group{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+details.acc{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;overflow:hidden;transition:box-shadow .2s}
+details.acc[open]{box-shadow:0 6px 18px rgba(107,68,35,.10);border-color:#9f6b44}
+details.acc > summary{list-style:none;cursor:pointer;padding:18px 24px;display:flex;align-items:center;gap:16px;user-select:none;background:linear-gradient(90deg,#faf3e8,#fefcf7)}
+details.acc > summary::-webkit-details-marker{display:none}
+details.acc > summary:hover{background:linear-gradient(90deg,#f0e2c6,#faf3e8)}
+details.acc[open] > summary{background:linear-gradient(90deg,#ead9c3,#faf3e8);border-bottom:1px solid #e8d8c3}
+
+details.acc .icon{width:46px;height:46px;border-radius:10px;background:#9f6b44;color:#fefcf7;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+details.acc.alert .icon{background:#a04030}
+details.acc.ok .icon{background:#4a7c59}
+
+details.acc .title{flex:1;min-width:0}
+details.acc .title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700;letter-spacing:.02em}
+details.acc .title p{margin:4px 0 0;font-size:11px;color:#7b6653;line-height:1.4}
+
+details.acc .quicks{display:flex;gap:18px;font-size:13px;color:#241b15;align-items:center}
+details.acc .quicks .q{display:flex;flex-direction:column;align-items:center;min-width:48px}
+details.acc .quicks .q b{font-size:18px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+details.acc .quicks .q small{font-size:10px;color:#7b6653;margin-top:2px;letter-spacing:.04em}
+details.acc .quicks .q b.ok{color:#4a7c59}
+details.acc .quicks .q b.gap{color:#a04030}
+
+details.acc .chev{color:#9f6b44;font-size:18px;font-weight:700;transition:transform .2s}
+details.acc[open] .chev{transform:rotate(180deg)}
+
+details.acc .body{padding:20px 24px 22px;border-top:0}
+details.acc .body-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.sub-detail{background:#faf3e8;border:1px solid #ead9c3;border-radius:10px;padding:14px 16px}
+.sub-detail .h{font-size:12px;color:#6b4423;font-weight:700;margin-bottom:8px;letter-spacing:.04em}
+.sub-detail .row{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:12px;color:#3a2e22;line-height:1.7;align-items:center}
+.sub-detail .row .vl{font-variant-numeric:tabular-nums;font-weight:700;color:#241b15}
+.sub-detail .row .vl.ok{color:#4a7c59}
+.sub-detail .row .vl.gap{color:#a04030}
+.sub-detail .bar{height:8px;background:#f4eadb;border-radius:3px;overflow:hidden;margin-top:10px;display:flex}
+.sub-detail .bar .a{background:#4a7c59}
+.sub-detail .bar .b{background:#a04030}
+
+.summary-card{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.sum{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 20px;border-top:3px solid #9f6b44;text-align:center}
+.sum .lbl{font-size:12px;color:#7b6653;margin-bottom:8px;letter-spacing:.04em}
+.sum .big{font-size:32px;font-weight:800;color:#241b15;line-height:1;font-variant-numeric:tabular-nums}
+.sum .big small{font-size:13px;color:#7b6653;font-weight:500;margin-left:4px}
+.sum .m{font-size:11px;color:#7b6653;margin-top:8px;line-height:1.4}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.summary-card{grid-template-columns:repeat(2,1fr)}details.acc .body-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.summary-card{grid-template-columns:1fr}details.acc > summary{padding:14px 16px;gap:10px}details.acc .quicks{display:none}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v10 · accordion · 4 expandable category cards</p>
+<h1>M-4 设计 v10：可展开分类卡（accordion）</h1>
+<p class="subtitle">4 大类可展开卡（市管 / 高管 / 纪检 / 中层 211），每张默认折叠、点击展开子分类（正副职 / 副总级一把手 / 副总 / 总助 / 经理 / 兼任 / 总行 / 经营）。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>4 大类可展开卡</h3><span class="pill">accordion × 4</span></div>
+<div class="hint">点击标题展开 / 折叠子分类。第一张默认展开查看示例。</div>
+
+<div class="acc-group">
+
+<details class="acc" open>
+<summary>
+<div class="icon">🎖</div>
+<div class="title"><h3>中层干部（核心 · 211 人）</h3><p>总行 + 经营机构 · 正副职拆分 · 配备率 91.94%</p></div>
+<div class="quicks">
+<div class="q"><b>211</b><small>总数</small></div>
+<div class="q"><b class="ok">194</b><small>已配</small></div>
+<div class="q"><b class="gap">17</b><small>空缺</small></div>
+</div>
+<span class="chev">▾</span>
+</summary>
+<div class="body">
+<div class="body-grid">
+<div class="sub-detail">
+<div class="h">🏛 总行部门班子</div>
+<div class="row"><span>总职数</span><span class="vl">100</span></div>
+<div class="row"><span>实际已配</span><span class="vl ok">93</span></div>
+<div class="row"><span>尚空缺</span><span class="vl gap">7</span></div>
+<div class="row"><span>配备率</span><span class="vl">93.0%</span></div>
+<div class="bar"><div class="a" style="width:93%"></div><div class="b" style="width:7%"></div></div>
+</div>
+<div class="sub-detail">
+<div class="h">🏢 经营机构班子</div>
+<div class="row"><span>总职数</span><span class="vl">111</span></div>
+<div class="row"><span>实际已配</span><span class="vl ok">101</span></div>
+<div class="row"><span>尚空缺（含 3 纪检）</span><span class="vl gap">10</span></div>
+<div class="row"><span>配备率</span><span class="vl">90.99%</span></div>
+<div class="bar"><div class="a" style="width:90.99%"></div><div class="b" style="width:9.01%"></div></div>
+</div>
+<div class="sub-detail">
+<div class="h">🎖 中层正职（含副总级一把手 17）</div>
+<div class="row"><span>总职数</span><span class="vl">54</span></div>
+<div class="row"><span>实际已配</span><span class="vl ok">50</span></div>
+<div class="row"><span>副总级一把手</span><span class="vl">17</span></div>
+<div class="row"><span>未含兼任</span><span class="vl">3</span></div>
+<div class="row"><span>尚空缺</span><span class="vl gap">4</span></div>
+<div class="bar"><div class="a" style="width:92.59%"></div><div class="b" style="width:7.41%"></div></div>
+</div>
+<div class="sub-detail">
+<div class="h">🎖 中层副职（副总 67 / 总助 74 / 经理 3）</div>
+<div class="row"><span>总职数</span><span class="vl">157</span></div>
+<div class="row"><span>实际已配</span><span class="vl ok">144</span></div>
+<div class="row"><span>副总 / 总助 / 经理</span><span class="vl">67 / 74 / 3</span></div>
+<div class="row"><span>尚空缺（含 3 纪检）</span><span class="vl gap">13</span></div>
+<div class="bar"><div class="a" style="width:91.72%"></div><div class="b" style="width:8.28%"></div></div>
+</div>
+</div>
+</div>
+</details>
+
+<details class="acc ok">
+<summary>
+<div class="icon">🏛</div>
+<div class="title"><h3>市管领导干部</h3><p>市管领导干部职数 · 已满配</p></div>
+<div class="quicks">
+<div class="q"><b>8</b><small>总数</small></div>
+<div class="q"><b class="ok">8</b><small>已配</small></div>
+<div class="q"><b class="ok">0</b><small>空缺</small></div>
+</div>
+<span class="chev">▾</span>
+</summary>
+<div class="body">
+<div class="body-grid">
+<div class="sub-detail">
+<div class="h">📋 市管干部配备情况</div>
+<div class="row"><span>总职数</span><span class="vl">8</span></div>
+<div class="row"><span>实际配置</span><span class="vl ok">8</span></div>
+<div class="row"><span>剩余可配置</span><span class="vl">0</span></div>
+<div class="row"><span>配备率</span><span class="vl">100%</span></div>
+<div class="bar"><div class="a" style="width:100%"></div></div>
+</div>
+</div>
+</div>
+</details>
+
+<details class="acc">
+<summary>
+<div class="icon">👔</div>
+<div class="title"><h3>高管人员</h3><p>工会主席 / 行长助理 / 首席风险官 / 首席信息官 · 无职数限制</p></div>
+<div class="quicks">
+<div class="q"><b>/</b><small>总数</small></div>
+<div class="q"><b>6</b><small>已配</small></div>
+<div class="q"><b>/</b><small>空缺</small></div>
+</div>
+<span class="chev">▾</span>
+</summary>
+<div class="body">
+<div class="body-grid">
+<div class="sub-detail">
+<div class="h">📋 高管人员构成</div>
+<div class="row"><span>工会主席</span><span class="vl">·</span></div>
+<div class="row"><span>行长助理</span><span class="vl">·</span></div>
+<div class="row"><span>首席风险官</span><span class="vl">·</span></div>
+<div class="row"><span>首席信息官</span><span class="vl">·</span></div>
+<div class="row"><span>合计（无职数限制）</span><span class="vl ok">6 人</span></div>
+</div>
+</div>
+</div>
+</details>
+
+<details class="acc alert">
+<summary>
+<div class="icon">⚖</div>
+<div class="title"><h3>派驻纪检监察组（不含组长）</h3><p>配备率仅 50% · 空缺 3 需重点跟进 ⚠</p></div>
+<div class="quicks">
+<div class="q"><b>6</b><small>总数</small></div>
+<div class="q"><b class="ok">3</b><small>已配</small></div>
+<div class="q"><b class="gap">3</b><small>空缺</small></div>
+</div>
+<span class="chev">▾</span>
+</summary>
+<div class="body">
+<div class="body-grid">
+<div class="sub-detail">
+<div class="h">📋 派驻纪检配备情况</div>
+<div class="row"><span>总职数（不含组长）</span><span class="vl">6</span></div>
+<div class="row"><span>实际配置</span><span class="vl ok">3</span></div>
+<div class="row"><span>剩余可配置</span><span class="vl gap">3</span></div>
+<div class="row"><span>配备率</span><span class="vl gap">50% ⚠</span></div>
+<div class="bar"><div class="a" style="width:50%"></div><div class="b" style="width:50%"></div></div>
+</div>
+</div>
+</div>
+</details>
+</div>
+
+<div class="section-title"><h3>全局汇总 · 4 大数字</h3><span class="pill">summary × 4</span></div>
+<section class="summary-card">
+<article class="sum"><div class="lbl">中层干部总职数</div><div class="big">211<small>人</small></div><div class="m">总行 100 + 经营 111</div></article>
+<article class="sum"><div class="lbl">实际已配</div><div class="big">194<small>人</small></div><div class="m">配备率 91.94%</div></article>
+<article class="sum"><div class="lbl">尚空缺</div><div class="big">17<small>人</small></div><div class="m">总行 7 + 经营 10</div></article>
+<article class="sum"><div class="lbl">新一届党委调整</div><div class="big">121<small>人</small></div><div class="m">提拔 94 / 降免 14 / 转岗 13</div></article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（市管 / 高管 / 纪检 / 中层总 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 兼任 / 总行 / 经营）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个静态 KPI 全显；v10 是 4 大类折叠卡 + 点击展开（节省首屏空间）</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 段 stacked-bar 全显；v10 用原生 HTML <code>&lt;details&gt;</code> 元素实现可交互</li>
+<li><b>与 M-3 差异</b>：M-3 v2 是 flow chart + podium（线性流程）；v10 是层级树状可展开（点哪看哪）</li>
+<li><b>新增 viz 类型</b>：① 原生 HTML accordion（<code>&lt;details&gt;</code> + summary） ② 4 大类折叠卡 ③ 子分类 2 列网格 ④ 状态色边框（绿/红/中性 3 色）</li>
+<li><b>信息密度</b>：高 — 4 卡 × 多子分类 × 4-5 字段 = 50+ 字段（仅展开时显示）</li>
+<li><b>读图速度</b>：2-5 秒（按需展开）；首屏只看到 4 大类标题 + 3 个 quicks 数字</li>
+<li><b>取舍</b>：accordion 在纯静态 HTML 中可用原生 <code>&lt;details&gt;</code> 实现零 JS 交互；默认第 1 张展开作为示例</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

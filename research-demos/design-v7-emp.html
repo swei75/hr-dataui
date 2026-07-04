@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v7：4 KPI + 4 维 mini-bar</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.top-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-h{background:#9f6b44;color:#fefcf7;border-radius:14px;padding:24px 22px;position:relative;overflow:hidden}
+.kpi-h.alt{background:#6b4423}
+.kpi-h::before{content:"";position:absolute;top:0;right:0;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%;transform:translate(40px,-40px)}
+.kpi-h .glyph{font-size:24px;opacity:.85;margin-bottom:10px}
+.kpi-h .label{font-size:13px;letter-spacing:.04em;opacity:.85;margin-bottom:10px}
+.kpi-h .big{font-size:44px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kpi-h .unit{font-size:14px;opacity:.75;margin-left:4px;font-weight:500}
+.kpi-h .sub{font-size:12px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.2);opacity:.8}
+.mini-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mini-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 18px 14px;border-top:4px solid #9f6b44}
+.mini-card.alt{border-top-color:#a04030}
+.mini-card.b{border-top-color:#6b4423}
+.mini-card.c{border-top-color:#c9a883}
+.mini-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.mini-card .head h4{margin:0;font-size:14px;color:#6b4423;font-weight:700}
+.mini-card .head .ttl{font-size:11px;color:#7b6653;letter-spacing:.06em}
+.mini-stack{display:flex;flex-direction:column;gap:8px}
+.mini-seg{display:grid;grid-template-columns:64px 1fr 56px;align-items:center;gap:8px;font-size:12px}
+.mini-seg .nm{color:#241b15;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-seg .tr{height:18px;background:#f4eadb;border-radius:4px;overflow:hidden}
+.mini-seg .fl{height:100%;border-radius:4px}
+.mini-seg .vl{color:#7b6653;text-align:right;font-variant-numeric:tabular-nums}
+.fl-1{background:#6b4423}.fl-2{background:#9f6b44}.fl-3{background:#a04030}.fl-4{background:#c9a883}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.top-kpis,.mini-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}.top-kpis,.mini-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v7 · kpi-grid · mini-bars</p>
+<h1>M-2 设计 v7：4 KPI + 4 维 mini-bar</h1>
+<p class="subtitle">顶部 4 张大数字 KPI（5,901 / 36 / 0.85:1 / 76.50%）吸引目光，下方 4 张 mini-bar 卡分解各维度分布。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人，含劳务派遣的合计总人数为 6,589 人）。</p>
+<p>本行在岗员工平均年龄 36 岁，<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%），<strong>41-50 岁 1,123 人</strong>（19.03%），<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>本行在岗员工硕士研究生及以上共 1,031 人（17.47%），<strong>本科 4,514 人</strong>（76.50%）为最大群体，专科 326 人（5.52%），专科以下 30 人（0.51%）。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>（对公 850 / 个人 390 / 个贷 359 / 微贷 93）；<strong>客服经理 1,165 人</strong>。</p>
+</section>
+
+<section class="top-kpis">
+<article class="kpi-h"><div class="glyph">👥</div><div class="label">正式员工总数</div><div class="big">5,901<span class="unit">人</span></div><div class="sub">含派遣合计 6,589 人</div></article>
+<article class="kpi-h alt"><div class="glyph">📅</div><div class="label">平均年龄</div><div class="big">36<span class="unit">岁</span></div><div class="sub">30 岁以下占 25.86%</div></article>
+<article class="kpi-h"><div class="glyph">⚖</div><div class="label">男女比例</div><div class="big">0.85<span class="unit">:1</span></div><div class="sub">女 53.95% · 男 46.05%</div></article>
+<article class="kpi-h alt"><div class="glyph">🎓</div><div class="label">本科学历密度</div><div class="big">76.50<span class="unit">%</span></div><div class="sub">本科 4,514 / 5,901 人</div></article>
+</section>
+
+<section class="mini-row">
+<article class="mini-card">
+<div class="head"><h4>机构分布</h4><span class="ttl">总 5,901</span></div>
+<div class="mini-stack">
+<div class="mini-seg"><span class="nm">经营机构</span><div class="tr"><div class="fl fl-1" style="width:79.80%"></div></div><span class="vl">79.80%</span></div>
+<div class="mini-seg"><span class="nm">总行机关</span><div class="tr"><div class="fl fl-2" style="width:12.13%"></div></div><span class="vl">12.13%</span></div>
+<div class="mini-seg"><span class="nm">直属机构</span><div class="tr"><div class="fl fl-3" style="width:8.07%"></div></div><span class="vl">8.07%</span></div>
+</div>
+</article>
+
+<article class="mini-card alt">
+<div class="head"><h4>年龄分布</h4><span class="ttl">均 36</span></div>
+<div class="mini-stack">
+<div class="mini-seg"><span class="nm"><30 岁</span><div class="tr"><div class="fl fl-1" style="width:25.86%"></div></div><span class="vl">25.86%</span></div>
+<div class="mini-seg"><span class="nm">31-40</span><div class="tr"><div class="fl fl-2" style="width:48.31%"></div></div><span class="vl">48.31%</span></div>
+<div class="mini-seg"><span class="nm">41-50</span><div class="tr"><div class="fl fl-3" style="width:19.03%"></div></div><span class="vl">19.03%</span></div>
+<div class="mini-seg"><span class="nm">51+</span><div class="tr"><div class="fl fl-4" style="width:6.80%"></div></div><span class="vl">6.80%</span></div>
+</div>
+</article>
+
+<article class="mini-card b">
+<div class="head"><h4>学历分布</h4><span class="ttl">本科主</span></div>
+<div class="mini-stack">
+<div class="mini-seg"><span class="nm">本科</span><div class="tr"><div class="fl fl-1" style="width:76.50%"></div></div><span class="vl">76.50%</span></div>
+<div class="mini-seg"><span class="nm">硕及以上</span><div class="tr"><div class="fl fl-2" style="width:17.47%"></div></div><span class="vl">17.47%</span></div>
+<div class="mini-seg"><span class="nm">专科</span><div class="tr"><div class="fl fl-3" style="width:5.52%"></div></div><span class="vl">5.52%</span></div>
+<div class="mini-seg"><span class="nm">专科以下</span><div class="tr"><div class="fl fl-4" style="width:0.51%"></div></div><span class="vl">0.51%</span></div>
+</div>
+</article>
+
+<article class="mini-card c">
+<div class="head"><h4>性别分布</h4><span class="ttl">0.85:1</span></div>
+<div class="mini-stack">
+<div class="mini-seg"><span class="nm">女性</span><div class="tr"><div class="fl fl-1" style="width:53.95%"></div></div><span class="vl">53.95%</span></div>
+<div class="mini-seg"><span class="nm">男性</span><div class="tr"><div class="fl fl-2" style="width:46.05%"></div></div><span class="vl">46.05%</span></div>
+<div class="mini-seg"><span class="nm">合计</span><div class="tr"><div class="fl fl-3" style="width:100%"></div></div><span class="vl">5,901</span></div>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：高管简报首页、月报摘要、对外汇报主图</li>
+<li><b>信息密度</b>：中 — 4+16 数字组合（4 个 KPI + 4 个 mini-stack 共 16 段）</li>
+<li><b>视觉冲击</b>：强 — 顶部大字 KPI + 下方色阶填充密度</li>
+<li><b>读图速度</b>：3 秒</li>
+<li><b>借鉴来源</b>：shanjinki-HR kpi-grid 风格 + 自创 mini-bar</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

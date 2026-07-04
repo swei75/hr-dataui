@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v1：多列表格 + KPI 顶</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:#fefcf7;border:1px solid #e8d8c3;border-radius:12px;padding:18px 18px;position:relative}
+.kpi.ok::before{content:"";position:absolute;top:0;left:14px;right:14px;height:3px;background:#4a7c59;border-radius:2px}
+.kpi.warn::before{content:"";position:absolute;top:0;left:14px;right:14px;height:3px;background:#a04030;border-radius:2px}
+.kpi.acc::before{content:"";position:absolute;top:0;left:14px;right:14px;height:3px;background:#9f6b44;border-radius:2px}
+.kpi.neu::before{content:"";position:absolute;top:0;left:14px;right:14px;height:3px;background:#6b4423;border-radius:2px}
+.kpi-lbl{font-size:12px;color:#7b6653;margin-bottom:8px;letter-spacing:.04em}
+.kpi-num{font-size:36px;font-weight:800;line-height:1;color:#241b15;font-variant-numeric:tabular-nums;margin-bottom:6px}
+.kpi-num small{font-size:13px;color:#7b6653;font-weight:500;margin-left:3px}
+.kpi-sub{font-size:11px;color:#7b6653;line-height:1.5}
+
+.table-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:6px 6px 8px;margin-bottom:24px;overflow:hidden}
+table.cadre{width:100%;border-collapse:collapse;font-size:13px}
+table.cadre thead th{background:#6b4423;color:#fefcf7;padding:12px 10px;text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+table.cadre thead th.r{text-align:right}
+table.cadre thead th.c{text-align:center}
+table.cadre tbody td{padding:11px 10px;border-bottom:1px solid #f4eadb;color:#241b15}
+table.cadre tbody td.r{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#241b15}
+table.cadre tbody td.c{text-align:center;font-variant-numeric:tabular-nums;color:#7b6653}
+table.cadre tbody tr.sub td{background:#fbf0db;color:#6b4423;font-weight:600}
+table.cadre tbody tr.total td{background:#ead9c3;color:#6b4423;font-weight:800;border-top:2px solid #9f6b44}
+table.cadre tbody tr:hover:not(.total):not(.sub){background:#fdf7ec}
+table.cadre tbody td.r.fill{color:#4a7c59}
+table.cadre tbody td.r.gap{color:#a04030}
+table.cadre tbody td.r.zero{color:#4a7c59}
+table.cadre tbody td .bar{display:inline-block;width:60px;height:6px;border-radius:3px;background:#f4eadb;overflow:hidden;vertical-align:middle;margin-left:8px}
+table.cadre tbody td .bar i{display:block;height:100%;background:#9f6b44;border-radius:3px}
+
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.kpi-row{grid-template-columns:repeat(2,1fr)}table.cadre{font-size:11px}table.cadre thead th,table.cadre tbody td{padding:8px 6px}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.kpi-row{grid-template-columns:1fr}table.cadre thead th,table.cadre tbody td{padding:6px 4px;font-size:10px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v1 · multi-col table · 4 KPI top · banking table</p>
+<h1>M-4 设计 v1：多列表格 + KPI 顶</h1>
+<p class="subtitle">顶部 4 大数字（211/194/17/87.2%）+ 中部 8 行 4 列表格（分类 / 总职数 / 实际配置 / 剩余可配置），含小条形占比、警示色与合计高亮。最贴近银行报表的版面。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>（工会主席、行长助理、首席风险官、首席信息官）；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>核心指标</h3><span class="pill">KPI × 4</span></div>
+<section class="kpi-row">
+<article class="kpi acc"><div class="kpi-lbl">中层干部总职数</div><div class="kpi-num">211<small>人</small></div><div class="kpi-sub">总行 100 + 经营 111</div></article>
+<article class="kpi ok"><div class="kpi-lbl">实际配备</div><div class="kpi-num">194<small>人</small></div><div class="kpi-sub">占总数 91.94%</div></article>
+<article class="kpi warn"><div class="kpi-lbl">尚空缺</div><div class="kpi-num">17<small>人</small></div><div class="kpi-sub">总行 7 + 经营 10</div></article>
+<article class="kpi neu"><div class="kpi-lbl">配备率</div><div class="kpi-num">87.2<small>%</small></div><div class="kpi-sub">正职 92.6% / 副职 91.7%</div></article>
+</section>
+
+<div class="section-title"><h3>干部职数情况（现状）· 4 列 8 行明细表</h3><span class="pill">8 行 × 4 列</span></div>
+<section class="table-wrap">
+<table class="cadre">
+<thead>
+<tr><th>分类</th><th class="r">总职数</th><th class="r">实际配置情况</th><th class="r">剩余可配置</th></tr>
+</thead>
+<tbody>
+<tr><td>市管领导干部职数</td><td class="r">8</td><td class="r fill">8<span class="bar"><i style="width:100%"></i></span></td><td class="r zero">0</td></tr>
+<tr><td>高管人员（工会主席、行长助理、首席风险官、首席信息官）</td><td class="r c">/</td><td class="r fill">6<span class="bar"><i style="width:100%;background:#6b4423"></i></span></td><td class="r c">/</td></tr>
+<tr><td>派驻纪检监察组（不含组长）</td><td class="r">6</td><td class="r fill">3<span class="bar"><i style="width:50%"></i></span></td><td class="r gap">3</td></tr>
+<tr class="total"><td>中层干部总职数</td><td class="r">211</td><td class="r fill">194<span class="bar"><i style="width:91.94%"></i></span></td><td class="r gap">17</td></tr>
+<tr class="sub"><td>其中：① 中层正职</td><td class="r">54</td><td class="r fill">50<span class="bar"><i style="width:92.59%"></i></span></td><td class="r gap">4</td></tr>
+<tr class="sub"><td>　　中层副职</td><td class="r">157</td><td class="r fill">144<span class="bar"><i style="width:91.72%"></i></span></td><td class="r gap">13</td></tr>
+<tr class="sub"><td>其中：② 总行部门班子职数</td><td class="r">100</td><td class="r fill">93<span class="bar"><i style="width:93%"></i></span></td><td class="r gap">7</td></tr>
+<tr class="sub"><td>　　经营机构班子职数</td><td class="r">111</td><td class="r fill">101<span class="bar"><i style="width:90.99%"></i></span></td><td class="r gap">10</td></tr>
+</tbody>
+</table>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（市管 / 高管 / 纪检 / 中层总 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 总行 / 经营）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个独立 KPI 卡组成一行；v1 是 4 KPI 顶 + 一张大表格下沉，正文以行表为信息主体</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 个 stacked-bar 占比卡；v1 用 4 列原生 HTML table 还原银行报表原貌，单元格内嵌迷你条形</li>
+<li><b>与 M-3 差异</b>：M-3 v1 用 gauge + timeline；M-3 v2 用 flow chart + 颁奖台；v1 完全无图表，全靠排版 + 行高亮 + 警示色</li>
+<li><b>新增 viz 类型</b>：① 原生 HTML table（8 行 4 列银行明细） ② 行内 mini bar（小条形嵌入单元格） ③ 行分组高亮（sub / total 双层级） ④ 警示色编码（绿=满配 / 红=有缺口 / 棕=汇总）</li>
+<li><b>信息密度</b>：中 — 4 KPI + 8 行 × 4 列 = 36 个数字</li>
+<li><b>读图速度</b>：4 秒 — 表头总职数列一眼定基线，缺口列红字即问题</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

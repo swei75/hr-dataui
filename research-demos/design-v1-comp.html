@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v1：5 财务大卡 + 折线趋势</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* 5 财务大卡 */
+.fc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.fc{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.fc::after{content:"";position:absolute;bottom:0;left:0;right:0;height:3px;background:#9f6b44}
+.fc.b::after{background:#6b4423}.fc.c::after{background:#a04030}.fc.d::after{background:#4a7c59}.fc.e::after{background:#c9a883}
+.fc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fc-ico{width:32px;height:32px;border-radius:8px;background:#f4eadb;color:#6b4423;display:flex;align-items:center;justify-content:center;font-size:17px}
+.fc-lbl{font-size:11px;color:#7b6653;letter-spacing:.04em}
+.fc-num{font-size:28px;font-weight:800;line-height:1;color:#241b15;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.fc-num small{font-size:12px;color:#7b6653;font-weight:500;margin-left:3px}
+.fc-sub{font-size:11px;color:#7b6653;margin-bottom:8px}
+.fc-spark{width:100%;height:36px;display:block}
+.fc-legend{display:flex;justify-content:space-between;font-size:9px;color:#7b6653;margin-top:4px}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+
+@media(max-width:980px){.fc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.fc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v1 · 5 finance cards · sparkline trend</p>
+<h1>M-5 设计 v1：5 财务大卡 + 折线趋势</h1>
+<p class="subtitle">每子方向一张财务大卡（薪酬/年金/医疗/监测/头狼），每卡含主指标、同比、迷你折线（5 月趋势）。最贴近 CFO 视角。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>，人均薪酬 <strong>24.3 万元</strong>（含预发 2026 年开门红 0.3 亿元）；2026 年 1-5 月全行已发放工资 <strong>4.2 亿元</strong>。</p>
+<p>2025 年企业年金余额 16.37 亿元，截至 2026 年 5 月企业年金余额 <strong>17.44 亿元</strong>，个人缴费比例 2%、单位缴费比例 8%。</p>
+<p>2025 年补充医疗缴费 <strong>7,979 万元</strong>，节余 2 亿元；截至 2026 年 5 月节余 <strong>1.9 亿元</strong>（个人 1.6 亿 + 单位 3,002 万）。</p>
+<p>2026 年一季度对经营机构 <strong>95 名班子成员（113 人次）</strong>监测业绩，<strong>15 名（16 人次）</strong>首次触发监测督导列入履职考核黑榜；同季评选<strong>头狼 129 人</strong>。</p>
+</section>
+
+<div class="section-title"><h3>5 子方向 · 财务大卡 + 折线趋势</h3><span class="pill">5/5 子方向</span></div>
+<section class="fc-grid">
+
+<article class="fc">
+<div class="fc-head"><span class="fc-ico">💵</span><span class="fc-lbl">薪酬总额</span></div>
+<div class="fc-num">15<small>亿元</small></div>
+<div class="fc-sub">2025 年 · 人均 24.3 万</div>
+<svg class="fc-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+<polyline fill="none" stroke="#9f6b44" stroke-width="1.6" points="0,30 40,28 80,22 120,18 160,14 200,10"/>
+<line x1="0" y1="30" x2="200" y2="30" stroke="#f4eadb" stroke-width="0.5"/>
+</svg>
+<div class="fc-legend"><span>2025-01</span><span>1-5月累计 4.2 亿</span><span>2026-05</span></div>
+</article>
+
+<article class="fc b">
+<div class="fc-head"><span class="fc-ico">🏦</span><span class="fc-lbl">企业年金</span></div>
+<div class="fc-num">17.44<small>亿元</small></div>
+<div class="fc-sub">同比 +6.5% · 个 2% / 单位 8%</div>
+<svg class="fc-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+<polyline fill="none" stroke="#6b4423" stroke-width="1.6" points="0,26 40,24 80,20 120,18 160,14 200,8"/>
+<line x1="0" y1="30" x2="200" y2="30" stroke="#f4eadb" stroke-width="0.5"/>
+</svg>
+<div class="fc-legend"><span>2025 16.37</span><span>+1.07 亿</span><span>2026-05</span></div>
+</article>
+
+<article class="fc c">
+<div class="fc-head"><span class="fc-ico">🏥</span><span class="fc-lbl">补充医疗节余</span></div>
+<div class="fc-num">1.9<small>亿元</small></div>
+<div class="fc-sub">个人 1.6 亿 · 单位 0.30 亿</div>
+<svg class="fc-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+<polyline fill="none" stroke="#a04030" stroke-width="1.6" points="0,10 40,14 80,18 120,22 160,24 200,26"/>
+<line x1="0" y1="10" x2="200" y2="26" stroke="#f4eadb" stroke-width="0.5" stroke-dasharray="2 2"/>
+</svg>
+<div class="fc-legend"><span>2025 2.0</span><span>↓ 1,000 万</span><span>2026-05</span></div>
+</article>
+
+<article class="fc d">
+<div class="fc-head"><span class="fc-ico">📡</span><span class="fc-lbl">监测覆盖</span></div>
+<div class="fc-num">113<small>人次</small></div>
+<div class="fc-sub">95 班成员 · 16 人次 黑榜</div>
+<svg class="fc-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+<polyline fill="none" stroke="#4a7c59" stroke-width="1.6" points="0,32 40,28 80,20 120,14 160,8 200,4"/>
+<line x1="0" y1="32" x2="200" y2="4" stroke="#f4eadb" stroke-width="0.5" stroke-dasharray="2 2"/>
+</svg>
+<div class="fc-legend"><span>0 人</span><span>14.16% 黑榜</span><span>113 人次</span></div>
+</article>
+
+<article class="fc e">
+<div class="fc-head"><span class="fc-ico">🐺</span><span class="fc-lbl">头狼评选</span></div>
+<div class="fc-num">129<small>人</small></div>
+<div class="fc-sub">2026Q1 · 占中层 62.0%</div>
+<svg class="fc-spark" viewBox="0 0 200 36" preserveAspectRatio="none">
+<polyline fill="none" stroke="#c9a883" stroke-width="1.6" points="0,30 40,26 80,22 120,16 160,10 200,6"/>
+<line x1="0" y1="30" x2="200" y2="6" stroke="#f4eadb" stroke-width="0.5" stroke-dasharray="2 2"/>
+</svg>
+<div class="fc-legend"><span>0 人</span><span>+季度累</span><span>129 人</span></div>
+</article>
+
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整（薪酬 / 年金 / 医疗 / 监测 / 头狼）</li>
+<li><b>与 M-1 差异</b>：M-1 是 4 KPI + 8 行明细表；v1 是 5 张同形态财务大卡并列，每张含 sparkline 折线</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar 占比卡；v1 无堆叠条，改用 sparkline 微缩折线</li>
+<li><b>与 M-3 差异</b>：M-3 v1 用 gauge 圆环；M-3 v2 用 flow 流程；v1 完全不用圆环/流程，纯大卡 + 折线</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是 8 行 4 列表；v1 是 5 大卡，不含表格</li>
+<li><b>新增 viz 类型</b>：① sparkline 迷你折线（每卡 1 条 6 点折线） ② 大卡底部色带编码（5 色对应 5 子方向） ③ 双层信息（主指标 + 同比 + 折线）</li>
+<li><b>信息密度</b>：中 — 5 大卡 × 4 信息层 = 20 个数据点</li>
+<li><b>读图速度</b>：3 秒 — 一张卡一眼扫 4 字段</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

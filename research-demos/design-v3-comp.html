@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v3：5 行 6 列对比表 + 颜色编码</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.tbl-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:6px 6px 8px;margin-bottom:22px;overflow:hidden}
+table.cmp{width:100%;border-collapse:collapse;font-size:13px}
+table.cmp thead th{background:#6b4423;color:#fefcf7;padding:12px 10px;text-align:center;font-weight:700;font-size:12px;letter-spacing:.04em}
+table.cmp thead th.l{text-align:left}
+table.cmp tbody td{padding:14px 10px;border-bottom:1px solid #f4eadb;color:#241b15;text-align:center;font-variant-numeric:tabular-nums}
+table.cmp tbody td.l{text-align:left;font-weight:700;color:#6b4423}
+table.cmp tbody td .ico{font-size:18px;margin-right:6px}
+table.cmp tbody tr:hover{background:#fdf7ec}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.tag.up{background:#4a7c5922;color:#4a7c59}
+.tag.dn{background:#a0403022;color:#a04030}
+.tag.neu{background:#ead9c3;color:#6b4423}
+.mini{width:60px;height:6px;border-radius:3px;background:#f4eadb;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+.mini i{display:block;height:100%;background:#9f6b44}
+.lvl{width:90px;height:10px;border-radius:5px;background:#f4eadb;overflow:hidden;display:inline-block;vertical-align:middle;margin:0 4px}
+.lvl i{display:block;height:100%}
+.lvl.hi i{background:#4a7c59}.lvl.mid i{background:#9f6b44}.lvl.lo i{background:#a04030}
+
+.legend{display:flex;gap:14px;font-size:11px;color:#7b6653;margin:8px 6px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){table.cmp{font-size:11px}table.cmp thead th,table.cmp tbody td{padding:8px 5px}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}table.cmp{font-size:10px}.mini,.lvl{display:none}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v3 · cmp-table · 5x6 · color-coded</p>
+<h1>M-5 设计 v3：5 行 6 列对比表 + 颜色编码</h1>
+<p class="subtitle">5 子方向 × 6 列（方向 / 总额 / 同比 / 人均 / 覆盖率 / 水平条），行内嵌迷你条 + 标签色编码 + 等级条。最贴近银行报表审计视角。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>，人均 <strong>24.3 万元</strong>；2026 年 1-5 月已发工资 4.2 亿元（含 2026 开门红 0.3 亿元）。</p>
+<p>企业年金余额 17.44 亿元（个缴 2% / 单位 8%），同比 +6.5%；补充医疗节余 1.9 亿元，同比 -5%。</p>
+<p>2026Q1 监测 95 名班子（113 人次），<strong>15 名（16 人次）首次触发监测督导</strong>列入履职考核黑榜（黑榜率 14.16%）。</p>
+<p>2026Q1 评选<strong>头狼 129 人</strong>，头狼占中层干部总职数 211 的 61.14%。</p>
+</section>
+
+<div class="section-title"><h3>5 子方向横向对比 · 5 行 6 列</h3><span class="pill">5 × 6</span></div>
+<section class="tbl-wrap">
+<table class="cmp">
+<thead>
+<tr>
+<th class="l" style="width:18%">子方向</th>
+<th style="width:14%">2025 总额</th>
+<th style="width:12%">同比</th>
+<th style="width:14%">人均/单位</th>
+<th style="width:16%">覆盖率</th>
+<th style="width:26%">水平</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="l"><span class="ico">💵</span>薪酬总额</td>
+<td>15 亿元</td>
+<td><span class="tag up">▲ +2%</span></td>
+<td>人均 24.3 万</td>
+<td>100% 全员</td>
+<td><span class="mini"><i style="width:90%;background:#9f6b44"></i></span> 高位</td>
+</tr>
+<tr>
+<td class="l"><span class="ico">🏦</span>企业年金</td>
+<td>17.44 亿元</td>
+<td><span class="tag up">▲ +6.5%</span></td>
+<td>单位 8% / 个 2%</td>
+<td>100% 全员</td>
+<td><span class="mini"><i style="width:95%;background:#6b4423"></i></span> 增长稳健</td>
+</tr>
+<tr>
+<td class="l"><span class="ico">🏥</span>补充医疗</td>
+<td>1.9 亿元</td>
+<td><span class="tag dn">▼ -5%</span></td>
+<td>个人 1.6 + 单位 0.30</td>
+<td>100% 全员</td>
+<td><span class="mini"><i style="width:75%;background:#a04030"></i></span> 节余回落</td>
+</tr>
+<tr>
+<td class="l"><span class="ico">📡</span>履职监测</td>
+<td>113 人次</td>
+<td><span class="tag up">▲ +19%</span></td>
+<td>95 班 / 黑榜 16</td>
+<td>44.5% 班子</td>
+<td><span class="lvl mid"><i style="width:50%"></i></span> 中位警戒</td>
+</tr>
+<tr>
+<td class="l"><span class="ico">🐺</span>头狼评选</td>
+<td>129 人</td>
+<td><span class="tag up">▲ +15%</span></td>
+<td>占中层 61.14%</td>
+<td>62.0% 中层</td>
+<td><span class="lvl hi"><i style="width:62%"></i></span> 中高位</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<div class="legend">
+<span><i style="background:#4a7c59"></i>绿 = 改善/高位</span>
+<span><i style="background:#9f6b44"></i>棕 = 平稳/中位</span>
+<span><i style="background:#a04030"></i>红 = 下降/警戒</span>
+<span><i style="background:#c9a883"></i>米 = 中性</span>
+</div>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 8 行 4 列（职数维度），v3 是 5 行 6 列（子方向维度），行列完全对调</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 维度卡片 + 8 网格细分；v3 单张大表 + 行内可视化（mini bar + lvl bar）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 含 gauge；v3 无圆环、无流程、无颁奖台、纯表格</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树；v3 是横向对比表，结构相反</li>
+<li><b>新增 viz 类型</b>：① 行内 mini bar（60×6px 细条） ② 等级条 lvl bar（10px 高 90 宽三色阈值） ③ 标签徽章（▲▼ 中性色编码） ④ 行级 hover 高亮</li>
+<li><b>信息密度</b>：高 — 5 行 × 6 列 = 30 数据格 + 5 行内 viz</li>
+<li><b>读图速度</b>：5 秒 — 横扫 5 行即对比 5 子方向</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

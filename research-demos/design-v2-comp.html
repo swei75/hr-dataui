@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v2：垂直柱状图 + 同环比箭头</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.col-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.col{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 14px 14px;text-align:center;position:relative}
+.col-ico{font-size:22px;margin-bottom:6px}
+.col-lbl{font-size:12px;color:#7b6653;margin-bottom:4px;letter-spacing:.04em}
+.col-num{font-size:24px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:2px}
+.col-num small{font-size:11px;color:#7b6653;margin-left:3px;font-weight:500}
+.col-bars{height:90px;display:flex;align-items:flex-end;justify-content:center;gap:6px;margin:6px 0 6px;position:relative}
+.col-bars::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed #e8d8c3}
+.cbar{width:22px;border-radius:3px 3px 0 0;background:#9f6b44;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;color:#fefcf7;font-size:9px;font-weight:700;padding-bottom:3px}
+.cbar.b{background:#6b4423}.cbar.c{background:#a04030}.cbar.d{background:#4a7c59}.cbar.e{background:#c9a883}
+.cbar.alt{background:#e8d8c3;color:#7b6653}
+.col-arrow{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.col-arrow.up{background:#4a7c5922;color:#4a7c59}
+.col-arrow.dn{background:#a0403022;color:#a04030}
+.col-arrow.flat{background:#ead9c3;color:#7b6653}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.col-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.col-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v2 · vertical-bar · yoy-arrow · 5 col</p>
+<h1>M-5 设计 v2：垂直柱状图 + 同环比箭头</h1>
+<p class="subtitle">每子方向 1 卡片，含 2024/2025/2026Q1 三柱对比 + 同比/环比箭头（红绿警示）。纯柱状叙事，不含圆环仪表盘。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>，人均薪酬 <strong>24.3 万元</strong>（含预发 2026 开门红 0.3 亿元）；2026 年 1-5 月已发 4.2 亿元。</p>
+<p>企业年金余额从 2025 年 16.37 亿增至 2026 年 5 月 <strong>17.44 亿元</strong>（个缴 2% / 单位 8%）。</p>
+<p>2025 年补充医疗缴费 7,979 万元，节余 2 亿元；2026 年 5 月节余 <strong>1.9 亿元</strong>（个人 1.6 亿 + 单位 3,002 万）。</p>
+<p>2026Q1 监测 <strong>95 名班子（113 人次）</strong>，<strong>15 名（16 人次）</strong>触发黑榜；同期评选<strong>头狼 129 人</strong>。</p>
+</section>
+
+<div class="section-title"><h3>5 子方向 · 垂直柱状对比 + 同环比</h3><span class="pill">5/5 子方向</span></div>
+<section class="col-grid">
+
+<article class="col">
+<div class="col-ico">💵</div>
+<div class="col-lbl">薪酬总额（亿）</div>
+<div class="col-num">15<small>亿</small></div>
+<div class="col-bars">
+<div class="cbar alt" style="height:42%">24</div>
+<div class="cbar" style="height:60%">25</div>
+<div class="cbar b" style="height:80%">15</div>
+</div>
+<div><span class="col-arrow up">▲ 同比 +2%</span></div>
+</article>
+
+<article class="col">
+<div class="col-ico">🏦</div>
+<div class="col-lbl">企业年金（亿）</div>
+<div class="col-num">17.44<small>亿</small></div>
+<div class="col-bars">
+<div class="cbar alt" style="height:60%">14</div>
+<div class="cbar" style="height:70%">16.4</div>
+<div class="cbar b" style="height:78%">17.4</div>
+</div>
+<div><span class="col-arrow up">▲ 同比 +6.5%</span></div>
+</article>
+
+<article class="col">
+<div class="col-ico">🏥</div>
+<div class="col-lbl">医疗节余（亿）</div>
+<div class="col-num">1.9<small>亿</small></div>
+<div class="col-bars">
+<div class="cbar alt" style="height:80%">2.1</div>
+<div class="cbar c" style="height:76%">2.0</div>
+<div class="cbar" style="height:72%">1.9</div>
+</div>
+<div><span class="col-arrow dn">▼ 同比 -5%</span></div>
+</article>
+
+<article class="col">
+<div class="col-ico">📡</div>
+<div class="col-lbl">监测人次</div>
+<div class="col-num">113<small>人次</small></div>
+<div class="col-bars">
+<div class="cbar alt" style="height:30%">68</div>
+<div class="cbar d" style="height:70%">95</div>
+<div class="cbar" style="height:84%">113</div>
+</div>
+<div><span class="col-arrow up">▲ 黑榜 14.2%</span></div>
+</article>
+
+<article class="col">
+<div class="col-ico">🐺</div>
+<div class="col-lbl">头狼人数</div>
+<div class="col-num">129<small>人</small></div>
+<div class="col-bars">
+<div class="cbar alt" style="height:50%">95</div>
+<div class="cbar" style="height:75%">112</div>
+<div class="cbar e" style="height:86%">129</div>
+</div>
+<div><span class="col-arrow up">▲ 季增 +17 人</span></div>
+</article>
+
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 4 KPI 顶 + 大表；v2 是 5 同形态卡片 + 三柱对比</li>
+<li><b>与 M-2 差异</b>：M-2 是水平 stacked-bar；v2 是垂直独立柱（三柱并列）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 用 gauge 圆环（被禁）；M-3 v2 用 flow 流程（被禁）；v2 用纯柱状，无圆环无流程</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是表格；v2 是柱状可视化</li>
+<li><b>新增 viz 类型</b>：① 垂直三柱对比（2024/2025/2026Q1） ② 同环比箭头徽章（up/dn/flat） ③ 警戒线虚线（柱状 50% 阈值线） ④ 颜色编码（升绿降红持平米）</li>
+<li><b>信息密度</b>：中 — 5 卡 × 3 柱 + 2 标签 = 25 数据点</li>
+<li><b>读图速度</b>：4 秒 — 三柱高矮 + 箭头方向一目了然</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

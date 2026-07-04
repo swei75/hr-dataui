@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v5：5 子方向分层卡片</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.layer-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:22px;position:relative}
+.lane{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.lane:last-child{margin-bottom:0}
+.lane-label{font-size:11px;color:#9f6b44;letter-spacing:.1em;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.lane-label::after{content:"";flex:1;height:1px;background:#e8d8c3}
+.l-card{background:#fdf7ec;border:1px solid #e8d8c3;border-radius:10px;padding:14px 14px 12px;border-top:3px solid #9f6b44;position:relative}
+.l-card.t1{border-top-color:#6b4423;background:#fefcf7}
+.l-card.t2{border-top-color:#9f6b44;background:#fefcf7}
+.l-card.t3{border-top-color:#c9a883;background:#fefcf7}
+.l-card.t4{border-top-color:#4a7c59;background:#fefcf7}
+.l-card.t5{border-top-color:#a04030;background:#fefcf7}
+.lc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lc-ico{font-size:18px}
+.lc-num{font-size:20px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.lc-num small{font-size:10px;color:#7b6653;margin-left:3px;font-weight:500}
+.lc-lbl{font-size:12px;color:#6b4423;font-weight:700;margin-bottom:3px}
+.lc-meta{font-size:11px;color:#7b6653;line-height:1.5}
+.lc-meta b{color:#9f6b44;font-weight:700}
+.arrow-v{display:flex;justify-content:center;font-size:18px;color:#9f6b44;margin:4px 0;opacity:.5}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.lane{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.lane{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v5 · layered-card · 3 lanes · grouped</p>
+<h1>M-5 设计 v5：5 子方向分层卡片（layered-card）</h1>
+<p class="subtitle">3 行 3 列分层卡片网格（保障/激励/监督），每行代表一个主题泳道，每张卡 = 1 个子方向或扩展卡。不同 M-4 的树形（分层卡片而非树）。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>，人均 24.3 万元；2026 年 1-5 月已发 4.2 亿元。</p>
+<p>企业年金 17.44 亿元（个 2% / 单位 8%）；补充医疗节余 1.9 亿元（个人 1.6 + 单位 0.30）。</p>
+<p>2026Q1 监测 <strong>95 名班子（113 人次）</strong>，<strong>16 人次</strong>黑榜；评选<strong>头狼 129 人</strong>。</p>
+<p>薪酬体系：保障层（年金/医疗）+ 激励层（薪酬/头狼）+ 监督层（监测）。三层覆盖员工"生活保障-发展激励-风险监督"全周期。</p>
+</section>
+
+<div class="section-title"><h3>分层卡片 · 保障 / 激励 / 监督</h3><span class="pill">3 泳道 × 9 卡片</span></div>
+<section class="layer-wrap">
+
+<div>
+<div class="lane-label">保障层 · 长期福利</div>
+<div class="lane">
+<article class="l-card t1"><div class="lc-head"><span class="lc-ico">💵</span><span class="lc-num">15<small>亿</small></span></div><div class="lc-lbl">工资总额</div><div class="lc-meta">人均 <b>24.3 万</b> · 1-5月 4.2亿</div></article>
+<article class="l-card t2"><div class="lc-head"><span class="lc-ico">🏦</span><span class="lc-num">17.44<small>亿</small></span></div><div class="lc-lbl">企业年金</div><div class="lc-meta">个 <b>2%</b> · 单位 <b>8%</b> · 同比 +6.5%</div></article>
+<article class="l-card t3"><div class="lc-head"><span class="lc-ico">🏥</span><span class="lc-num">1.9<small>亿</small></span></div><div class="lc-lbl">补充医疗节余</div><div class="lc-meta">个人 <b>1.6亿</b> · 单位 <b>0.30亿</b></div></article>
+</div>
+</div>
+
+<div class="arrow-v">▼</div>
+
+<div>
+<div class="lane-label">激励层 · 价值分配</div>
+<div class="lane">
+<article class="l-card t4"><div class="lc-head"><span class="lc-ico">🐺</span><span class="lc-num">129<small>人</small></span></div><div class="lc-lbl">头狼评选</div><div class="lc-meta">一等 58 · 二等 39 · 三等 32</div></article>
+<article class="l-card t2"><div class="lc-head"><span class="lc-ico">📈</span><span class="lc-num">+2<small>%</small></span></div><div class="lc-lbl">薪酬同比</div><div class="lc-meta">含预发开门红 0.3亿</div></article>
+<article class="l-card t3"><div class="lc-head"><span class="lc-ico">⚡</span><span class="lc-num">61.1<small>%</small></span></div><div class="lc-lbl">头狼占中层比</div><div class="lc-meta">129 / 211 中层总职数</div></article>
+</div>
+</div>
+
+<div class="arrow-v">▼</div>
+
+<div>
+<div class="lane-label">监督层 · 风险管控</div>
+<div class="lane">
+<article class="l-card t5"><div class="lc-head"><span class="lc-ico">📡</span><span class="lc-num">113<small>人次</small></span></div><div class="lc-lbl">履职监测</div><div class="lc-meta">95 班子 · 黑榜 <b>16 人次</b></div></article>
+<article class="l-card t5"><div class="lc-head"><span class="lc-ico">🚨</span><span class="lc-num">14.2<small>%</small></span></div><div class="lc-lbl">黑榜率</div><div class="lc-meta">16 / 113 · 首次触发督导</div></article>
+<article class="l-card t2"><div class="lc-head"><span class="lc-ico">✅</span><span class="lc-num">0<small>人</small></span></div><div class="lc-lbl">重大风险</div><div class="lc-meta">无重大风险事件</div></article>
+</div>
+</div>
+
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整 + 4 扩展次卡</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 大表；v5 是 3 泳道 × 3 卡 = 9 卡片网格</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 维度 + 8 网格；v5 是 3 主题泳道（保障/激励/监督）逻辑分组</li>
+<li><b>与 M-3 差异</b>：v5 无圆环、无流程、无颁奖台、无案例卡</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树；v5 是分层卡片网格（非树形嵌套）</li>
+<li><b>新增 viz 类型</b>：① 泳道分组（3 行按主题划分） ② 主题色编码（保障棕/激励绿/监督红） ③ 卡片顶部色带 + 行间箭头过渡 ④ 次卡扩展</li>
+<li><b>信息密度</b>：中 — 9 卡 × 3 信息层 = 27 数据点</li>
+<li><b>读图速度</b>：5 秒 — 3 泳道从上到下扫读</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v9：年龄金字塔</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.pyramid-block{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:28px;margin-bottom:8px}
+.pyramid-head{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:14px;border-bottom:1px dashed #e8d8c3;margin-bottom:22px}
+.pyramid-head h3{margin:0;font-size:18px;color:#6b4423}
+.pyramid-head p{font-size:13px;color:#7b6653;margin:4px 0 0}
+.head-mini{display:flex;gap:18px}
+.head-mini .it{font-size:13px;color:#7b6653}
+.head-mini .it b{font-size:22px;color:#9f6b44;font-weight:800;display:block;line-height:1.1}
+.legend{display:flex;justify-content:center;gap:24px;margin-bottom:14px;font-size:13px;color:#7b6653}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:3px;display:inline-block}
+.dot.male{background:#6b4423}.dot.female{background:#a04030}
+.pyramid{display:flex;flex-direction:column;gap:6px;margin:8px 0 18px}
+.row-p{display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;height:62px}
+.row-p .left{display:flex;justify-content:flex-end}
+.row-p .right{display:flex;justify-content:flex-start}
+.row-p .center{text-align:center;font-size:13px;color:#7b6653}
+.row-p .center .lbl{display:block;font-size:13px;color:#241b15;font-weight:600;margin-bottom:4px}
+.row-p .center .avg{font-size:11px;color:#9f6b44}
+.bar-p{height:48px;display:flex;align-items:center;justify-content:flex-end;padding:0 14px;color:#fefcf7;font-weight:700;font-size:13px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.bar-p.left{background:linear-gradient(270deg,#6b4423 0%,#8b5a3a 100%)}
+.bar-p.right{background:linear-gradient(90deg,#a04030 0%,#c2513b 100%)}
+.pct-tag{display:inline-block;margin:0 8px;font-size:13px;color:#7b6653;font-variant-numeric:tabular-nums}
+.insights{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px;padding-top:22px;border-top:1px dashed #e8d8c3}
+.ins{background:#fefcf7;border:1px solid #e8d8c3;border-radius:12px;padding:16px 18px}
+.ins .lbl{font-size:12px;color:#7b6653;letter-spacing:.04em;margin-bottom:6px}
+.ins .num{font-size:24px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums}
+.ins .ctx{font-size:12px;color:#7b6653;margin-top:6px;line-height:1.5}
+.ins.primary{background:#9f6b44;color:#fefcf7;border-color:#9f6b44}
+.ins.primary .lbl,.ins.primary .ctx{color:#fefcf7;opacity:.85}
+.ins.primary .num{color:#fefcf7}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.insights{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}.row-p{grid-template-columns:1fr 60px 1fr}.head-mini{display:none}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v9 · pyramid · age × gender</p>
+<h1>M-2 设计 v9：年龄金字塔</h1>
+<p class="subtitle">双侧水平条图：左侧男 / 右侧女 × 4 个年龄段。纵向叠加形成金字塔，直观对比不同年龄段的男女结构。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人）。</p>
+<p>本行在岗员工平均年龄 36 岁，其中<strong>30 岁以下 1,526 人</strong>，占比 25.86%；<strong>31-40 岁 2,851 人</strong>为最大群体（48.31%）；<strong>41-50 岁 1,123 人</strong>（19.03%）；<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>本行在岗员工硕士研究生及以上共 1,031 人（17.47%），<strong>本科 4,514 人</strong>（76.50%）。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>；<strong>客服经理 1,165 人</strong>。</p>
+</section>
+
+<section class="pyramid-block">
+<div class="pyramid-head">
+<div><h3>年龄段 × 性别分布</h3><p>双侧横向条带 · 男（深棕）vs 女（红棕）</p></div>
+<div class="head-mini">
+<div class="it">男性<b>2,717</b></div>
+<div class="it">女性<b>3,184</b></div>
+<div class="it">总<b>5,901</b></div>
+</div>
+</div>
+
+<div class="legend">
+<span><i class="dot male"></i> 男性（左侧）</span>
+<span><i class="dot female"></i> 女性（右侧）</span>
+</div>
+
+<div class="pyramid">
+<!-- 假设男女年龄段分布近似按比例：男 25.86%/48.31%/19.03%/6.80% 应用到 2717 = 703/1312/517/185；女 1336/1539/606/216; 估算标注为 比例 -->
+<div class="row-p">
+<div class="left"><span class="pct-tag">703 人</span><div class="bar-p left" style="width:60%">703</div></div>
+<div class="center"><span class="lbl">&lt; 30 岁</span><span class="avg">25.86%</span></div>
+<div class="right"><div class="bar-p right" style="width:68%">823</div><span class="pct-tag">823 人</span></div>
+</div>
+<div class="row-p">
+<div class="left"><span class="pct-tag">1,312 人</span><div class="bar-p left" style="width:80%">1,312</div></div>
+<div class="center"><span class="lbl">31-40 岁</span><span class="avg">48.31% · 最大</span></div>
+<div class="right"><div class="bar-p right" style="width:90%">1,539</div><span class="pct-tag">1,539 人</span></div>
+</div>
+<div class="row-p">
+<div class="left"><span class="pct-tag">517 人</span><div class="bar-p left" style="width:45%">517</div></div>
+<div class="center"><span class="lbl">41-50 岁</span><span class="avg">19.03%</span></div>
+<div class="right"><div class="bar-p right" style="width:50%">606</div><span class="pct-tag">606 人</span></div>
+</div>
+<div class="row-p">
+<div class="left"><span class="pct-tag">185 人</span><div class="bar-p left" style="width:18%">185</div></div>
+<div class="center"><span class="lbl">51 岁以上</span><span class="avg">6.80%</span></div>
+<div class="right"><div class="bar-p right" style="width:20%">216</div><span class="pct-tag">216 人</span></div>
+</div>
+</div>
+
+<div class="insights">
+<div class="ins primary"><div class="lbl">主力段 (31-40)</div><div class="num">2,851 人</div><div class="ctx">占总数 48.31%，男女比约 1,312 : 1,539 ≈ 0.85</div></div>
+<div class="ins"><div class="lbl">年轻员工 (&lt;30)</div><div class="num">1,526 人</div><div class="ctx">25.86%，女性略多（823 vs 703）</div></div>
+<div class="ins"><div class="lbl">高龄员工 (51+)</div><div class="num">401 人</div><div class="ctx">6.80%，结构稳定 · 需关注梯队</div></div>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：人口学 / 人才结构分析、DEI 报告</li>
+<li><b>信息密度</b>：中 — 4 行 × 2 列条 + 3 卡汇总</li>
+<li><b>视觉冲击</b>：强 — 金字塔形态显著 + 男女对比色码</li>
+<li><b>读图速度</b>：10 秒</li>
+<li><b>借鉴来源</b>：人口金字塔结构 + M-1 v1 KPI 卡嵌入</li>
+<li><b>数据注</b>：年龄段内男女细分按 .docx 25.86%/48.31%/19.03%/6.80% 整体比例推估（绝对数 = 人数 × 比例 × 性别比 0.85/1）</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

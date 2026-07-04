@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v10：网格卡片墙 + 钻取</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.main-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.mcard{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.mcard::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:#9f6b44}
+.mcard.b::before{background:#6b4423}.mcard.c::before{background:#a04030}.mcard.d::before{background:#4a7c59}.mcard.e::before{background:#c9a883}
+.mcard .ico{width:34px;height:34px;border-radius:8px;background:#f4eadb;color:#6b4423;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:8px}
+.mcard .nm{font-size:12px;color:#6b4423;font-weight:700;margin-bottom:4px}
+.mcard .vl{font-size:24px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:4px}
+.mcard .vl small{font-size:11px;color:#7b6653;margin-left:3px;font-weight:500}
+.mcard .sub{font-size:10px;color:#7b6653;margin-bottom:8px;line-height:1.4}
+.mcard .drill{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#9f6b44;font-weight:700}
+.mcard .drill::after{content:"›";font-size:14px}
+.sec-label{font-size:13px;color:#6b4423;font-weight:700;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:"";flex:1;height:1px;background:#e8d8c3}
+.sub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.scard{background:#fdf7ec;border:1px solid #e8d8c3;border-radius:10px;padding:12px 14px}
+.scard.ok{border-left:4px solid #4a7c59}
+.scard.warn{border-left:4px solid #a04030}
+.scard.neu{border-left:4px solid #9f6b44}
+.scard .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.scard .nm{font-size:12px;color:#3a2e22;font-weight:700}
+.scard .vl{font-size:13px;color:#241b15;font-weight:800;font-variant-numeric:tabular-nums}
+.scard .meta{font-size:10px;color:#7b6653;line-height:1.4;margin-top:2px}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.main-grid{grid-template-columns:repeat(2,1fr)}.sub-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.main-grid,.sub-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v10 · 5 main + 9 sub cards · drill-hint</p>
+<h1>M-5 设计 v10：网格卡片墙 + 钻取提示</h1>
+<p class="subtitle">顶部 5 主卡（5 子方向，色带编码） + 3 个分区 9 张次卡（薪酬构成/年金收益/头狼三等），每张主卡带 › 钻取提示。模拟 BI 看板交互视觉。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>（人均 24.3 万），1-5 月已发 4.2 亿元；含 2026 开门红预发 0.3 亿元。</p>
+<p>企业年金余额 17.44 亿元（个 2% / 单位 8%），覆盖全员；补充医疗节余 <strong>1.9 亿元</strong>（个人 1.6 + 单位 0.30）。</p>
+<p>2026Q1 监测 <strong>95 名班子（113 人次）</strong>，<strong>16 人次</strong>黑榜（黑榜率 14.16%）。</p>
+<p>2026Q1 评选<strong>头狼 129 人</strong>，一等 58 / 二等 39 / 三等 32，占中层 61.14%。</p>
+</section>
+
+<div class="section-title"><h3>5 主卡 · 5 子方向</h3><span class="pill">5 main × drill</span></div>
+<section class="main-grid">
+<article class="mcard"><div class="ico">💵</div><div class="nm">薪酬总额</div><div class="vl">15<small>亿元</small></div><div class="sub">人均 24.3 万 · 1-5月 4.2亿</div><span class="drill">查看部门人均</span></article>
+<article class="mcard b"><div class="ico">🏦</div><div class="nm">企业年金</div><div class="vl">17.44<small>亿元</small></div><div class="sub">个 2% / 单位 8% · 同比 +6.5%</div><span class="drill">查看账户收益</span></article>
+<article class="mcard c"><div class="ico">🏥</div><div class="nm">补充医疗</div><div class="vl">1.9<small>亿元</small></div><div class="sub">个人 1.6 + 单位 0.30</div><span class="drill">查看节余分配</span></article>
+<article class="mcard d"><div class="ico">📡</div><div class="nm">履职监测</div><div class="vl">113<small>人次</small></div><div class="sub">95 班 · 黑榜 16</div><span class="drill">查看触发名单</span></article>
+<article class="mcard e"><div class="ico">🐺</div><div class="nm">头狼评选</div><div class="vl">129<small>人</small></div><div class="sub">一等 58 / 二 39 / 三 32</div><span class="drill">查看等级详情</span></article>
+</section>
+
+<div class="sec-label">薪酬构成 · 钻取次卡</div>
+<section class="sub-grid">
+<article class="scard neu"><div class="head"><span class="nm">基本工资</span><span class="vl">7.5 亿</span></div><div class="meta">占总额 50%</div></article>
+<article class="scard neu"><div class="head"><span class="nm">绩效奖金</span><span class="vl">4.5 亿</span></div><div class="meta">占总额 30%</div></article>
+<article class="scard warn"><div class="head"><span class="nm">开门红</span><span class="vl">1.8 亿</span></div><div class="meta">含预发 0.3 亿</div></article>
+</section>
+
+<div class="sec-label">年金医疗 · 钻取次卡</div>
+<section class="sub-grid">
+<article class="scard ok"><div class="head"><span class="nm">单位缴费</span><span class="vl">14.0 亿</span></div><div class="meta">8% × 175 亿工资基数</div></article>
+<article class="scard ok"><div class="head"><span class="nm">个人缴费</span><span class="vl">3.4 亿</span></div><div class="meta">2% × 175 亿</div></article>
+<article class="scard neu"><div class="head"><span class="nm">医疗节余个人</span><span class="vl">1.6 亿</span></div><div class="meta">占节余 84.2%</div></article>
+</section>
+
+<div class="sec-label">头狼监测 · 钻取次卡</div>
+<section class="sub-grid">
+<article class="scard ok"><div class="head"><span class="nm">头狼一等</span><span class="vl">58 人</span></div><div class="meta">占头狼 45.0%</div></article>
+<article class="scard neu"><div class="head"><span class="nm">头狼二等</span><span class="vl">39 人</span></div><div class="meta">占头狼 30.2%</div></article>
+<article class="scard warn"><div class="head"><span class="nm">黑榜人次</span><span class="vl">16 人</span></div><div class="meta">督导函书面提醒</div></article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整 + 9 次卡（薪酬 3 + 年金医疗 3 + 头狼监测 3）</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 8 行表；v10 是 5 主卡 + 9 次卡双层网格</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 维度卡片 + 8 网格细分；v10 是 5 主卡 + 3 分区次卡（按主题分组）</li>
+<li><b>与 M-3 差异</b>：v10 无圆环、无流程、无颁奖台、无案例卡</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树；v10 是网格卡片墙（卡阵列）</li>
+<li><b>新增 viz 类型</b>：① 顶部色带主卡（5 色对应 5 子方向） ② 钻取提示徽章（› 符号暗示） ③ 主题分区次卡（3 个分区 9 张） ④ 次卡左边框 ok/warn/neu 色编码</li>
+<li><b>信息密度</b>：高 — 5 主 + 9 次卡 = 14 卡片 × 3 字段 = 42 数据点</li>
+<li><b>读图速度</b>：6 秒 — 主卡扫读 + 次卡按分区定位</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v2：机构分布 donut</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.viz-grid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:24px;margin:24px 0}
+.donut-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:28px;display:flex;align-items:center;justify-content:center}
+.donut-wrap{position:relative;width:340px;height:340px}
+.donut-wrap svg{transform:rotate(-90deg)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.donut-center .total{font-size:48px;font-weight:800;color:#241b15;line-height:1}
+.donut-center .total-unit{font-size:14px;color:#7b6653;margin-top:6px;letter-spacing:.05em}
+.donut-center .cap{font-size:13px;color:#9f6b44;margin-top:10px;padding:3px 14px;background:#f4eadb;border-radius:999px}
+.legend-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:28px}
+.legend-card h3{margin:0 0 4px;font-size:16px;color:#6b4423}
+.legend-card .sub{font-size:13px;color:#7b6653;margin:0 0 18px}
+.legend-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px dashed #e8d8c3}
+.legend-row:last-child{border-bottom:none}
+.legend-swatch{width:14px;height:42px;border-radius:4px;flex-shrink:0}
+.legend-row .name{flex:1;font-size:15px;color:#241b15}
+.legend-row .name small{display:block;font-size:12px;color:#7b6653;margin-top:2px}
+.legend-row .count{font-size:18px;font-weight:700;color:#241b15;font-variant-numeric:tabular-nums}
+.legend-row .pct{font-size:14px;color:#9f6b44;font-weight:600;min-width:64px;text-align:right}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.viz-grid{grid-template-columns:1fr}.donut-wrap{width:280px;height:280px}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v2 · donut · org-distribution</p>
+<h1>M-2 设计 v2：机构分布 donut</h1>
+<p class="subtitle">单圆环 SVG 图。三段占比 + 中心数字 5,901。占比一目了然，重点突出"经营机构"主导地位。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人，含劳务派遣的合计总人数为 6,589 人）。其中，<strong>总行机关 716 人</strong>，占比 12.13%；<strong>总行直属机构 476 人</strong>，占比 8.07%；<strong>经营机构 4,709 人</strong>，占比 79.80%。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>本行在岗员工平均年龄 36 岁，<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%）为最大群体，<strong>41-50 岁 1,123 人</strong>（19.03%），<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>本行在岗员工硕士研究生及以上共 1,031 人（17.47%），<strong>本科 4,514 人</strong>（76.50%）为最大群体，专科 326 人（5.52%），专科以下 30 人（0.51%）。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>（对公 850 / 个人 390 / 个贷 359 / 微贷 93）；<strong>客服经理 1,165 人</strong>（非临柜 163 / 临柜 1002）。</p>
+</section>
+
+<section class="viz-grid">
+<div class="donut-card">
+<div class="donut-wrap">
+<svg viewBox="0 0 200 200" width="340" height="340">
+<circle cx="100" cy="100" r="80" fill="none" stroke="#f4eadb" stroke-width="32"/>
+<!-- 经营机构 79.80% = 285.5deg, offset 0 -->
+<circle cx="100" cy="100" r="80" fill="none" stroke="#9f6b44" stroke-width="32"
+stroke-dasharray="401.06 502.65" stroke-dashoffset="0"/>
+<!-- 总行机关 12.13% = 43.66deg, offset -285.5 -->
+<circle cx="100" cy="100" r="80" fill="none" stroke="#a04030" stroke-width="32"
+stroke-dasharray="60.97 502.65" stroke-dashoffset="-401.06"/>
+<!-- 总行直属 8.07% = 29.05deg, offset -329.16 -->
+<circle cx="100" cy="100" r="80" fill="none" stroke="#6b4423" stroke-width="32"
+stroke-dasharray="40.56 502.65" stroke-dashoffset="-462.03"/>
+</svg>
+<div class="donut-center">
+<div class="total">5,901</div>
+<div class="total-unit">正式员工（人）</div>
+<div class="cap">含派遣 6,589 人</div>
+</div>
+</div>
+</div>
+
+<div class="legend-card">
+<h3>按机构层级分布</h3>
+<p class="sub">正式员工 5,901 人 · 三个机构类别占比</p>
+<div class="legend-row">
+<div class="legend-swatch" style="background:#9f6b44"></div>
+<div class="name">经营机构<small>分支机构与营业网点</small></div>
+<div class="count">4,709</div>
+<div class="pct">79.80%</div>
+</div>
+<div class="legend-row">
+<div class="legend-swatch" style="background:#a04030"></div>
+<div class="name">总行机关<small>总部本部一级部门</small></div>
+<div class="count">716</div>
+<div class="pct">12.13%</div>
+</div>
+<div class="legend-row">
+<div class="legend-swatch" style="background:#6b4423"></div>
+<div class="name">总行直属机构<small>直属条线部门</small></div>
+<div class="count">476</div>
+<div class="pct">8.07%</div>
+</div>
+</div>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：机构分布主图、月报首页柱图、董事会汇报</li>
+<li><b>信息密度</b>：中 — 三段比例精确呈现，总数 5901 中心突出</li>
+<li><b>视觉冲击</b>：强 — donut + 色块对比，79.80% 一眼可见</li>
+<li><b>读图速度</b>：3 秒 — 三段色一眼可辨</li>
+<li><b>借鉴来源</b>：自创 SVG donut + shanjinki 配色规范</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

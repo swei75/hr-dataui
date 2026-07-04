@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-6 设计 v5：2D 四象限矩阵 + 气泡图</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* quadrant */
+.quad-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 26px;margin-bottom:24px}
+.quad-wrap h4{margin:0 0 14px;font-size:15px;color:#6b4423}
+.quad-stage{position:relative;width:100%;aspect-ratio:1.6/1;background:linear-gradient(to right,#fbf4e9 0%,#fbf4e9 50%,#f0d4cc 50%,#f0d4cc 100%),linear-gradient(to bottom,#fefcf7 0%,#fefcf7 50%,#fbf4e9 50%,#fbf4e9 100%);background-size:100% 100%;border:1px dashed #c9b299;border-radius:10px}
+.quad-grid{position:absolute;inset:0}
+.quad-axis-x,.quad-axis-y{position:absolute;font-size:11px;color:#7b6653;font-weight:700}
+.quad-axis-x{top:-18px;left:50%;transform:translateX(-50%)}
+.quad-axis-y{left:-32px;top:50%;transform:translateY(-50%) rotate(-90deg)}
+.quad-divider-v,.quad-divider-h{position:absolute;background:#c9b299}
+.quad-divider-v{left:50%;top:8%;bottom:8%;width:1px}
+.quad-divider-h{top:50%;left:8%;right:8%;height:1px}
+.quad-label{position:absolute;font-size:11px;color:#6b4423;font-weight:700;background:rgba(254,252,247,.85);padding:2px 6px;border-radius:4px}
+.quad-label.tl{top:8px;left:8px}.quad-label.tr{top:8px;right:8px}.quad-label.bl{bottom:8px;left:8px}.quad-label.br{bottom:8px;right:8px}
+.bubble{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fefcf7;font-weight:800;text-align:center;box-shadow:0 4px 10px rgba(107,68,35,.18);cursor:pointer}
+.bubble .bb-num{font-size:18px;line-height:1}
+.bubble .bb-lbl{font-size:10px;margin-top:2px;opacity:.95;font-weight:600}
+.bubble.high{background:linear-gradient(135deg,#9f6b44,#6b4423)}
+.bubble.crit{background:linear-gradient(135deg,#a04030,#7a2f23)}
+.bubble.mid{background:linear-gradient(135deg,#c9a589,#9f6b44)}
+
+/* 3 bottom cards */
+.tri-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+.tri-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px}
+.tri-card.crit{border-top:4px solid #a04030}
+.tri-card.ok{border-top:4px solid #4a7c59}
+.tri-card h4{margin:0 0 12px;font-size:14px;color:#6b4423;display:flex;justify-content:space-between;align-items:center}
+.tri-card .pill-s{font-size:10px;background:#ead9c3;color:#9f6b44;padding:3px 8px;border-radius:999px;font-weight:700}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-block;font-size:12px;padding:5px 10px;border-radius:999px;background:#ead9c3;color:#6b4423;font-weight:600}
+.chip.ok{background:#dcebe1;color:#2c5a3c}
+.chip.crit{background:#f0d4cc;color:#7a2f23}
+.tri-numbers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.num-box{text-align:center;padding:10px 6px;background:#f4eadb;border-radius:8px}
+.num-box .nb-num{font-size:24px;font-weight:800;color:#6b4423;font-variant-numeric:tabular-nums;line-height:1}
+.num-box .nb-lbl{font-size:11px;color:#7b6653;margin-top:4px}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.tri-grid{grid-template-columns:1fr}.quad-stage{aspect-ratio:1/1}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.tri-grid,.tri-numbers{grid-template-columns:1fr 1fr}.quad-stage{aspect-ratio:1/1}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v5 · quadrant matrix · bubble plot · priority tier</p>
+<h1>M-6 设计 v5：2D 四象限矩阵 + 气泡图</h1>
+<p class="subtitle">M-3 用 4 节点流程图展示人员退出流程；本版改用 2D 四象限矩阵（影响力 × 紧急度）+ 气泡图（气泡大小=期数），把 5 个重点培训项目分层归类，配以责任主体 chip 矩阵。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📚</span>
+<h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+<p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+<p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+<p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+
+<div class="section-title"><h3>重点项目优先级矩阵 · 影响力 × 紧急度</h3><span class="pill">2D quadrant + bubble</span></div>
+<section class="quad-wrap">
+<h4>5 个重点培训项目分层定位 · 气泡面积 = 期数</h4>
+<div class="quad-stage">
+<div class="quad-grid">
+<div class="quad-divider-v"></div>
+<div class="quad-divider-h"></div>
+<div class="quad-axis-x">影响力 (高 →)</div>
+<div class="quad-axis-y">紧急度 (↑ 高)</div>
+<div class="quad-label tl">⚡ 紧急且核心：能力短板攻坚</div>
+<div class="quad-label tr">📌 影响力大 / 节奏稳：长期品牌建设</div>
+<div class="quad-label bl">⚙ 优化型：常规迭代</div>
+<div class="quad-label br">📅 蓄水型：人才储备</div>
+
+<!-- 紧急高 + 影响力高 (左上)：3 个项目 -->
+<div class="bubble crit" style="left:8%;top:14%;width:96px;height:96px">
+  <span class="bb-num">4</span><span class="bb-lbl">办贷火线班</span>
+</div>
+<div class="bubble crit" style="left:30%;top:32%;width:72px;height:72px">
+  <span class="bb-num">2</span><span class="bb-lbl">对公特训营</span>
+</div>
+<div class="bubble crit" style="left:18%;top:48%;width:84px;height:84px">
+  <span class="bb-num">3</span><span class="bb-lbl">个贷铁军</span>
+</div>
+
+<!-- 高影响力 + 普通紧迫 (右上) -->
+<div class="bubble high" style="left:64%;top:24%;width:120px;height:120px">
+  <span class="bb-num">5</span><span class="bb-lbl">广银大讲堂</span>
+</div>
+
+<!-- 蓄水型 (右下) -->
+<div class="bubble mid" style="left:70%;top:66%;width:60px;height:60px">
+  <span class="bb-num">1</span><span class="bb-lbl">校招新员工</span>
+</div>
+
+<!-- 走进华为 2.0 (计划型，右下偏中) -->
+<div class="bubble high" style="left:52%;top:74%;width:54px;height:54px;background:linear-gradient(135deg,#9f6b44,#6b4423);opacity:.55">
+  <span class="bb-num">∞</span><span class="bb-lbl">华为 2.0</span>
+</div>
+</div>
+</div>
+</section>
+
+<div class="section-title"><h3>6 子方向 · 责任主体与产出</h3><span class="pill">chip-matrix × 3</span></div>
+<section class="tri-grid">
+<article class="tri-card ok">
+<h4>🏆 100% 完成部门 <span class="pill-s">8 个</span></h4>
+<div class="chip-list">
+<span class="chip ok">董事会办公室</span>
+<span class="chip ok">私人银行与财富管理部</span>
+<span class="chip ok">金融同业部</span>
+<span class="chip ok">金融市场部</span>
+<span class="chip ok">战略客户部</span>
+<span class="chip ok">消费者权益保护部</span>
+<span class="chip ok">机关纪委办公室</span>
+<span class="chip ok">安全保卫部</span>
+</div>
+</article>
+
+<article class="tri-card crit">
+<h4>⚠ 执行率末位 <span class="pill-s">3 个 · 需治理</span></h4>
+<div class="chip-list">
+<span class="chip crit">金融科技部 · 0%</span>
+<span class="chip crit">内控合规部 · 0%</span>
+<span class="chip crit">运营管理部 · 14.29%</span>
+</div>
+</article>
+
+<article class="tri-card">
+<h4>📝 资格考产出 <span class="pill-s">35 场 · 8 岗位</span></h4>
+<div class="tri-numbers">
+<div class="num-box"><div class="nb-num">35</div><div class="nb-lbl">上岗资格考试（场）</div></div>
+<div class="num-box"><div class="nb-num">8</div><div class="nb-lbl">涉及大岗位</div></div>
+<div class="num-box"><div class="nb-num">1,878</div><div class="nb-lbl">参考（人次）</div></div>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：6/6 完整（5 项目气泡 / 100% 部门 8 / 末位 3 / 资格考 3 数字）</li>
+<li><b>与 M-1~M-5 差异</b>：M-3 用 4 节点 linear flow 串接；本版改用 X-Y 两轴 quadrant，可一眼看出"哪些项目要立刻抓、哪些可以排期"；M-4 是 13 节点分类树，本版是 2D 平面定位，无层级。</li>
+<li><b>新增 viz 类型</b>：① 2D 四象限矩阵（quadrant matrix · X=影响力 Y=紧急度）② 气泡图（bubble plot · 面积=期数）③ 责任主体 chip 矩阵（chip-matrix × 3，三栏分组）</li>
+<li><b>信息密度</b>：高 — 5 项目分层 + 8+3 责任主体 + 3 个资格考数字</li>
+<li><b>读图速度</b>：3 秒 — 红色气泡立即吸引至"紧急核心"，chip 区一句话锁定责任主体</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

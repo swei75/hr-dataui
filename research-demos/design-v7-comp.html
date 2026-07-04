@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-5 设计 v7：嵌套 donut（外环/内环/中心）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.donut-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px;margin-bottom:22px;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:center}
+.donut-svg{width:380px;height:380px;display:block;margin:0 auto}
+.donut-svg .center-num{font-size:30px;font-weight:800;fill:#241b15;font-variant-numeric:tabular-nums}
+.donut-svg .center-lbl{font-size:11px;fill:#7b6653;letter-spacing:.08em}
+.donut-svg .seg-label{font-size:10px;font-weight:700;fill:#fefcf7}
+
+.legend-grid{display:flex;flex-direction:column;gap:8px}
+.lg-row{display:grid;grid-template-columns:18px 110px 1fr 70px;gap:10px;align-items:center;font-size:12px;color:#3a2e22}
+.lg-row .sw{width:14px;height:14px;border-radius:3px}
+.lg-row .nm{font-weight:600}
+.lg-row .desc{color:#7b6653}
+.lg-row .vl{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#9f6b44}
+
+.hint{margin-top:14px;padding-top:14px;border-top:1px dashed #e8d8c3;font-size:11px;color:#7b6653;line-height:1.6}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.donut-wrap{grid-template-columns:1fr}.donut-svg{width:320px;height:320px}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.donut-svg{width:280px;height:280px}.lg-row{grid-template-columns:14px 90px 1fr 60px;font-size:11px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v7 · nested-donut · outer-inner-center</p>
+<h1>M-5 设计 v7：嵌套 donut（外环/内环/中心）</h1>
+<p class="subtitle">外环 5 子方向成本构成（薪酬/年金/医疗/监测/头狼），内环头狼 3 等人数分布，中心 KPI 总览。3 层信息同心圆。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">💰</span>
+<h2 class="narrative-h2"><span class="narrative-badge">五</span>考核薪酬情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2025 年度<strong>工资总额 15 亿元</strong>（人均 24.3 万），1-5 月已发 4.2 亿元。</p>
+<p>企业年金 17.44 亿元（个 2% / 单位 8%）；补充医疗节余 <strong>1.9 亿元</strong>（个人 1.6 + 单位 0.30）。</p>
+<p>2026Q1 监测 95 班（113 人次），<strong>16 人次</strong>黑榜；评选<strong>头狼 129 人</strong>（一等 58 / 二等 39 / 三等 32）。</p>
+<p>成本口径：薪酬 60% · 年金 25% · 医疗 10% · 监测 1% · 头狼激励 4%。</p>
+</section>
+
+<div class="section-title"><h3>嵌套 donut · 外环 5 子方向 + 内环头狼等级 + 中心总额</h3><span class="pill">3 层嵌套</span></div>
+<section class="donut-wrap">
+
+<svg class="donut-svg" viewBox="0 0 380 380">
+<!-- Outer ring: 5 子方向 (radius 110-170) -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#f4eadb" stroke-width="60"/>
+<!-- 薪酬 60% -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#9f6b44" stroke-width="60"
+  stroke-dasharray="427.26 1068.14" transform="rotate(-90 190 190)"/>
+<!-- 年金 25% -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#6b4423" stroke-width="60"
+  stroke-dasharray="178.02 1068.14" stroke-dashoffset="-427.26" transform="rotate(-90 190 190)"/>
+<!-- 医疗 10% -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#4a7c59" stroke-width="60"
+  stroke-dasharray="71.21 1068.14" stroke-dashoffset="-605.28" transform="rotate(-90 190 190)"/>
+<!-- 监测 1% -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#a04030" stroke-width="60"
+  stroke-dasharray="7.12 1068.14" stroke-dashoffset="-676.49" transform="rotate(-90 190 190)"/>
+<!-- 头狼 4% -->
+<circle cx="190" cy="190" r="170" fill="none" stroke="#c9a883" stroke-width="60"
+  stroke-dasharray="28.48 1068.14" stroke-dashoffset="-683.61" transform="rotate(-90 190 190)"/>
+
+<!-- Inner ring: 头狼 3 等 (radius 60-100) -->
+<circle cx="190" cy="190" r="80" fill="none" stroke="#f4eadb" stroke-width="40"/>
+<!-- 一等 58人 / 129 = 45% -->
+<circle cx="190" cy="190" r="80" fill="none" stroke="#6b4423" stroke-width="40"
+  stroke-dasharray="226.19 502.65" transform="rotate(-90 190 190)"/>
+<!-- 二等 39人 = 30% -->
+<circle cx="190" cy="190" r="80" fill="none" stroke="#9f6b44" stroke-width="40"
+  stroke-dasharray="150.80 502.65" stroke-dashoffset="-226.19" transform="rotate(-90 190 190)"/>
+<!-- 三等 32人 = 25% -->
+<circle cx="190" cy="190" r="80" fill="none" stroke="#c9a883" stroke-width="40"
+  stroke-dasharray="125.66 502.65" stroke-dashoffset="-376.99" transform="rotate(-90 190 190)"/>
+
+<!-- Center: 总览 -->
+<text class="center-num" x="190" y="183" text-anchor="middle">129</text>
+<text class="center-lbl" x="190" y="200" text-anchor="middle">头狼 · 人</text>
+<text class="center-lbl" x="190" y="216" text-anchor="middle">2026Q1</text>
+
+<!-- Outer labels -->
+<text class="seg-label" x="190" y="50" text-anchor="middle">薪酬 60%</text>
+<text class="seg-label" x="340" y="200" text-anchor="middle">年金</text>
+<text class="seg-label" x="270" y="350" text-anchor="middle">医疗 10%</text>
+<text class="seg-label" x="110" y="350" text-anchor="middle">监测 1%</text>
+<text class="seg-label" x="40" y="200" text-anchor="middle">头狼 4%</text>
+</svg>
+
+<div>
+<div class="legend-grid">
+<div class="lg-row"><span class="sw" style="background:#9f6b44"></span><span class="nm">💵 薪酬总额</span><span class="desc">工资 + 绩效 + 开门红 + 津补</span><span class="vl">15.0 亿</span></div>
+<div class="lg-row"><span class="sw" style="background:#6b4423"></span><span class="nm">🏦 企业年金</span><span class="desc">单位 8% + 个人 2% + 利息</span><span class="vl">17.44 亿</span></div>
+<div class="lg-row"><span class="sw" style="background:#4a7c59"></span><span class="nm">🏥 补充医疗</span><span class="desc">个人节余 1.6 + 单位 0.30</span><span class="vl">1.9 亿</span></div>
+<div class="lg-row"><span class="sw" style="background:#a04030"></span><span class="nm">📡 履职监测</span><span class="desc">113 人次 · 黑榜 16 人次</span><span class="vl">14.2%</span></div>
+<div class="lg-row"><span class="sw" style="background:#c9a883"></span><span class="nm">🐺 头狼激励</span><span class="desc">一等 58 / 二等 39 / 三等 32</span><span class="vl">129 人</span></div>
+</div>
+<div class="hint">外环=成本构成占比 · 内环=头狼三等分布 · 中心=头狼总人数。三层同心视觉由大到小聚焦。</div>
+</div>
+
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：5/5 完整 + 头狼 3 等扩展</li>
+<li><b>与 M-1 差异</b>：M-1 v1 是 4 KPI + 8 行表；v7 是 1 个嵌套 donut + 5 行图例</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar + 8 网格；v7 是同心圆环嵌套（3 层）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 含 gauge；v7 是 donut（不同几何 + 3 层嵌套 vs M-3 的单层圆环）</li>
+<li><b>与 M-4 差异</b>：M-4 v1 是分类树；v7 是同心圆环</li>
+<li><b>新增 viz 类型</b>：① 3 层嵌套 donut（外环 5 段 + 内环 3 段 + 中心数字） ② 同心 ring stroke-dasharray 编码 ③ 圆周外缘 seg-label 定位</li>
+<li><b>信息密度</b>：中 — 1 donut 含 5+3 段 = 8 数据段 + 5 行图例</li>
+<li><b>读图速度</b>：5 秒 — 圆环扫读 + 图例对照</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-3 设计 v2：流程图 + 排名榜</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* Flow chart */
+.flow-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.flow-wrap h4{margin:0 0 18px;font-size:15px;color:#6b4423}
+.flow{display:flex;align-items:stretch;justify-content:space-between;gap:0}
+.flow-node{flex:1;background:#fefcf7;border:2px solid #9f6b44;border-radius:10px;padding:14px 10px;text-align:center;position:relative;min-height:140px}
+.flow-node.in{border-color:#4a7c59}
+.flow-node.out{border-color:#a04030}
+.flow-node .fn-icon{font-size:22px;margin-bottom:6px}
+.flow-node .fn-num{font-size:26px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.flow-node.in .fn-num{color:#4a7c59}
+.flow-node.out .fn-num{color:#a04030}
+.flow-node .fn-lbl{font-size:11px;color:#6b4423;margin-top:6px;font-weight:700;letter-spacing:.04em}
+.flow-node .fn-sub{font-size:10px;color:#7b6653;margin-top:4px;line-height:1.4}
+.flow-arrow{display:flex;align-items:center;justify-content:center;color:#9f6b44;font-size:28px;font-weight:700;padding:0 6px;flex:0 0 auto;min-height:140px}
+.flow-summary{margin-top:14px;padding-top:14px;border-top:1px dashed #e8d8c3;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.flow-sum-cell{text-align:center;font-size:12px;color:#3a2e22}
+.flow-sum-cell b{color:#9f6b44;font-size:14px;display:block}
+
+/* Ranking podium */
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.rank-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 24px}
+.rank-card.ok{border-top:4px solid #4a7c59}
+.rank-card.bad{border-top:4px solid #a04030}
+.rank-card h4{margin:0 0 14px;font-size:15px;color:#6b4423}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pod-col{display:flex;flex-direction:column;align-items:center}
+.pod-bar{width:100%;background:linear-gradient(0deg,#9f6b44,#c9a883);border-radius:6px 6px 0 0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:8px 4px;color:#fefcf7;font-weight:700}
+.pod-bar.bad{background:linear-gradient(0deg,#a04030,#c08a7e)}
+.pod-bar .pct{font-size:18px;font-variant-numeric:tabular-nums}
+.pod-bar .lbl{font-size:10px;letter-spacing:.04em;margin-top:2px}
+.pod-name{margin-top:6px;font-size:13px;color:#241b15;font-weight:700}
+.pod-name small{display:block;font-size:10px;color:#7b6653;font-weight:500;margin-top:2px}
+.rank-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.rank-tbl th{text-align:left;color:#7b6653;font-weight:600;padding:4px 6px;border-bottom:1px solid #e8d8c3}
+.rank-tbl td{padding:5px 6px;border-bottom:1px solid #f4eadb;color:#3a2e22}
+.rank-tbl td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:#9f6b44}
+.rank-tbl td.num.bad{color:#a04030}
+
+/* Case cards */
+.case-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.case-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:16px 18px;border-left:5px solid #c9a883}
+.case-card.win{border-left-color:#4a7c59}
+.case-card.lose{border-left-color:#a04030}
+.case-card .tag{font-size:11px;color:#9f6b44;letter-spacing:.06em;font-weight:700;margin-bottom:6px}
+.case-card.win .tag{color:#4a7c59}
+.case-card.lose .tag{color:#a04030}
+.case-card .ttl{font-size:14px;color:#241b15;font-weight:700;margin-bottom:4px}
+.case-card .meta{font-size:11px;color:#7b6653;line-height:1.5}
+
+/* Exit type bar */
+.exit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.exit-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px}
+.exit-card h4{margin:0 0 12px;font-size:14px;color:#6b4423;display:flex;justify-content:space-between}
+.exit-card h4 .pill-s{font-size:10px;background:#ead9c3;color:#9f6b44;padding:3px 8px;border-radius:999px;font-weight:700}
+.exit-rows{display:flex;flex-direction:column;gap:8px}
+.exit-rows .er{display:grid;grid-template-columns:90px 1fr 50px;font-size:12px;align-items:center;gap:8px}
+.exit-rows .er .nm{color:#3a2e22;font-weight:600}
+.exit-rows .er .trk{height:18px;background:#f4eadb;border-radius:4px;overflow:hidden}
+.exit-rows .er .fl{height:100%;background:#9f6b44;display:flex;align-items:center;padding-left:6px;color:#fefcf7;font-size:10px;font-weight:700}
+.exit-rows .er .vl{color:#241b15;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.flow{flex-wrap:wrap}.flow-arrow{transform:rotate(90deg)}.rank-grid,.exit-grid{grid-template-columns:1fr}.case-grid{grid-template-columns:repeat(2,1fr)}.flow-summary{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.case-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v2 · flow-chart · podium · case-cards</p>
+<h1>M-3 设计 v2：流程图 + 排名榜 + 案例卡</h1>
+<p class="subtitle">顶部"人才引进→签约→入行→退出"水平流程图（4 节点 + 3 箭头）；中部 Top3 颁奖台 / Bottom3 柱状榜 + 退出类型条；底部 4 个仲裁案例卡。强调"端到端"和"故事感"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📉</span>
+<h2 class="narrative-h2"><span class="narrative-badge">三</span>人员优化情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2026 年以来，<strong>社招入职 34 人</strong>（总行干部 2 / 分支行部门 4 / 网点班子 4 / 客户经理 9 / 其他 15）；<strong>校招签约 721 人</strong>（秋招 250 + 春招 430 + 微贷特资 41），<strong>一本及以上 73%</strong>（较去年 +7pp）。</p>
+<p>校招岗位分布：总行管培生 45 人、总行金融科技岗 54 人、分行管培生 112 人、英才岗 469 人、微贷/特资定向 41 人。</p>
+<p>2026 年以来，<strong>全行累计退出 202 人</strong>：总行机构及直属机构离职 24、退休 6（合计 30）；经营机构离职 153、退休 19（合计 172）。</p>
+<p>分支行"腾笼换鸟"<strong>完成率 50%</strong>（1-5 月退出 201 / 全年 410）。绩差客户经理退出 44 人，占绩差总数 46%（目标 50%）。1-5 月<strong>劳动仲裁 15 人</strong>，已结案 4（胜 2 / 败 2）。</p>
+</section>
+
+<div class="section-title"><h3>端到端流程 · 人才引进 → 人员退出</h3><span class="pill">flow × 4 节点</span></div>
+<section class="flow-wrap">
+<h4>2026 年人员优化全流程</h4>
+<div class="flow">
+<div class="flow-node in">
+<div class="fn-icon">📥</div>
+<div class="fn-num">34</div>
+<div class="fn-lbl">社招入职</div>
+<div class="fn-sub">总行干部 2 / 分支行 4 / 网点 4 / 客户经理 9 / 其他 15</div>
+</div>
+<div class="flow-arrow">▶</div>
+<div class="flow-node in">
+<div class="fn-icon">🎓</div>
+<div class="fn-num">721</div>
+<div class="fn-lbl">校招签约</div>
+<div class="fn-sub">目标 659 已超额 · 秋 250 + 春 430 + 微贷 41</div>
+</div>
+<div class="flow-arrow">▶</div>
+<div class="flow-node">
+<div class="fn-icon">👥</div>
+<div class="fn-num">5,901</div>
+<div class="fn-lbl">在岗员工</div>
+<div class="fn-sub">正式员工基数（含派遣 6,589）</div>
+</div>
+<div class="flow-arrow">▶</div>
+<div class="flow-node out">
+<div class="fn-icon">📤</div>
+<div class="fn-num">202</div>
+<div class="fn-lbl">累计退出</div>
+<div class="fn-sub">总行直属 30 / 经营机构 172</div>
+</div>
+</div>
+<div class="flow-summary">
+<div class="flow-sum-cell">净流入 <b>+553 人</b>（社招+校招-退出）</div>
+<div class="flow-sum-cell">引进完成率 <b>109.4%</b>（721/659）</div>
+<div class="flow-sum-cell">退出达成率 <b>50.0%</b>（201/410，序时）</div>
+</div>
+</section>
+
+<div class="section-title"><h3>排名榜 · 颁奖台 + 退出类型</h3><span class="pill">podium + exit-bar</span></div>
+<section class="rank-grid">
+<article class="rank-card ok">
+<h4>🏆 腾笼换鸟 · 序时完成率 Top 3</h4>
+<div class="podium">
+<div class="pod-col"><div class="pod-bar" style="height:90px"><span class="pct">295%</span><span class="lbl">🥇 No.1</span></div><div class="pod-name">总营<small>超额完成</small></div></div>
+<div class="pod-col"><div class="pod-bar" style="height:78px"><span class="pct">259%</span><span class="lbl">🥈 No.2</span></div><div class="pod-name">惠州<small>超额完成</small></div></div>
+<div class="pod-col"><div class="pod-bar" style="height:75px"><span class="pct">255%</span><span class="lbl">🥉 No.3</span></div><div class="pod-name">东莞<small>超额完成</small></div></div>
+</div>
+<table class="rank-tbl">
+<tr><th>排名</th><th>分行</th><th>完成率</th></tr>
+<tr><td>1</td><td>总营</td><td class="num">295%</td></tr>
+<tr><td>2</td><td>惠州</td><td class="num">259%</td></tr>
+<tr><td>3</td><td>东莞</td><td class="num">255%</td></tr>
+</table>
+</article>
+
+<article class="rank-card bad">
+<h4>⚠ 腾笼换鸟 · 序时完成率 Bottom 3</h4>
+<div class="podium">
+<div class="pod-col"><div class="pod-bar bad" style="height:22px"><span class="pct">44%</span></div><div class="pod-name">佛山<small>排名末位</small></div></div>
+<div class="pod-col"><div class="pod-bar bad" style="height:24px"><span class="pct">48%</span></div><div class="pod-name">汕头<small>第二低</small></div></div>
+<div class="pod-col"><div class="pod-bar bad" style="height:40px"><span class="pct">80%</span></div><div class="pod-name">广分<small>退出量第一</small></div></div>
+</div>
+<table class="rank-tbl">
+<tr><th>排名</th><th>分行</th><th>完成率</th></tr>
+<tr><td>1</td><td>佛山</td><td class="num bad">44%</td></tr>
+<tr><td>2</td><td>汕头</td><td class="num bad">48%</td></tr>
+<tr><td>3</td><td>广分</td><td class="num bad">80%</td></tr>
+</table>
+</article>
+</section>
+
+<div class="section-title"><h3>退出类型 · 机构 + 职级 + 绩差</h3><span class="pill">exit-bar × 6</span></div>
+<section class="exit-grid">
+<article class="exit-card">
+<h4>🏢 机构分布 <span class="pill-s">总 202</span></h4>
+<div class="exit-rows">
+<div class="er"><span class="nm">经营机构</span><div class="trk"><div class="fl" style="width:85%">172</div></div><span class="vl">172</span></div>
+<div class="er"><span class="nm">　离职</span><div class="trk"><div class="fl" style="width:75%;background:#a04030">153</div></div><span class="vl">153</span></div>
+<div class="er"><span class="nm">　退休</span><div class="trk"><div class="fl" style="width:9%;background:#c9a883">19</div></div><span class="vl">19</span></div>
+<div class="er"><span class="nm">总行直属</span><div class="trk"><div class="fl" style="width:15%;background:#6b4423">30</div></div><span class="vl">30</span></div>
+<div class="er"><span class="nm">　离职</span><div class="trk"><div class="fl" style="width:12%;background:#a04030">24</div></div><span class="vl">24</span></div>
+<div class="er"><span class="nm">　退休</span><div class="trk"><div class="fl" style="width:3%;background:#c9a883">6</div></div><span class="vl">6</span></div>
+</div>
+</article>
+
+<article class="exit-card">
+<h4>🎖 职级分布 <span class="pill-s">总 202</span></h4>
+<div class="exit-rows">
+<div class="er"><span class="nm">员工</span><div class="trk"><div class="fl" style="width:98%">199</div></div><span class="vl">199</span></div>
+<div class="er"><span class="nm">　离职</span><div class="trk"><div class="fl" style="width:87%;background:#a04030">175</div></div><span class="vl">175</span></div>
+<div class="er"><span class="nm">　退休</span><div class="trk"><div class="fl" style="width:12%;background:#c9a883">24</div></div><span class="vl">24</span></div>
+<div class="er"><span class="nm">中层干部</span><div class="trk"><div class="fl" style="width:1%;background:#6b4423">2</div></div><span class="vl">2</span></div>
+<div class="er"><span class="nm">高管</span><div class="trk"><div class="fl" style="width:0.5%;background:#6b4423">1</div></div><span class="vl">1</span></div>
+<div class="er"><span class="nm">　胡优华</span><div class="trk"><div class="fl" style="width:0.5%;background:#c9a883">退休</div></div><span class="vl">资深督导</span></div>
+</div>
+</article>
+</section>
+
+<div class="section-title"><h3>劳动仲裁 · 4 案例卡</h3><span class="pill">case × 4</span></div>
+<section class="case-grid">
+<article class="case-card win">
+<div class="tag">✅ 胜诉 1</div>
+<div class="ttl">广州分行</div>
+<div class="meta">已结案胜诉 · 一审胜诉</div>
+</article>
+<article class="case-card win">
+<div class="tag">✅ 胜诉 2</div>
+<div class="ttl">信用卡中心</div>
+<div class="meta">已结案胜诉 · 一审胜诉</div>
+</article>
+<article class="case-card lose">
+<div class="tag">⚖ 败诉 1</div>
+<div class="ttl">汕头分行</div>
+<div class="meta">败诉 · 仲裁阶段，分行安排上诉中</div>
+</article>
+<article class="case-card lose">
+<div class="tag">⚖ 败诉 2</div>
+<div class="ttl">信用卡中心</div>
+<div class="meta">二审裁决无法上诉 · 赔付金额有所降低</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：10/10 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 静态 KPI；v2 用端到端 flow（4 节点流程）+ 颁奖台 podium（柱状排名）</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar 占比；v2 用纯水平进度条 + 颁奖台柱状图 + 案例卡</li>
+<li><b>新增 viz 类型</b>：① 水平流程图（flow chart 4 节点）② 颁奖台（podium 柱状排名）③ 案例卡（case card）④ 水平进度条（horizontal progress）</li>
+<li><b>信息密度</b>：中 — 4 节点 + 6 行退出 + 6 排名 + 4 案例 = 20 单元</li>
+<li><b>读图速度</b>：3-5 秒 — 流程图一眼理解端到端，颁奖台 Top3 一秒识别</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

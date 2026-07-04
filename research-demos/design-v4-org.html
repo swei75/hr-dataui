@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v4：进度环（donut 配/空）</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+
+.donut-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:24px}
+.donut-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 16px 16px;text-align:center;position:relative;border-top:3px solid #9f6b44}
+.donut-card .label{font-size:12px;color:#6b4423;font-weight:700;margin-bottom:10px;letter-spacing:.04em}
+.donut-svg{display:block;margin:0 auto 8px;position:relative}
+.donut-card .center-num{font-size:24px;font-weight:800;color:#241b15;font-variant-numeric:tabular-nums;line-height:1}
+.donut-card .center-pct{font-size:11px;color:#7b6653;margin-top:3px;letter-spacing:.04em}
+.donut-card .legend-row{font-size:11px;color:#3a2e22;margin-top:6px;line-height:1.5}
+.donut-card .legend-row b{font-weight:700;font-variant-numeric:tabular-nums}
+.donut-card .legend-row .g{color:#4a7c59}
+.donut-card .legend-row .r{color:#a04030}
+.donut-card .total{font-size:11px;color:#7b6653;margin-top:4px;letter-spacing:.04em}
+
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.sum-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 20px;border-left:5px solid #9f6b44}
+.sum-card.alert{border-left-color:#a04030}
+.sum-card.ok{border-left-color:#4a7c59}
+.sum-card .lbl{font-size:12px;color:#7b6653;margin-bottom:8px;letter-spacing:.04em}
+.sum-card .num{font-size:30px;font-weight:800;color:#241b15;line-height:1;font-variant-numeric:tabular-nums}
+.sum-card .num small{font-size:14px;color:#7b6653;font-weight:500;margin-left:4px}
+.sum-card .meta{font-size:11px;color:#7b6653;margin-top:8px;line-height:1.6}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.donut-grid{grid-template-columns:repeat(3,1fr)}.summary-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.donut-grid{grid-template-columns:repeat(2,1fr)}.summary-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v4 · donut ring · 6 metrics · full circle (not gauge)</p>
+<h1>M-4 设计 v4：进度环（donut 配/空）</h1>
+<p class="subtitle">6 个完整圆环（不是 gauge 半圆进度），每环双段"绿色已配 + 红色空缺"。圆环中心显示绝对人数，外环占比快速读取。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>6 大维度 · 双段进度环（已配 vs 空缺）</h3><span class="pill">donut × 6</span></div>
+<section class="donut-grid">
+
+<article class="donut-card">
+<div class="label">中层总</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="86.96 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="7.62 100" stroke-dashoffset="-61.96" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#241b15">91.94%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">194<span style="font-size:11px;color:#7b6653;font-weight:500"> / 211</span></div>
+<div class="legend-row"><span class="g">●已配 194</span>　<span class="r">●空缺 17</span></div>
+</article>
+
+<article class="donut-card">
+<div class="label">总行班子</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="84.59 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="6.37 100" stroke-dashoffset="-59.59" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#241b15">93.0%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">93<span style="font-size:11px;color:#7b6653;font-weight:500"> / 100</span></div>
+<div class="legend-row"><span class="g">●已配 93</span>　<span class="r">●空缺 7</span></div>
+</article>
+
+<article class="donut-card">
+<div class="label">经营班子</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="82.62 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="8.18 100" stroke-dashoffset="-57.62" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#241b15">91.0%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">101<span style="font-size:11px;color:#7b6653;font-weight:500"> / 111</span></div>
+<div class="legend-row"><span class="g">●已配 101</span>　<span class="r">●空缺 10</span></div>
+</article>
+
+<article class="donut-card">
+<div class="label">中层正职</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="84.26 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="6.74 100" stroke-dashoffset="-59.26" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#241b15">92.6%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">50<span style="font-size:11px;color:#7b6653;font-weight:500"> / 54</span></div>
+<div class="legend-row"><span class="g">●已配 50</span>　<span class="r">●空缺 4</span></div>
+<div class="total">含副总级一把手 17</div>
+</article>
+
+<article class="donut-card">
+<div class="label">中层副职</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="83.30 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="7.52 100" stroke-dashoffset="-58.30" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#241b15">91.7%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">144<span style="font-size:11px;color:#7b6653;font-weight:500"> / 157</span></div>
+<div class="legend-row"><span class="g">●已配 144</span>　<span class="r">●空缺 13</span></div>
+<div class="total">副总67 / 总助74 / 经理3</div>
+</article>
+
+<article class="donut-card" style="border-top-color:#a04030">
+<div class="label" style="color:#a04030">派驻纪检 ⚠</div>
+<svg class="donut-svg" width="120" height="120" viewBox="0 0 42 42">
+<circle cx="21" cy="21" r="15.915" fill="#fefcf7" stroke="#4a7c59" stroke-width="6"
+  stroke-dasharray="42.5 100" stroke-dashoffset="25" transform="rotate(-90 21 21)"/>
+<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#a04030" stroke-width="6"
+  stroke-dasharray="42.5 100" stroke-dashoffset="-17.5" transform="rotate(-90 21 21)"/>
+<text x="21" y="20" text-anchor="middle" font-size="9" font-weight="800" fill="#a04030">50%</text>
+<text x="21" y="27" text-anchor="middle" font-size="4.5" fill="#7b6653">配备率</text>
+</svg>
+<div class="center-num">3<span style="font-size:11px;color:#7b6653;font-weight:500"> / 6</span></div>
+<div class="legend-row"><span class="g">●已配 3</span>　<span class="r">●空缺 3</span></div>
+</article>
+</section>
+
+<div class="section-title"><h3>汇总 · 4 大数字</h3><span class="pill">summary × 4</span></div>
+<section class="summary-row">
+<article class="sum-card"><div class="lbl">中层总职数</div><div class="num">211<small>人</small></div><div class="meta">总行 100 + 经营 111</div></article>
+<article class="sum-card ok"><div class="lbl">实际已配</div><div class="num">194<small>人</small></div><div class="meta">占总数 91.94%</div></article>
+<article class="sum-card alert"><div class="lbl">尚空缺</div><div class="num">17<small>人</small></div><div class="meta">总行 7 + 经营 10</div></article>
+<article class="sum-card"><div class="lbl">市管 + 高管</div><div class="num">14<small>人</small></div><div class="meta">市管 8（满配）+ 高管 6</div></article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（市管 / 高管 / 纪检 / 中层总 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 总行 / 经营）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个独立 KPI 卡组成一行；v4 是 6 个圆环，每环独立表达"已配 vs 空缺"</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 段 stacked-bar 占比卡；v4 是 6 个圆形 donut 双段可视化（圆形 vs 横条）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 是半圆 gauge（progress 进度）；v4 是完整圆环 donut（两段已配/空缺，非单段进度）</li>
+<li><b>新增 viz 类型</b>：① 完整圆环 donut（full circle ring，区别于 M-3 的半圆 gauge） ② 双段语义编码（绿/红两段拼接） ③ 圆心数字（绝对值 + 百分比双显） ④ 警示边框（纪检用红色边框高亮）</li>
+<li><b>信息密度</b>：中 — 6 环 × 4 字段 = 24 字段 + 4 张汇总卡</li>
+<li><b>读图速度</b>：3 秒 — 6 个圆环并排扫读，红色段位置 = 缺口比例</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,386 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.db{background:var(--color-background-primary);min-height:600px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.header{background:#0F6E56;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.header-title{color:#fff;font-size:17px;font-weight:500;display:flex;align-items:center;gap:10px}
+.header-title i{font-size:20px}
+.header-sub{color:#9FE1CB;font-size:12px;margin-top:2px}
+.nav{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-x:auto}
+.nav-btn{padding:10px 16px;font-size:12px;font-weight:400;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
+.nav-btn.active{color:#0F6E56;border-bottom:2px solid #0F6E56;background:var(--color-background-primary);font-weight:500}
+.nav-btn:hover:not(.active){background:var(--color-background-primary);color:var(--color-text-primary)}
+.page{display:none;padding:16px}
+.page.active{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.kpi-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.kpi-delta{font-size:11px;margin-top:3px}
+.kpi-delta.up{color:#0F6E56}.kpi-delta.dn{color:#A32D2D}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px}
+.chart-subtitle{font-size:11px;color:var(--color-text-secondary);margin-top:-6px;margin-bottom:10px}
+.chart-wrap{position:relative;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;font-size:11px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.filter-label{font-size:11px;color:var(--color-text-secondary)}
+.filter-btn{padding:4px 10px;font-size:11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;color:var(--color-text-secondary)}
+.filter-btn.sel{background:#0F6E56;color:#fff;border-color:#0F6E56}
+.pie-info{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 14px;margin-top:10px;font-size:12px;display:none}
+.pie-info.show{display:block}
+.pie-info-title{font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.pie-info table{width:100%;border-collapse:collapse}
+.pie-info td{padding:3px 0;color:var(--color-text-secondary);font-size:11px}
+.pie-info td:last-child{text-align:right;color:var(--color-text-primary);font-weight:500}
+.tbl-wrap{overflow-x:auto;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{background:var(--color-background-secondary);padding:9px 12px;text-align:left;font-weight:500;font-size:11px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);position:sticky;top:0}
+table.dt td{padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+table.dt tr:last-child td{border-bottom:none}
+table.dt tr:hover td{background:var(--color-background-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.badge.good{background:#E1F5EE;color:#085041}.badge.warn{background:#FAEEDA;color:#633806}.badge.bad{background:#FCEBEB;color:#791F1F}
+.search-box{width:100%;padding:7px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);margin-bottom:12px}
+</style>
+
+<div class="db">
+<div class="header">
+  <div>
+    <div class="header-title"><i class="ti ti-chart-pie-2" aria-hidden="true"></i>Insurance Analytics — Primerica</div>
+    <div class="header-sub">Galaxy Data Solutions Pvt Ltd &nbsp;|&nbsp; Power BI-style Dashboard &nbsp;|&nbsp; Jan 2024 – Present</div>
+  </div>
+  <div style="font-size:11px;color:#9FE1CB;">FY 2024</div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="goPage(0)"><i class="ti ti-layout-dashboard" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Policy Performance</button>
+  <button class="nav-btn" onclick="goPage(1)"><i class="ti ti-file-description" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Claims Analysis</button>
+  <button class="nav-btn" onclick="goPage(2)"><i class="ti ti-trending-up" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Premium Growth</button>
+  <button class="nav-btn" onclick="goPage(3)"><i class="ti ti-users" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Retention & Loss Ratio</button>
+  <button class="nav-btn" onclick="goPage(4)"><i class="ti ti-table" aria-hidden="true" style="font-size:13px;margin-right:4px"></i>Details Table</button>
+</div>
+
+<!-- PAGE 1: Policy Performance -->
+<div class="page active" id="p0">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total Policies</div><div class="kpi-val">48,320</div><div class="kpi-delta up">▲ 12.4% YoY</div></div>
+    <div class="kpi"><div class="kpi-label">Active Policies</div><div class="kpi-val">41,876</div><div class="kpi-delta up">▲ 9.1%</div></div>
+    <div class="kpi"><div class="kpi-label">Lapsed</div><div class="kpi-val">4,218</div><div class="kpi-delta dn">▼ 2.3%</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Policy Value</div><div class="kpi-val">$3,840</div><div class="kpi-delta up">▲ 5.7%</div></div>
+    <div class="kpi"><div class="kpi-label">New Policies</div><div class="kpi-val">6,104</div><div class="kpi-delta up">▲ 18.2%</div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-title">Policy Status Distribution</div>
+      <div class="chart-subtitle">Click a slice to see breakdown</div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#1D9E75"></span>Active 86.7%</span>
+        <span><span class="legend-sq" style="background:#EF9F27"></span>Lapsed 8.7%</span>
+        <span><span class="legend-sq" style="background:#E24B4A"></span>Cancelled 4.6%</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="pie1" role="img" aria-label="Policy status pie: Active 86.7%, Lapsed 8.7%, Cancelled 4.6%">Active 86.7%, Lapsed 8.7%, Cancelled 4.6%</canvas></div>
+      <div class="pie-info" id="pie1-info">
+        <div class="pie-info-title" id="pie1-title"></div>
+        <table><tbody id="pie1-body"></tbody></table>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Policy Type Mix</div>
+      <div class="chart-subtitle">Click a slice to see breakdown</div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#185FA5"></span>Term 54%</span>
+        <span><span class="legend-sq" style="background:#7F77DD"></span>Whole 28%</span>
+        <span><span class="legend-sq" style="background:#D85A30"></span>Universal 12%</span>
+        <span><span class="legend-sq" style="background:#BA7517"></span>Other 6%</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="pie2" role="img" aria-label="Policy type: Term 54%, Whole 28%, Universal 12%, Other 6%">Term 54%, Whole 28%, Universal 12%, Other 6%</canvas></div>
+      <div class="pie-info" id="pie2-info">
+        <div class="pie-info-title" id="pie2-title"></div>
+        <table><tbody id="pie2-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="chart-card full" style="margin-bottom:0">
+    <div class="chart-title">Monthly Policies Issued vs Lapsed</div>
+    <div class="legend">
+      <span><span class="legend-sq" style="background:#1D9E75"></span>Issued</span>
+      <span><span class="legend-sq" style="background:#E24B4A"></span>Lapsed</span>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="bar1" role="img" aria-label="Bar chart of monthly policies issued vs lapsed">Monthly data</canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 2: Claims Analysis -->
+<div class="page" id="p1">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total Claims</div><div class="kpi-val">9,412</div><div class="kpi-delta dn">▲ 4.2% YoY</div></div>
+    <div class="kpi"><div class="kpi-label">Settled Claims</div><div class="kpi-val">7,840</div><div class="kpi-delta up">▲ 6.8%</div></div>
+    <div class="kpi"><div class="kpi-label">Pending</div><div class="kpi-val">1,024</div><div class="kpi-delta dn">▼ 1.9%</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Claim ($)</div><div class="kpi-val">$18,420</div><div class="kpi-delta up">▲ 3.1%</div></div>
+    <div class="kpi"><div class="kpi-label">Settlement Rate</div><div class="kpi-val">83.3%</div><div class="kpi-delta up">▲ 2.0%</div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-title">Claims by Type</div>
+      <div class="chart-subtitle">Click a slice for breakdown</div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#185FA5"></span>Death 42%</span>
+        <span><span class="legend-sq" style="background:#EF9F27"></span>Disability 31%</span>
+        <span><span class="legend-sq" style="background:#E24B4A"></span>Critical 18%</span>
+        <span><span class="legend-sq" style="background:#7F77DD"></span>Other 9%</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="pie3" role="img" aria-label="Claims by type">Claims type data</canvas></div>
+      <div class="pie-info" id="pie3-info">
+        <div class="pie-info-title" id="pie3-title"></div>
+        <table><tbody id="pie3-body"></tbody></table>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Claims by Region</div>
+      <div class="chart-subtitle">Click a slice for breakdown</div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#1D9E75"></span>North 35%</span>
+        <span><span class="legend-sq" style="background:#D85A30"></span>South 28%</span>
+        <span><span class="legend-sq" style="background:#185FA5"></span>East 22%</span>
+        <span><span class="legend-sq" style="background:#BA7517"></span>West 15%</span>
+      </div>
+      <div class="chart-wrap" style="height:190px"><canvas id="pie4" role="img" aria-label="Claims by region">Regional data</canvas></div>
+      <div class="pie-info" id="pie4-info">
+        <div class="pie-info-title" id="pie4-title"></div>
+        <table><tbody id="pie4-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="chart-card full" style="margin-bottom:0">
+    <div class="chart-title">Monthly Claims Trend — click month bar to filter</div>
+    <div class="filter-row" id="claims-filter-row" style="display:none">
+      <span class="filter-label">Filtered month:</span>
+      <span id="claims-month-label" style="font-size:12px;font-weight:500;color:#0F6E56"></span>
+      <button class="filter-btn" onclick="clearClaimsFilter()">✕ Clear</button>
+    </div>
+    <div class="legend">
+      <span><span class="legend-sq" style="background:#185FA5"></span>Settled</span>
+      <span><span class="legend-sq" style="background:#E24B4A"></span>Pending</span>
+      <span><span class="legend-sq" style="background:#EF9F27"></span>Rejected</span>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="bar2" role="img" aria-label="Monthly claims bar chart">Monthly claims</canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 3: Premium Growth -->
+<div class="page" id="p2">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total Premium</div><div class="kpi-val">$185.4M</div><div class="kpi-delta up">▲ 16.2% YoY</div></div>
+    <div class="kpi"><div class="kpi-label">New Business</div><div class="kpi-val">$42.1M</div><div class="kpi-delta up">▲ 22.4%</div></div>
+    <div class="kpi"><div class="kpi-label">Renewal Premium</div><div class="kpi-val">$143.3M</div><div class="kpi-delta up">▲ 13.8%</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Premium/Policy</div><div class="kpi-val">$3,840</div><div class="kpi-delta up">▲ 5.7%</div></div>
+    <div class="kpi"><div class="kpi-label">Growth Rate</div><div class="kpi-val">16.2%</div><div class="kpi-delta up">▲ 3.1pp</div></div>
+  </div>
+  <div class="chart-card full" style="margin-bottom:12px">
+    <div class="chart-title">Monthly Premium Growth (Area Chart)</div>
+    <div class="legend">
+      <span><span class="legend-sq" style="background:#1D9E75"></span>New Business</span>
+      <span><span class="legend-sq" style="background:#185FA5"></span>Renewals</span>
+    </div>
+    <div class="chart-wrap" style="height:220px"><canvas id="area1" role="img" aria-label="Monthly premium area chart">Premium data</canvas></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-title">Premium by Product — click month to filter</div>
+      <div class="filter-row" id="prem-filter-row" style="display:none">
+        <span class="filter-label">Filtered:</span>
+        <span id="prem-month-label" style="font-size:12px;font-weight:500;color:#0F6E56"></span>
+        <button class="filter-btn" onclick="clearPremFilter()">✕ Clear</button>
+      </div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#7F77DD"></span>Term</span>
+        <span><span class="legend-sq" style="background:#D85A30"></span>Whole</span>
+        <span><span class="legend-sq" style="background:#EF9F27"></span>Universal</span>
+      </div>
+      <div class="chart-wrap" style="height:180px"><canvas id="bar3" role="img" aria-label="Premium by product bar chart">Product premium</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">YoY Growth Comparison</div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#1D9E75"></span>FY 2024</span>
+        <span><span class="legend-sq" style="background:#185FA5;opacity:.5"></span>FY 2023</span>
+      </div>
+      <div class="chart-wrap" style="height:180px"><canvas id="line1" role="img" aria-label="YoY premium line chart">YoY data</canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: Retention & Loss Ratio -->
+<div class="page" id="p3">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Retention Rate</div><div class="kpi-val">88.3%</div><div class="kpi-delta up">▲ 1.4pp</div></div>
+    <div class="kpi"><div class="kpi-label">Lapse Rate</div><div class="kpi-val">8.7%</div><div class="kpi-delta up">▼ 0.8pp</div></div>
+    <div class="kpi"><div class="kpi-label">Loss Ratio</div><div class="kpi-val">61.2%</div><div class="kpi-delta up">▼ 2.1pp</div></div>
+    <div class="kpi"><div class="kpi-label">Combined Ratio</div><div class="kpi-val">94.8%</div><div class="kpi-delta up">▼ 1.3pp</div></div>
+    <div class="kpi"><div class="kpi-label">Churn</div><div class="kpi-val">3.0%</div><div class="kpi-delta dn">▲ 0.2pp</div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-title">Monthly Retention Rate (%)</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="line2" role="img" aria-label="Monthly retention rate line chart">Retention data</canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Loss Ratio by Product — click month to filter</div>
+      <div class="filter-row" id="loss-filter-row" style="display:none">
+        <span class="filter-label">Filtered:</span>
+        <span id="loss-month-label" style="font-size:12px;font-weight:500;color:#0F6E56"></span>
+        <button class="filter-btn" onclick="clearLossFilter()">✕ Clear</button>
+      </div>
+      <div class="legend">
+        <span><span class="legend-sq" style="background:#7F77DD"></span>Term</span>
+        <span><span class="legend-sq" style="background:#D85A30"></span>Whole</span>
+        <span><span class="legend-sq" style="background:#EF9F27"></span>Universal</span>
+      </div>
+      <div class="chart-wrap" style="height:200px"><canvas id="bar4" role="img" aria-label="Loss ratio by product bar chart">Loss ratio data</canvas></div>
+    </div>
+  </div>
+  <div class="chart-card full" style="margin-bottom:0">
+    <div class="chart-title">Retention vs Loss Ratio Trend (Area + Line)</div>
+    <div class="legend">
+      <span><span class="legend-sq" style="background:#1D9E75"></span>Retention %</span>
+      <span><span class="legend-sq" style="background:#E24B4A"></span>Loss Ratio %</span>
+    </div>
+    <div class="chart-wrap" style="height:180px"><canvas id="area2" role="img" aria-label="Retention vs loss ratio area chart">Trend data</canvas></div>
+  </div>
+</div>
+
+<!-- PAGE 5: Details Table -->
+<div class="page" id="p4">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">Total Records</div><div class="kpi-val">48,320</div><div class="kpi-delta up">FY 2024</div></div>
+    <div class="kpi"><div class="kpi-label">Filtered Records</div><div class="kpi-val" id="rec-count">20</div><div class="kpi-delta up">showing sample</div></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Status:</span>
+    <button class="filter-btn sel" onclick="filterTable(this,'All')">All</button>
+    <button class="filter-btn" onclick="filterTable(this,'Active')">Active</button>
+    <button class="filter-btn" onclick="filterTable(this,'Lapsed')">Lapsed</button>
+    <button class="filter-btn" onclick="filterTable(this,'Cancelled')">Cancelled</button>
+    <button class="filter-btn" onclick="filterTable(this,'Pending')">Pending</button>
+  </div>
+  <input class="search-box" type="text" placeholder="Search by policy ID, name, or type..." oninput="searchTable(this.value)">
+  <div class="tbl-wrap">
+    <table class="dt" id="detail-tbl">
+      <thead><tr>
+        <th>Policy ID</th><th>Holder Name</th><th>Type</th><th>Region</th>
+        <th>Premium ($)</th><th>Status</th><th>Loss Ratio</th><th>Issued</th>
+      </tr></thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function goPage(n){
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+}
+
+const PIE_DATA={
+  pie1:{labels:['Active','Lapsed','Cancelled'],vals:[86.7,8.7,4.6],colors:['#1D9E75','#EF9F27','#E24B4A'],details:{
+    'Active':{rows:[['Policies','41,876'],['Avg Premium','$3,920'],['YoY Change','▲ 9.1%'],['Top Region','North']]},
+    'Lapsed':{rows:[['Policies','4,218'],['Avg Premium','$2,840'],['YoY Change','▼ 2.3%'],['Main Reason','Non-payment']]},
+    'Cancelled':{rows:[['Policies','2,226'],['Avg Premium','$3,100'],['YoY Change','▼ 0.4%'],['Main Reason','Request']]}
+  }},
+  pie2:{labels:['Term','Whole','Universal','Other'],vals:[54,28,12,6],colors:['#185FA5','#7F77DD','#D85A30','#BA7517'],details:{
+    'Term':{rows:[['Policies','26,093'],['Avg Premium','$2,800'],['Retention','91.2%'],['Growth','▲ 14%']]},
+    'Whole':{rows:[['Policies','13,530'],['Avg Premium','$5,400'],['Retention','94.8%'],['Growth','▲ 8%']]},
+    'Universal':{rows:[['Policies','5,798'],['Avg Premium','$4,200'],['Retention','87.3%'],['Growth','▲ 19%']]},
+    'Other':{rows:[['Policies','2,899'],['Avg Premium','$2,100'],['Retention','78.2%'],['Growth','▲ 3%']]}
+  }},
+  pie3:{labels:['Death','Disability','Critical Illness','Other'],vals:[42,31,18,9],colors:['#185FA5','#EF9F27','#E24B4A','#7F77DD'],details:{
+    'Death':{rows:[['Claims','3,953'],['Avg Amount','$24,800'],['Settlement Rate','91%'],['YoY','▲ 3%']]},
+    'Disability':{rows:[['Claims','2,918'],['Avg Amount','$15,200'],['Settlement Rate','84%'],['YoY','▲ 6%']]},
+    'Critical Illness':{rows:[['Claims','1,694'],['Avg Amount','$18,400'],['Settlement Rate','79%'],['YoY','▲ 7%']]},
+    'Other':{rows:[['Claims','847'],['Avg Amount','$9,200'],['Settlement Rate','76%'],['YoY','▲ 2%']]}
+  }},
+  pie4:{labels:['North','South','East','West'],vals:[35,28,22,15],colors:['#1D9E75','#D85A30','#185FA5','#BA7517'],details:{
+    'North':{rows:[['Claims','3,294'],['Avg Amt','$20,400'],['Top Type','Death'],['Settled%','88%']]},
+    'South':{rows:[['Claims','2,635'],['Avg Amt','$17,800'],['Top Type','Disability'],['Settled%','82%']]},
+    'East':{rows:[['Claims','2,071'],['Avg Amt','$16,200'],['Top Type','Critical'],['Settled%','81%']]},
+    'West':{rows:[['Claims','1,412'],['Avg Amt','$19,100'],['Top Type','Death'],['Settled%','85%']]}
+  }}
+};
+
+function makePie(id,pdata){
+  const cfg={type:'doughnut',data:{labels:pdata.labels,datasets:[{data:pdata.vals,backgroundColor:pdata.colors,borderWidth:2,borderColor:'#fff',hoverBorderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed}%`}}},onClick:(e,els)=>{
+    if(!els.length)return;
+    const lbl=pdata.labels[els[0].index];
+    const det=pdata.details[lbl];
+    const infoEl=document.getElementById(id+'-info');
+    const titleEl=document.getElementById(id+'-title');
+    const bodyEl=document.getElementById(id+'-body');
+    titleEl.textContent=lbl+' — Detail Breakdown';
+    bodyEl.innerHTML=det.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+    infoEl.classList.add('show');
+  }}};
+  return new Chart(document.getElementById(id),cfg);
+}
+
+Object.keys(PIE_DATA).forEach(id=>makePie(id,PIE_DATA[id]));
+
+const issued=[380,420,460,490,510,540,580,560,610,640,600,620];
+const lapsed=[82,90,78,95,88,102,75,88,80,94,87,91];
+new Chart(document.getElementById('bar1'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'Issued',data:issued,backgroundColor:'#1D9E75'},{label:'Lapsed',data:lapsed,backgroundColor:'#E24B4A'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false}},y:{ticks:{font:{size:10}}}}}});
+
+const claimsData={settled:[580,620,640,700,680,720,760,740,800,820,780,800],pending:[80,70,90,85,75,88,72,84,78,80,75,82],rejected:[40,38,44,50,42,48,36,42,40,46,38,44]};
+let claimsChart=new Chart(document.getElementById('bar2'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'Settled',data:[...claimsData.settled],backgroundColor:'#185FA5'},{label:'Pending',data:[...claimsData.pending],backgroundColor:'#EF9F27'},{label:'Rejected',data:[...claimsData.rejected],backgroundColor:'#E24B4A'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:10},autoSkip:false}},y:{stacked:true,ticks:{font:{size:10}}}},onClick:(e,els)=>{
+  if(!els.length)return;
+  const mi=els[0].index;
+  const mn=MONTHS[mi];
+  document.getElementById('claims-month-label').textContent=mn;
+  document.getElementById('claims-filter-row').style.display='flex';
+  claimsChart.data.datasets[0].data=MONTHS.map((_,i)=>i===mi?claimsData.settled[i]:0);
+  claimsChart.data.datasets[1].data=MONTHS.map((_,i)=>i===mi?claimsData.pending[i]:0);
+  claimsChart.data.datasets[2].data=MONTHS.map((_,i)=>i===mi?claimsData.rejected[i]:0);
+  claimsChart.update();
+}}});
+function clearClaimsFilter(){
+  document.getElementById('claims-filter-row').style.display='none';
+  claimsChart.data.datasets[0].data=[...claimsData.settled];
+  claimsChart.data.datasets[1].data=[...claimsData.pending];
+  claimsChart.data.datasets[2].data=[...claimsData.rejected];
+  claimsChart.update();
+}
+
+const newBiz=[2.8,3.1,3.4,3.8,4.0,4.2,4.5,4.3,4.8,5.0,4.7,4.9];
+const renewals=[10.2,10.8,11.4,11.9,12.2,12.6,13.0,12.8,13.4,13.8,13.2,13.6];
+new Chart(document.getElementById('area1'),{type:'line',data:{labels:MONTHS,datasets:[{label:'New Business',data:newBiz,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.15)',fill:true,tension:0.4,pointRadius:3},{label:'Renewals',data:renewals,borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,0.1)',fill:true,tension:0.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},autoSkip:false}},y:{ticks:{font:{size:10},callback:v=>'$'+v+'M'}}}}});
+
+const prodData={term:[8.2,9.1,9.8,10.4,10.8,11.2,11.9,11.6,12.4,12.9,12.2,12.7],whole:[4.1,4.4,4.8,5.0,5.2,5.5,5.8,5.6,6.0,6.2,5.9,6.1],universal:[1.8,2.0,2.2,2.4,2.5,2.6,2.8,2.7,2.9,3.0,2.8,3.0]};
+let premChart=new Chart(document.getElementById('bar3'),{type:'bar',data:{labels:MONTHS,datasets:[{label:'Term',data:[...prodData.term],backgroundColor:'#7F77DD'},{label:'Whole',data:[...prodData.whole],backgroundColor:'#D85A30'},{label:'Universal',data:[...prodData.universal],backgroundColor:'#EF9F27'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,ticks:{font:{size:10},autoSkip:false,maxRotation:45}},y:{stacked:true,ticks:{font:{size:10},callback:v=>'$'+v+'M'}}},onClick:(e,els)=>{
+  if(!els.length)return;
+  const mi=els[0].index;
+  const mn=MONTHS[mi];
+  document.getElementById('prem-month-label').textContent=mn;
+  document.getElementById('prem-filter-row').style.display='flex';
+  premChart.data.datasets[0].data=MONTHS.map((_,i)=>i===mi?prodData.term[i]:0);
+  premChart.data.datasets[1].data=MONTHS.map((_,i)=>i===mi?prodData.whole[i]:0);
+  premChart.data.datasets[2].data=MONTHS.map((_,i)=>i===mi?prodData.universal[i]:0);
+  premChart.update();
+}}});
+function clearPremFilter(){
+  document.getElementById('prem-filter-row').style.display='none';
+  premChart.data.datasets[0].data=[...prodData.term];
+  premChart.data.datasets[1].data=[...prodData.whole];
+  premChart.data.datasets[2].data=[...prodData.universal];
+  premChart.update();
+}
+
+const fy23=[10.2,11.4,12.0,12.8,13.1,13.6,14.2,13.9,14.8,15.2,14.6,15.0];
+const fy24

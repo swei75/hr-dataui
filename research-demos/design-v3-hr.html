@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-3 设计 v3：双轴对比柱 + 雷达图</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* Dual-axis bar */
+.dbar-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:24px}
+.dbar-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 24px}
+.dbar-card h4{margin:0 0 6px;font-size:15px;color:#6b4423}
+.dbar-card .legend{display:flex;gap:14px;font-size:11px;color:#7b6653;margin-bottom:14px}
+.dbar-card .legend span{display:inline-flex;align-items:center;gap:5px}
+.dbar-card .legend .sw{width:14px;height:10px;border-radius:2px}
+.bar-chart{display:flex;flex-direction:column;gap:14px}
+.bar-row{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center}
+.bar-row .lbl{font-size:12px;color:#3a2e22;font-weight:600}
+.bar-pair{display:flex;height:24px;border-radius:5px;overflow:hidden;background:#f4eadb}
+.bar-pair .b-actual{background:#9f6b44;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fefcf7;font-size:11px;font-weight:700}
+.bar-pair .b-target{background:#e8d8c3;display:flex;align-items:center;justify-content:flex-start;padding-left:8px;color:#6b4423;font-size:11px;font-weight:700}
+.bar-row .vl{font-size:12px;color:#241b15;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.bar-row .vl small{display:block;font-size:9px;color:#7b6653;font-weight:500}
+
+/* Radar chart */
+.radar-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 22px;text-align:center}
+.radar-card h4{margin:0 0 8px;font-size:14px;color:#6b4423;text-align:left}
+.radar-svg{display:block;margin:0 auto}
+.radar-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:11px;text-align:left}
+.radar-legend .li{display:flex;align-items:center;gap:6px;color:#3a2e22}
+.radar-legend .li .sw{width:10px;height:10px;border-radius:50%}
+
+/* Big number tower */
+.tower-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.tower{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 14px;text-align:center;position:relative;overflow:hidden}
+.tower .t-num{font-size:42px;font-weight:800;color:#241b15;line-height:1;font-variant-numeric:tabular-nums}
+.tower .t-num span{font-size:14px;color:#7b6653;font-weight:500;margin-left:4px}
+.tower .t-lbl{font-size:12px;color:#6b4423;margin-top:6px;font-weight:700}
+.tower .t-sub{font-size:10px;color:#7b6653;margin-top:4px;line-height:1.4}
+.tower.in::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#4a7c59}
+.tower.out::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#a04030}
+.tower.gauge::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#9f6b44}
+
+/* Breakdown lists */
+.breakdown-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.bd-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px;border-top:4px solid #9f6b44}
+.bd-card.c{border-top-color:#6b4423}
+.bd-card.d{border-top-color:#4a7c59}
+.bd-card.e{border-top-color:#a04030}
+.bd-card h4{margin:0 0 12px;font-size:14px;color:#6b4423}
+.bd-list{display:flex;flex-direction:column;gap:7px}
+.bd-list .br{display:grid;grid-template-columns:1fr auto;font-size:12px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed #f4eadb}
+.bd-list .br .nm{color:#3a2e22}
+.bd-list .br .vl{color:#9f6b44;font-variant-numeric:tabular-nums;font-weight:700}
+.bd-list .br .vl small{color:#7b6653;font-weight:500;margin-left:4px}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.dbar-grid,.breakdown-grid{grid-template-columns:1fr}.tower-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.tower-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v3 · dual-axis · radar · tower</p>
+<h1>M-3 设计 v3：双轴对比柱 + 雷达图 + 数字塔</h1>
+<p class="subtitle">顶部 5 大数字 KPI（塔式布局）+ 中部"目标 vs 实际"双轴对比柱图（全年任务）+ 5 维雷达图（人才结构）+ 底部 4 张明细表。强调"对比"与"多维透视"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📉</span>
+<h2 class="narrative-h2"><span class="narrative-badge">三</span>人员优化情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2026 年以来，<strong>社招入职 34 人</strong>，其中总行干部 2 人、分支行部门 4 人、网点班子 4 人、客户经理 9 人、其他 15 人。</p>
+<p>2026 届<strong>校园招聘目标 659 人</strong>，已签约 721 人（超额）；其中<strong>一本及以上 73%</strong>（较去年 +7pp）。岗位分布：管培生 45 + 金融科技 54 + 分行管培 112 + 英才 469 + 微贷 41。</p>
+<p><strong>全行累计退出 202 人</strong>。分支行腾笼换鸟完成率 <strong>50%</strong>（201 / 410）；<strong>绩差退出 44 人</strong>（占比 46%）；1-5 月劳动仲裁 15 人（胜 2 / 败 2 / 进行中 11）。</p>
+</section>
+
+<div class="section-title"><h3>顶部 · 5 大数字 KPI 塔</h3><span class="pill">tower × 5</span></div>
+<section class="tower-grid">
+<article class="tower in">
+<div class="t-num">34<span>人</span></div>
+<div class="t-lbl">社招入职</div>
+<div class="t-sub">总行干部 2 / 分支行 4 / 网点 4 / 客户经理 9 / 其他 15</div>
+</article>
+<article class="tower in">
+<div class="t-num">721<span>人</span></div>
+<div class="t-lbl">校招已签约</div>
+<div class="t-sub">目标 659 已超额 · 一本以上 73%</div>
+</article>
+<article class="tower out">
+<div class="t-num">202<span>人</span></div>
+<div class="t-lbl">累计退出</div>
+<div class="t-sub">总行直属 30 / 经营机构 172</div>
+</article>
+<article class="tower gauge">
+<div class="t-num">50<span>%</span></div>
+<div class="t-lbl">腾笼换鸟完成率</div>
+<div class="t-sub">1-5 月退出 201 / 全年 410</div>
+</article>
+<article class="tower out">
+<div class="t-num">15<span>人</span></div>
+<div class="t-lbl">劳动仲裁</div>
+<div class="t-sub">胜 2 / 败 2 / 进行中 11</div>
+</article>
+</section>
+
+<div class="section-title"><h3>双轴对比 · 全年目标 vs 1-5 月实际</h3><span class="pill">dual-bar × 5</span></div>
+<section class="dbar-grid">
+<article class="dbar-card">
+<h4>腾笼换鸟 · 各任务线进度</h4>
+<div class="legend"><span><span class="sw" style="background:#9f6b44"></span>1-5 月实际</span><span><span class="sw" style="background:#e8d8c3"></span>全年目标</span></div>
+<div class="bar-chart">
+<div class="bar-row">
+<span class="lbl">全行退出</span>
+<div class="bar-pair"><div class="b-actual" style="width:49.02%">201</div><div class="b-target" style="width:50.98%">410</div></div>
+<span class="vl">201<small>/ 410</small></span>
+</div>
+<div class="bar-row">
+<span class="lbl">总行直属</span>
+<div class="bar-pair"><div class="b-actual" style="width:30%">15</div><div class="b-target" style="width:70%">50</div></div>
+<span class="vl">15<small>/ 50</small></span>
+</div>
+<div class="bar-row">
+<span class="lbl">经营机构</span>
+<div class="bar-pair"><div class="b-actual" style="width:48.78%">180</div><div class="b-target" style="width:51.22%">189</div></div>
+<span class="vl">180<small>/ 189</small></span>
+</div>
+<div class="bar-row">
+<span class="lbl">绩差退出</span>
+<div class="bar-pair"><div class="b-actual" style="width:46%">44</div><div class="b-target" style="width:54%">50</div></div>
+<span class="vl">44<small>/ 50</small></span>
+</div>
+<div class="bar-row">
+<span class="lbl">校招签约</span>
+<div class="bar-pair"><div class="b-actual" style="width:100%">721</div><div class="b-target" style="width:100%">659</div></div>
+<span class="vl">721<small>/ 659</small></span>
+</div>
+</div>
+</article>
+
+<article class="radar-card">
+<h4>人才结构 · 5 维雷达</h4>
+<svg class="radar-svg" width="240" height="240" viewBox="0 0 240 240">
+<polygon points="120,30 200,75 200,165 120,210 40,165 40,75" fill="#fbf4e9" stroke="#e8d8c3" stroke-width="1"/>
+<polygon points="120,50 184,84 184,156 120,190 56,156 56,84" fill="none" stroke="#e8d8c3" stroke-width="1"/>
+<polygon points="120,70 168,94 168,146 120,170 72,146 72,94" fill="none" stroke="#e8d8c3" stroke-width="1"/>
+<polygon points="120,90 152,104 152,136 120,150 88,136 88,104" fill="none" stroke="#e8d8c3" stroke-width="1"/>
+<polygon points="120,110 136,114 136,126 120,130 104,126 104,114" fill="none" stroke="#e8d8c3" stroke-width="1"/>
+<polygon points="120,30 200,75 120,210 40,165 40,75" fill="rgba(159,107,68,0.35)" stroke="#9f6b44" stroke-width="2"/>
+<text x="120" y="22" text-anchor="middle" font-size="11" fill="#6b4423" font-weight="700">校招</text>
+<text x="210" y="78" text-anchor="start" font-size="11" fill="#6b4423" font-weight="700">社招</text>
+<text x="210" y="168" text-anchor="start" font-size="11" fill="#6b4423" font-weight="700">总行</text>
+<text x="120" y="226" text-anchor="middle" font-size="11" fill="#6b4423" font-weight="700">经营</text>
+<text x="22" y="168" text-anchor="end" font-size="11" fill="#6b4423" font-weight="700">退出</text>
+<text x="22" y="78" text-anchor="end" font-size="11" fill="#6b4423" font-weight="700">绩差</text>
+</svg>
+<div class="radar-legend">
+<div class="li"><span class="sw" style="background:#9f6b44"></span>校招 721</div>
+<div class="li"><span class="sw" style="background:#9f6b44"></span>社招 34</div>
+<div class="li"><span class="sw" style="background:#9f6b44"></span>总行直属 30</div>
+<div class="li"><span class="sw" style="background:#9f6b44"></span>经营机构 172</div>
+<div class="li"><span class="sw" style="background:#9f6b44"></span>退出 202</div>
+<div class="li"><span class="sw" style="background:#9f6b44"></span>绩差 44</div>
+</div>
+</article>
+</section>
+
+<div class="section-title"><h3>明细分布 · 4 张清单</h3><span class="pill">breakdown × 4</span></div>
+<section class="breakdown-grid">
+<article class="bd-card">
+<h4>📥 社招 34 人 · 岗位分布</h4>
+<div class="bd-list">
+<div class="br"><span class="nm">总行总经理助理级</span><span class="vl">2<small>人</small></span></div>
+<div class="br"><span class="nm">分支行部门班子</span><span class="vl">4<small>人</small></span></div>
+<div class="br"><span class="nm">网点班子</span><span class="vl">4<small>人</small></span></div>
+<div class="br"><span class="nm">各类客户经理</span><span class="vl">9<small>人</small></span></div>
+<div class="br"><span class="nm">其他</span><span class="vl">15<small>人</small></span></div>
+</div>
+</article>
+
+<article class="bd-card c">
+<h4>🎓 校招 721 人 · 岗位分布</h4>
+<div class="bd-list">
+<div class="br"><span class="nm">总行管培生</span><span class="vl">45<small>人</small></span></div>
+<div class="br"><span class="nm">总行金融科技</span><span class="vl">54<small>人</small></span></div>
+<div class="br"><span class="nm">分行管培生</span><span class="vl">112<small>人</small></span></div>
+<div class="br"><span class="nm">英才岗</span><span class="vl">469<small>人</small></span></div>
+<div class="br"><span class="nm">微贷/特资定向</span><span class="vl">41<small>人</small></span></div>
+</div>
+</article>
+
+<article class="bd-card d">
+<h4>📤 退出 202 人 · 职级分布</h4>
+<div class="bd-list">
+<div class="br"><span class="nm">高管级退休（胡优华）</span><span class="vl">1<small>人</small></span></div>
+<div class="br"><span class="nm">中层干部离职</span><span class="vl">2<small>人</small></span></div>
+<div class="br"><span class="nm">员工离职</span><span class="vl">175<small>人</small></span></div>
+<div class="br"><span class="nm">员工退休</span><span class="vl">24<small>人</small></span></div>
+<div class="br"><span class="nm">合计</span><span class="vl">202<small>人</small></span></div>
+</div>
+</article>
+
+<article class="bd-card e">
+<h4>⚖ 仲裁 15 人 · 状态</h4>
+<div class="bd-list">
+<div class="br"><span class="nm">胜诉（广分 / 信用卡）</span><span class="vl">2<small>人</small></span></div>
+<div class="br"><span class="nm">败诉（汕头 / 信用卡）</span><span class="vl">2<small>人</small></span></div>
+<div class="br"><span class="nm">进行中</span><span class="vl">11<small>人</small></span></div>
+<div class="br"><span class="nm">仲裁率</span><span class="vl">0.25<small>%</small></span></div>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：10/10 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 静态 KPI；v3 用 5 大数字塔 + 双轴对比柱（actual vs target 横向对比）+ SVG 雷达图</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 个 stacked-bar；v3 用 dual-bar（双轴 = 实际+目标）+ radar + 数字塔（极简大字）</li>
+<li><b>新增 viz 类型</b>：① 数字塔（giant number tower）② 双轴对比柱（dual-axis grouped bar）③ SVG 雷达图（radar/spider）④ 明细清单（breakdown list）</li>
+<li><b>信息密度</b>：高 — 5 大数字 + 5 对比柱 + 6 雷达维 + 20 明细 = 36 数据点</li>
+<li><b>读图速度</b>：3-5 秒 — 数字塔扫一眼，对比柱读进度，雷达看结构</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

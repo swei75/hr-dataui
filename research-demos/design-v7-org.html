@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-4 设计 v7：数字墙 + 配/空对比卡</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:34px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.num-wall{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
+.num-tile{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 18px;text-align:center;position:relative;overflow:hidden}
+.num-tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:#9f6b44}
+.num-tile.ok::after{background:#4a7c59}
+.num-tile.warn::after{background:#a04030}
+.num-tile.deep::after{background:#6b4423}
+.num-tile .lbl{font-size:12px;color:#7b6653;margin-bottom:10px;letter-spacing:.04em;font-weight:600}
+.num-tile .big{font-size:42px;font-weight:800;color:#241b15;line-height:1;font-variant-numeric:tabular-nums}
+.num-tile .big small{font-size:14px;color:#7b6653;font-weight:500;margin-left:4px}
+.num-tile .meta{font-size:11px;color:#7b6653;margin-top:10px;letter-spacing:.04em;line-height:1.5}
+.num-tile.deep{background:#6b4423;color:#fefcf7}
+.num-tile.deep .lbl,.num-tile.deep .big,.num-tile.deep .big small,.num-tile.deep .meta{color:#fefcf7}
+.num-tile.deep .lbl,.num-tile.deep .meta{color:#ead9c3}
+.section-title{display:flex;align-items:center;gap:10px;margin:22px 0 10px}
+.section-title h3{margin:0;font-size:16px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+.compare-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+.cmp-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:18px 22px;border-left:5px solid #9f6b44}
+.cmp-card.alert{border-left-color:#a04030}
+.cmp-card .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.cmp-card h4{margin:0;font-size:14px;color:#6b4423;font-weight:700}
+.cmp-card .total{font-size:11px;color:#7b6653;letter-spacing:.04em}
+.cmp-card .total b{color:#9f6b44;font-size:16px}
+.cmp-track{position:relative;height:34px;background:#f4eadb;border-radius:6px;overflow:hidden;margin-bottom:10px}
+.cmp-fill{height:100%;display:flex;align-items:center;color:#fefcf7;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.cmp-fill.f{background:linear-gradient(90deg,#4a7c59,#5d8e6c);justify-content:flex-end;padding-right:10px}
+.cmp-fill.g{background:linear-gradient(90deg,#a04030,#b85141);position:absolute;top:0;left:0;height:100%;justify-content:flex-start;padding-left:8px}
+.cmp-info{display:flex;justify-content:space-between;font-size:11px;color:#3a2e22}
+.cmp-info .f{color:#4a7c59;font-weight:700}
+.cmp-info .g{color:#a04030;font-weight:700}
+.scale-note{background:#f4eadb;border-radius:8px;padding:8px 12px;font-size:11px;color:#5a4a3a;margin-bottom:14px;line-height:1.5}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.num-wall{grid-template-columns:repeat(3,1fr)}.compare-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:24px}.narrative-h2{font-size:22px}.num-wall{grid-template-columns:repeat(2,1fr)}.num-tile .big{font-size:32px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v7 · number-wall + dual-segment comparison cards</p>
+<h1>M-4 设计 v7：数字墙 + 配/空对比卡</h1>
+<p class="subtitle">顶部 6 大数字墙（211/194/17/100/93/7）+ 中部 6 张配/空对比卡（每卡水平双段：绿色已配 + 红色空缺，绝对值宽度非 100% 占比）。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">🎖</span>
+<h2 class="narrative-h2"><span class="narrative-badge">四</span>干部队伍建设情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>中层干部<strong>总职数 211 人</strong>，其中，总行 100 人、经营机构 111 人；<strong>正职 54 人，副职 157 人</strong>。</p>
+<p>目前<strong>已配备 194 人，尚空缺 17 人</strong>。总行已配备 93 人（尚空缺 7 人）、经营机构已配备 101 人（尚空缺 10 人）；正职已配备 50 人（尚空缺 4 人）、副职已配备 144 人（尚空缺 13 人）。</p>
+<p>市管领导干部职数 8 / 已配 8 / 空缺 0；<strong>高管人员 6 人</strong>；派驻纪检监察组（不含组长）6 / 已配 3 / 空缺 3。</p>
+</section>
+
+<div class="section-title"><h3>数字墙 · 6 大核心数字</h3><span class="pill">wall × 6</span></div>
+<section class="num-wall">
+<article class="num-tile deep"><div class="lbl">中层干部总职数</div><div class="big">211<small>人</small></div><div class="meta">总行 100 + 经营 111</div></article>
+<article class="num-tile ok"><div class="lbl">实际已配</div><div class="big">194<small>人</small></div><div class="meta">配备率 91.94%</div></article>
+<article class="num-tile warn"><div class="lbl">尚空缺</div><div class="big">17<small>人</small></div><div class="meta">总行 7 + 经营 10</div></article>
+<article class="num-tile"><div class="lbl">总行部门班子</div><div class="big">100<small>人</small></div><div class="meta">已配 93 / 空缺 7</div></article>
+<article class="num-tile ok"><div class="lbl">总行已配</div><div class="big">93<small>人</small></div><div class="meta">配备率 93.0%</div></article>
+<article class="num-tile warn"><div class="lbl">总行空缺</div><div class="big">7<small>人</small></div><div class="meta">含正职 / 副职缺口</div></article>
+</section>
+
+<div class="section-title"><h3>6 张配/空对比卡 · 绝对值双段条</h3><span class="pill">compare × 6</span></div>
+<div class="scale-note">每张卡的水平条宽度 = 真实人数（最大卡宽度 = 211 中层总）。绿色段 = 已配绝对值，红色段 = 空缺绝对值。</div>
+<section class="compare-grid">
+
+<article class="cmp-card">
+<div class="hd"><h4>🎖 中层总（参考最大值）</h4><span class="total">总 <b>211</b></span></div>
+<div class="cmp-track"><div class="cmp-fill f" style="width:91.94%">已配 194</div></div>
+<div class="cmp-info"><span class="f">已配 194 · 91.94%</span><span class="g">空缺 17</span></div>
+</article>
+
+<article class="cmp-card">
+<div class="hd"><h4>🏢 总行部门班子</h4><span class="total">总 <b>100</b></span></div>
+<div class="cmp-track">
+<div class="cmp-fill f" style="width:93%">已配 93</div>
+<div class="cmp-fill g" style="width:7%">7</div>
+</div>
+<div class="cmp-info"><span class="f">已配 93 · 93.0%</span><span class="g">空缺 7</span></div>
+</article>
+
+<article class="cmp-card">
+<div class="hd"><h4>🏢 经营机构班子</h4><span class="total">总 <b>111</b></span></div>
+<div class="cmp-track">
+<div class="cmp-fill f" style="width:90.99%">已配 101</div>
+<div class="cmp-fill g" style="width:9.01%">10</div>
+</div>
+<div class="cmp-info"><span class="f">已配 101 · 90.99%</span><span class="g">空缺 10（含 3 纪检）</span></div>
+</article>
+
+<article class="cmp-card">
+<div class="hd"><h4>🎖 中层正职</h4><span class="total">总 <b>54</b></span></div>
+<div class="cmp-track">
+<div class="cmp-fill f" style="width:25.59%">已配 50</div>
+<div class="cmp-fill g" style="width:2.05%">4</div>
+</div>
+<div class="cmp-info"><span class="f">已配 50 · 92.6%</span><span class="g">空缺 4</span></div>
+</article>
+
+<article class="cmp-card">
+<div class="hd"><h4>🎖 中层副职</h4><span class="total">总 <b>157</b></span></div>
+<div class="cmp-track">
+<div class="cmp-fill f" style="width:74.41%">已配 144</div>
+<div class="cmp-fill g" style="width:6.31%">13</div>
+</div>
+<div class="cmp-info"><span class="f">已配 144 · 91.7%</span><span class="g">空缺 13（含 3 纪检）</span></div>
+</article>
+
+<article class="cmp-card alert">
+<div class="hd"><h4>⚖ 派驻纪检监察组 ⚠</h4><span class="total">总 <b>6</b></span></div>
+<div class="cmp-track">
+<div class="cmp-fill f" style="width:2.84%">已配 3</div>
+<div class="cmp-fill g" style="width:2.84%">3</div>
+</div>
+<div class="cmp-info"><span class="f">已配 3 · 50%</span><span class="g">空缺 3</span></div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：12/12 完整（市管 / 高管 / 纪检 / 中层总 / 正 / 副 / 副总级一把手 / 副总 / 总助 / 经理 / 总行 / 经营）</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 个等权 KPI 卡一行；v7 是 6 大数字墙（深棕主色 + 底色编码）+ 6 张配/空对比卡</li>
+<li><b>与 M-2 差异</b>：M-2 是 stacked-bar 占满 100% 宽度（视觉强调占比）；v7 是绝对值双段条（视觉强调规模差）</li>
+<li><b>与 M-3 差异</b>：M-3 v1 是 gauge + 进度条；v7 是对比卡 + 双段条（强调"配/空两态"非"时间进度"）</li>
+<li><b>新增 viz 类型</b>：① 数字墙（6 tile 大数字 + 底色色条） ② 绝对值双段对比条（非 100% 占比） ③ 渐变绿填充 ④ 警示边框（纪检 alert）</li>
+<li><b>信息密度</b>：高 — 6 大数字 + 6 对比卡 × 3 字段 = 36+ 数字</li>
+<li><b>读图速度</b>：3 秒 — 数字墙定锚，对比卡扫读规模差</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

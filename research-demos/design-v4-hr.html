@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-3 设计 v4：时间线 + 热力图 + 案例卡</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:36px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:15px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:28px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.narrative-card p{font-size:14px;line-height:1.85;color:#3a2e22;margin:0 0 9px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.section-title{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+.section-title h3{margin:0;font-size:17px;color:#6b4423;font-weight:700}
+.section-title .pill{font-size:11px;letter-spacing:.06em;background:#ead9c3;color:#9f6b44;padding:4px 10px;border-radius:999px;font-weight:700}
+
+/* Vertical timeline */
+.tl-vertical{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.tl-vertical h4{margin:0 0 16px;font-size:15px;color:#6b4423}
+.tl-list{position:relative;padding-left:30px}
+.tl-list::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,#9f6b44,#a04030)}
+.tl-item{position:relative;padding:0 0 18px 24px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:-30px;top:4px;width:20px;height:20px;border-radius:50%;background:#9f6b44;border:3px solid #fbf4e9;box-shadow:0 0 0 2px #9f6b44}
+.tl-item.warn::before{background:#a04030;box-shadow:0 0 0 2px #a04030}
+.tl-item.ok::before{background:#4a7c59;box-shadow:0 0 0 2px #4a7c59}
+.tl-date{font-size:11px;color:#9f6b44;font-weight:800;letter-spacing:.06em;margin-bottom:2px}
+.tl-title{font-size:14px;color:#241b15;font-weight:700;margin-bottom:4px}
+.tl-meta{font-size:12px;color:#3a2e22;line-height:1.6}
+.tl-meta b{color:#9f6b44}
+
+/* Heatmap */
+.heat-wrap{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:22px 24px;margin-bottom:24px}
+.heat-wrap h4{margin:0 0 6px;font-size:15px;color:#6b4423}
+.heat-wrap .sub{font-size:11px;color:#7b6653;margin-bottom:14px}
+.heat-grid{display:grid;grid-template-columns:110px repeat(5,1fr);gap:4px;font-size:11px}
+.heat-cell{aspect-ratio:1.6;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fefcf7;padding:4px;font-variant-numeric:tabular-nums;flex-direction:column;line-height:1.2}
+.heat-cell.empty{background:#fbf4e9;color:#7b6653;font-weight:500}
+.heat-h{background:transparent;color:#6b4423;font-weight:700;display:flex;align-items:center;justify-content:center;aspect-ratio:auto;padding:6px}
+.heat-row-lbl{background:transparent;color:#241b15;font-weight:600;display:flex;align-items:center;justify-content:flex-start;padding:6px 8px;aspect-ratio:auto}
+.heat-legend{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:11px;color:#7b6653}
+.heat-legend .scale{display:flex;gap:0}
+.heat-legend .scale div{width:22px;height:12px}
+
+/* Case cards */
+.case-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.case-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:16px 18px;border-left:5px solid #c9a883;position:relative;overflow:hidden}
+.case-card.win{border-left-color:#4a7c59}
+.case-card.lose{border-left-color:#a04030}
+.case-card.urgent{border-left-color:#a04030;background:linear-gradient(135deg,#fefcf7 70%,#fbe9e3 100%)}
+.case-card .tag{font-size:10px;color:#9f6b44;letter-spacing:.06em;font-weight:800;margin-bottom:6px}
+.case-card.win .tag{color:#4a7c59}
+.case-card.lose .tag{color:#a04030}
+.case-card .icon{position:absolute;top:12px;right:14px;font-size:22px;opacity:.7}
+.case-card .ttl{font-size:14px;color:#241b15;font-weight:700;margin-bottom:4px}
+.case-card .meta{font-size:11px;color:#7b6653;line-height:1.5}
+.case-card .meta b{color:#9f6b44}
+
+/* Bottom split: 退出分布 + 校招岗位 */
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.split-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:20px 24px}
+.split-card h4{margin:0 0 12px;font-size:14px;color:#6b4423}
+.split-rows{display:flex;flex-direction:column;gap:8px}
+.split-rows .sr{display:grid;grid-template-columns:1fr auto;font-size:12px;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed #f4eadb}
+.split-rows .sr:last-child{border-bottom:0}
+.split-rows .sr .nm{color:#3a2e22}
+.split-rows .sr .vl{color:#9f6b44;font-variant-numeric:tabular-nums;font-weight:700}
+.split-rows .sr .vl small{color:#7b6653;font-weight:500;margin-left:3px}
+
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.split-grid{grid-template-columns:1fr}.case-grid{grid-template-columns:repeat(2,1fr)}.heat-grid{grid-template-columns:80px repeat(5,1fr);font-size:10px}}
+@media(max-width:640px){.hero h1{font-size:26px}.narrative-h2{font-size:22px}.case-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v4 · timeline · heatmap · case-cards</p>
+<h1>M-3 设计 v4：里程碑时间线 + 热力图 + 案例卡</h1>
+<p class="subtitle">左侧月度里程碑时间线（6 节点彩点）+ 中部"分行 × 月份"完成率热力图（颜色深浅即完成率）+ 4 张仲裁/排名案例卡。强调"事件时间感"和"分行对比"。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">📉</span>
+<h2 class="narrative-h2"><span class="narrative-badge">三</span>人员优化情况</h2>
+</section>
+
+<section class="narrative-card">
+<p>2026 年以来，<strong>社招入职 34 人</strong>（总行干部 2 / 分支行 4 / 网点 4 / 客户经理 9 / 其他 15）。</p>
+<p>2026 届<strong>校招签约 721 人</strong>（目标 659 已超额），<strong>一本及以上 73%</strong>（较去年 +7pp）；秋招 250、春招 430、微贷 41。</p>
+<p><strong>全行累计退出 202 人</strong>。分支行腾笼换鸟完成率 <strong>50%</strong>（1-5 月退出 201 / 全年 410）；<strong>绩差退出 44 人</strong>（46%，目标 50%）。</p>
+<p>1-5 月<strong>劳动仲裁 15 人</strong>（胜 2 / 败 2 / 进行中 11）。其中<strong>总营 295%</strong>超额领先，<strong>佛山 44%</strong>排名末位。</p>
+</section>
+
+<div class="section-title"><h3>月度里程碑时间线 · 1-5 月关键事件</h3><span class="pill">timeline × 6</span></div>
+<section class="tl-vertical">
+<h4>2026 年 1-5 月人员优化关键里程碑</h4>
+<div class="tl-list">
+<div class="tl-item ok">
+<div class="tl-date">2026-01 · JAN</div>
+<div class="tl-title">校招秋招集中签约期</div>
+<div class="tl-meta">总行管培生 <b>18 人</b>签约 · 金融科技岗首批 <b>30 人</b> · 全月累计退出 <b>30 人</b></div>
+</div>
+<div class="tl-item">
+<div class="tl-date">2026-02 · FEB</div>
+<div class="tl-title">春节前后离职小高峰</div>
+<div class="tl-meta">腾笼换鸟累计 <b>70 人</b>（环比 +40）· 绩差退出启动 · 社招新员工陆续入职</div>
+</div>
+<div class="tl-item ok">
+<div class="tl-date">2026-03 · MAR</div>
+<div class="tl-title">春招签约高峰 + 校园双选会</div>
+<div class="tl-meta">春招 <b>430 人</b>落地 · 一本以上占比 <b>73%</b> · 累计退出 <b>120 人</b></div>
+</div>
+<div class="tl-item warn">
+<div class="tl-date">2026-04 · APR</div>
+<div class="tl-title">劳动仲裁案件集中发生</div>
+<div class="tl-meta"><b>15 人</b>仲裁立案 · 已结案 4 人（<b>胜 2 / 败 2</b>）· 累计退出 <b>170 人</b></div>
+</div>
+<div class="tl-item">
+<div class="tl-date">2026-05 · MAY</div>
+<div class="tl-title">半年考核节点 · 完成率达标</div>
+<div class="tl-meta">腾笼换鸟累计退出 <b>201 人</b> · <b>完成率 50%</b>（序时达标）· 总营 / 惠州 / 东莞超额</div>
+</div>
+<div class="tl-item warn">
+<div class="tl-date">预警信号</div>
+<div class="tl-title">后三分行需关注</div>
+<div class="tl-meta"><b>佛山 44%</b> · <b>汕头 48%</b> · <b>广分 80%</b>（退出量虽大但完成率仍滞后）</div>
+</div>
+</div>
+</section>
+
+<div class="section-title"><h3>腾笼换鸟 · 分行 × 月份 热力图</h3><span class="pill">heatmap 6 × 5</span></div>
+<section class="heat-wrap">
+<h4>6 家分行 × 1-5 月退出完成率（颜色越深 = 完成率越高）</h4>
+<div class="sub">单元格内显示当月累计完成率 · 100% = 序时达标基准</div>
+<div class="heat-grid">
+<div class="heat-h"></div><div class="heat-h">1 月</div><div class="heat-h">2 月</div><div class="heat-h">3 月</div><div class="heat-h">4 月</div><div class="heat-h">5 月</div>
+
+<div class="heat-row-lbl">总营 ⭐</div>
+<div class="heat-cell" style="background:#c9a883">58%</div>
+<div class="heat-cell" style="background:#9f6b44">117%</div>
+<div class="heat-cell" style="background:#6b4423">175%</div>
+<div class="heat-cell" style="background:#6b4423">235%</div>
+<div class="heat-cell" style="background:#6b4423">295%</div>
+
+<div class="heat-row-lbl">惠州 ⭐</div>
+<div class="heat-cell" style="background:#c9a883">52%</div>
+<div class="heat-cell" style="background:#9f6b44">103%</div>
+<div class="heat-cell" style="background:#9f6b44">156%</div>
+<div class="heat-cell" style="background:#6b4423">207%</div>
+<div class="heat-cell" style="background:#6b4423">259%</div>
+
+<div class="heat-row-lbl">东莞 ⭐</div>
+<div class="heat-cell" style="background:#c9a883">51%</div>
+<div class="heat-cell" style="background:#9f6b44">102%</div>
+<div class="heat-cell" style="background:#9f6b44">153%</div>
+<div class="heat-cell" style="background:#6b4423">204%</div>
+<div class="heat-cell" style="background:#6b4423">255%</div>
+
+<div class="heat-row-lbl">广分</div>
+<div class="heat-cell" style="background:#c9a883">16%</div>
+<div class="heat-cell" style="background:#c9a883">32%</div>
+<div class="heat-cell" style="background:#c9a883">48%</div>
+<div class="heat-cell" style="background:#9f6b44">64%</div>
+<div class="heat-cell" style="background:#c9a883">80%</div>
+
+<div class="heat-row-lbl">汕头 ⚠</div>
+<div class="heat-cell" style="background:#c9a883">10%</div>
+<div class="heat-cell" style="background:#c9a883">19%</div>
+<div class="heat-cell" style="background:#ead9c3;color:#6b4423">29%</div>
+<div class="heat-cell" style="background:#ead9c3;color:#6b4423">38%</div>
+<div class="heat-cell" style="background:#a04030">48%</div>
+
+<div class="heat-row-lbl">佛山 ⚠</div>
+<div class="heat-cell" style="background:#c9a883">9%</div>
+<div class="heat-cell" style="background:#ead9c3;color:#6b4423">18%</div>
+<div class="heat-cell" style="background:#ead9c3;color:#6b4423">26%</div>
+<div class="heat-cell" style="background:#ead9c3;color:#6b4423">35%</div>
+<div class="heat-cell" style="background:#a04030">44%</div>
+</div>
+<div class="heat-legend">
+<span>低</span>
+<span class="scale">
+<div style="background:#ead9c3"></div>
+<div style="background:#c9a883"></div>
+<div style="background:#9f6b44"></div>
+<div style="background:#6b4423"></div>
+</span>
+<span>高</span>
+<span style="margin-left:14px">⭐ Top 3 · ⚠ Bottom 3</span>
+</div>
+</section>
+
+<div class="section-title"><h3>重点案例 · 仲裁 + 排名 + 退出</h3><span class="pill">case × 4</span></div>
+<section class="case-grid">
+<article class="case-card win">
+<div class="icon">✅</div>
+<div class="tag">胜诉案例 1</div>
+<div class="ttl">广州分行 · 一审胜诉</div>
+<div class="meta">1-5 月仲裁结案 · 已结案 4 人中<strong> 2 人胜诉</strong> · 无赔付</div>
+</article>
+
+<article class="case-card lose urgent">
+<div class="icon">⚖</div>
+<div class="tag">败诉案例 1</div>
+<div class="ttl">汕头分行 · 上诉中</div>
+<div class="meta">败诉后<strong> 安排上诉中</strong> · 该分行同时序时完成率 48%（倒数第二）</div>
+</article>
+
+<article class="case-card lose urgent">
+<div class="icon">📉</div>
+<div class="tag">排名末位</div>
+<div class="ttl">佛山分行 · 44%</div>
+<div class="meta">序时完成率<strong> 排名末位</strong> · 5 月仅完成 44% · 风险预警</div>
+</article>
+
+<article class="case-card">
+<div class="icon">⚠</div>
+<div class="tag">绩差退出</div>
+<div class="ttl">南京 / 中山 20%</div>
+<div class="meta">绩差客户经理退出率<strong> 后三</strong>：南京 20% / 中山 20% / 深圳 27%</div>
+</article>
+</section>
+
+<div class="section-title"><h3>明细分布 · 退出 + 校招</h3><span class="pill">breakdown × 2</span></div>
+<section class="split-grid">
+<article class="split-card">
+<h4>📤 退出 202 人 · 机构 + 职级</h4>
+<div class="split-rows">
+<div class="sr"><span class="nm">总行直属 · 离职 24 / 退休 6</span><span class="vl">30<small>人</small></span></div>
+<div class="sr"><span class="nm">经营机构 · 离职 153 / 退休 19</span><span class="vl">172<small>人</small></span></div>
+<div class="sr"><span class="nm">高管退休（胡优华资深督导）</span><span class="vl">1<small>人</small></span></div>
+<div class="sr"><span class="nm">中层干部离职</span><span class="vl">2<small>人</small></span></div>
+<div class="sr"><span class="nm">员工 · 离职 175 / 退休 24</span><span class="vl">199<small>人</small></span></div>
+<div class="sr"><span class="nm">合计</span><span class="vl">202<small>人</small></span></div>
+</div>
+</article>
+
+<article class="split-card">
+<h4>🎓 校招 721 人 · 岗位 + 时段</h4>
+<div class="split-rows">
+<div class="sr"><span class="nm">总行管培生</span><span class="vl">45<small>人</small></span></div>
+<div class="sr"><span class="nm">总行金融科技</span><span class="vl">54<small>人</small></span></div>
+<div class="sr"><span class="nm">分行管培生</span><span class="vl">112<small>人</small></span></div>
+<div class="sr"><span class="nm">英才岗</span><span class="vl">469<small>人</small></span></div>
+<div class="sr"><span class="nm">微贷 / 特资定向</span><span class="vl">41<small>人</small></span></div>
+<div class="sr"><span class="nm">秋招 250 + 春招 430 · 一本以上 73%</span><span class="vl">721<small>人</small></span></div>
+</div>
+</article>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：10/10 完整</li>
+<li><b>与 M-1 差异</b>：M-1 是 6 静态 KPI；v4 用 6 节点垂直时间线 + 6×5 颜色热力图 + 4 重点案例</li>
+<li><b>与 M-2 差异</b>：M-2 是 5 个 stacked-bar + 8 客户网格；v4 用 vertical timeline + heatmap（颜色编码） + case-card 故事化</li>
+<li><b>新增 viz 类型</b>：① 垂直时间线（vertical timeline with color dots）② 热力图（heatmap 6 分行 × 5 月份）③ 案例卡（含状态色边）④ 风险预警标（warning signal）</li>
+<li><b>信息密度</b>：高 — 6 时间节点 + 30 热力单元 + 4 案例 + 12 明细 = 52 数据点</li>
+<li><b>读图速度</b>：5 秒 — 时间线扫事件，热力图按颜色深浅识优劣，案例卡快速定位风险</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

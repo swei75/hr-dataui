@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-6 设计 v3：6 维雷达图</title>
+<style>
+:root{
+  --bg:#fbf4e9;--card:#fefcf7;--primary:#9f6b44;--primary-dark:#6b4423;
+  --border:#e8d8c3;--subtle-bg:#ead9c3;--text:#241b15;--text-muted:#7b6653;
+  --body:#3a2e22;--good:#4a7c59;--warn:#a04030;--accent:#c9b299;
+  --font:"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--font);color:var(--body);line-height:1.65;padding:24px 16px 60px;-webkit-font-smoothing:antialiased}
+.page-shell{max-width:980px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px 36px 40px;box-shadow:0 4px 18px rgba(107,68,35,.06)}
+.hero{border-bottom:1px dashed var(--border);padding-bottom:18px;margin-bottom:20px}
+.eyebrow{display:inline-block;font-size:12px;letter-spacing:.15em;color:var(--primary);text-transform:uppercase;background:var(--subtle-bg);padding:4px 12px;border-radius:99px;margin-bottom:10px}
+.hero h1{font-size:24px;color:var(--text);font-weight:600;margin-bottom:6px}
+.hero .subtitle{font-size:14px;color:var(--text-muted);max-width:720px}
+.narrative-head{display:flex;align-items:center;gap:12px;margin:22px 0 14px}
+.module-icon{font-size:28px}
+.narrative-h2{font-size:20px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:var(--primary);color:#fff;border-radius:8px;font-size:16px;font-weight:600}
+.narrative-card{background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:8px;padding:18px 22px;margin-bottom:24px}
+.narrative-card p{font-size:14px;color:var(--body);line-height:1.85;margin-bottom:8px}
+.narrative-card p:last-child{margin-bottom:0}
+.narrative-card strong{color:var(--primary-dark);font-weight:600;background:linear-gradient(transparent 60%,rgba(159,107,68,.18) 60%);padding:0 2px}
+.viz-block{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px 14px 14px;margin-bottom:24px;display:flex;flex-direction:column;align-items:center}
+.viz-block svg{width:100%;max-width:540px;height:auto;display:block}
+.legend-row{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--text-muted)}
+.legend-row span{display:inline-flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend-dot.fill{background:rgba(159,107,68,.5);border:1px solid #6b4423}
+.legend-dot.warn{background:var(--warn)}
+.design-note{background:var(--subtle-bg);border-radius:10px;padding:18px 22px;border:1px solid var(--border)}
+.design-note h3{font-size:15px;color:var(--primary-dark);margin-bottom:10px;font-weight:600;letter-spacing:.05em}
+.design-note ul{list-style:none;padding:0}
+.design-note li{font-size:13px;color:var(--body);margin-bottom:6px;padding-left:18px;position:relative}
+.design-note li::before{content:'◆';position:absolute;left:0;color:var(--primary);font-size:10px;top:6px}
+.design-note li b{color:var(--primary-dark);font-weight:600}
+@media (max-width:640px){.page-shell{padding:20px 18px 28px}.hero h1{font-size:20px}.narrative-h2{font-size:17px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v3 · radar · 6-dim · polygon</p>
+<h1>M-6 设计 v3：6 维雷达图</h1>
+<p class="subtitle">M-3 用 gauge ring 是单维度圆环；本版用 6 维雷达 polygon，可一眼看出培训体系的"综合能力画像"。</p>
+</header>
+<section class="narrative-head">
+<span class="module-icon">📚</span>
+<h2 class="narrative-h2"><span class="narrative-badge">六</span>培训赋能情况</h2>
+</section>
+<section class="narrative-card">
+<p>全行共开展能力大提升项目 <strong>983 场</strong>，落地实施 <strong>55 个</strong>重点培训项目。</p>
+<p>其中包括 5 期广银大讲堂、2 期对公特训营、3 期个贷铁军培训、4 期办贷能力提升火线班、1 期校招新员工集中培训等，近期计划启动"走进华为 2.0"领导力提升项目，<strong>重点项目已执行 58.06%</strong>。</p>
+<p>其中，已按计划 <strong>100% 完成培训</strong>的部室有 <strong>8 个</strong>（董事会办公室、私人银行与财富管理部、金融同业部、金融市场部、战略客户部、消费者权益保护部、机关纪委办公室、安全保卫部）；执行率排名后三位为金融科技部（<strong>0%</strong>）、内控合规部（<strong>0%</strong>）、运营管理部（<strong>14.29%</strong>）。</p>
+<p>全行已组织 <strong>35 场次</strong>上岗资格考试（涉及 <strong>8 大岗位</strong>），共有 <strong>1878 人次</strong>参考。</p>
+</section>
+<section class="viz-block">
+<svg viewBox="0 0 540 490" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="培训赋能 6 维雷达图">
+<defs>
+<radialGradient id="bg" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="#fff8eb"/>
+<stop offset="100%" stop-color="#fefcf7"/>
+</radialGradient>
+</defs>
+<rect x="0" y="0" width="540" height="490" fill="url(#bg)"/>
+
+<!-- 5 concentric hex rings (center 270,240 Rmax=140) -->
+<polygon points="270,100 391.24,170 391.24,310 270,380 148.76,310 148.76,170" fill="none" stroke="#ead9c3" stroke-width="1"/>
+<polygon points="270,128 366.99,184 366.99,296 270,352 173.01,296 173.01,184" fill="none" stroke="#ead9c3" stroke-width="1"/>
+<polygon points="270,156 342.74,198 342.74,282 270,324 197.26,282 197.26,198" fill="none" stroke="#ead9c3" stroke-width="1"/>
+<polygon points="270,184 318.5,212 318.5,268 270,296 221.5,268 221.5,212" fill="none" stroke="#ead9c3" stroke-width="1"/>
+<polygon points="270,212 294.25,226 294.25,254 270,268 245.75,254 245.75,226" fill="none" stroke="#ead9c3" stroke-width="1"/>
+
+<!-- 6 spokes -->
+<line x1="270" y1="240" x2="270" y2="100" stroke="#c9b299" stroke-width="1"/>
+<line x1="270" y1="240" x2="391.24" y2="170" stroke="#c9b299" stroke-width="1"/>
+<line x1="270" y1="240" x2="391.24" y2="310" stroke="#c9b299" stroke-width="1"/>
+<line x1="270" y1="240" x2="270" y2="380" stroke="#c9b299" stroke-width="1"/>
+<line x1="270" y1="240" x2="148.76" y2="310" stroke="#c9b299" stroke-width="1"/>
+<line x1="270" y1="240" x2="148.76" y2="170" stroke="#c9b299" stroke-width="1"/>
+
+<!-- Data polygon -->
+<polygon points="270,148.26 336.68,201.5 340.39,280.64 270,286.67 221.5,268 184.1,196.18"
+fill="rgba(159,107,68,.28)" stroke="#6b4423" stroke-width="2" stroke-linejoin="round"/>
+
+<!-- Data points -->
+<circle cx="270" cy="148.26" r="5" fill="#9f6b44" stroke="#fefcf7" stroke-width="2"/>
+<circle cx="336.68" cy="201.5" r="5" fill="#9f6b44" stroke="#fefcf7" stroke-width="2"/>
+<circle cx="340.39" cy="280.64" r="5" fill="#9f6b44" stroke="#fefcf7" stroke-width="2"/>
+<circle cx="270" cy="286.67" r="5" fill="#9f6b44" stroke="#fefcf7" stroke-width="2"/>
+<circle cx="221.5" cy="268" r="5" fill="#a04030" stroke="#fefcf7" stroke-width="2"/>
+<circle cx="184.1" cy="196.18" r="5" fill="#9f6b44" stroke="#fefcf7" stroke-width="2"/>
+
+<!-- Level tick labels (along axis 2) -->
+<text x="400" y="173" font-family="PingFang SC" font-size="9" fill="#c9b299">100%</text>
+<text x="375" y="187" font-family="PingFang SC" font-size="9" fill="#c9b299">80%</text>
+<text x="350" y="201" font-family="PingFang SC" font-size="9" fill="#c9b299">60%</text>
+<text x="325" y="215" font-family="PingFang SC" font-size="9" fill="#c9b299">40%</text>
+<text x="300" y="229" font-family="PingFang SC" font-size="9" fill="#c9b299">20%</text>
+
+<!-- Axis 1: top (培训总量) -->
+<text x="270" y="42" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">培训总量</text>
+<text x="270" y="62" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#241b15" font-weight="700">983 场</text>
+<text x="270" y="80" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#9f6b44" font-weight="600">65.5%</text>
+
+<!-- Axis 2: top-right (重点项目) -->
+<text x="422" y="125" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">重点项目</text>
+<text x="422" y="145" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#241b15" font-weight="700">55 项</text>
+<text x="422" y="161" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#9f6b44" font-weight="600">55.0%</text>
+
+<!-- Axis 3: bottom-right (执行率) -->
+<text x="422" y="325" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">执行率</text>
+<text x="422" y="345" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#241b15" font-weight="700">58.06%</text>
+<text x="422" y="361" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#9f6b44" font-weight="600">58.06%</text>
+
+<!-- Axis 4: bottom (100% 部门) -->
+<text x="270" y="408" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">100% 部门</text>
+<text x="270" y="428" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#241b15" font-weight="700">8 / 24</text>
+<text x="270" y="445" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#9f6b44" font-weight="600">33.3%</text>
+
+<!-- Axis 5: bottom-left REVERSE (末位部门) -->
+<text x="118" y="325" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">末位部门 ↓</text>
+<text x="118" y="345" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#a04030" font-weight="700">3 个</text>
+<text x="118" y="361" text-anchor="middle" font-family="PingFang SC" font-size="10" fill="#a04030">反向计分</text>
+
+<!-- Axis 6: top-left (资格考) -->
+<text x="118" y="125" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7b6653" font-weight="600">资格考</text>
+<text x="118" y="145" text-anchor="middle" font-family="PingFang SC" font-size="17" fill="#241b15" font-weight="700">1,878 人</text>
+<text x="118" y="161" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#9f6b44" font-weight="600">62.6%</text>
+
+<!-- Center label box -->
+<rect x="220" y="220" width="100" height="40" rx="6" fill="#fefcf7" stroke="#e8d8c3"/>
+<text x="270" y="234" text-anchor="middle" font-family="PingFang SC" font-size="10" fill="#7b6653">综合培训能力</text>
+<text x="270" y="253" text-anchor="middle" font-family="PingFang SC" font-size="22" fill="#6b4423" font-weight="700">56.6%</text>
+</svg>
+<div class="legend-row">
+<span><i class="legend-dot fill"></i>6 维数据 polygon（rgba 主色）</span>
+<span><i class="legend-dot warn"></i>反向轴（越少越好）</span>
+</div>
+</section>
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>覆盖维度</b>：6/6 完整（培训总量 / 重点项目 / 执行率 / 100% 部门 / 末位部门 / 资格考）</li>
+<li><b>与 M-1~M-5 差异</b>：M-1 走 6 张静态 KPI 卡（数字散点）/ M-2 走 stacked-bar + 客户网格（占比堆积）/ M-3 走 gauge ring 单维圆环（环形进度）/ M-4 走 13 节点分类树（层级结构）/ M-5 走大数字 + sparkline 财务卡（趋势条）。本版把 6 个子方向压成一张雷达 polygon，用形状呈现培训体系的"能力画像"。</li>
+<li><b>新增 viz 类型</b>：① 雷达图 / spider chart（SVG polygon · 6 顶点闭合形状）；② 同心层级环（5 层 20/40/60/80/100% 等比网格）；③ 反向计分规则（末位部门数越少分越高，数据点用警告色区分）</li>
+<li><b>读图速度</b>：3 秒 — 一眼看出多边形偏向"右上半 + 中部"，即总量 / 资格考 / 重点项目偏强，部门覆盖与末位治理偏弱；中央"综合培训能力 56.6%"锚定整体水位。</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau IT Risk Executive Mockup</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --color-bg:#f7f6f2; --color-surface:#f9f8f5; --color-surface-2:#fbfbf9; --color-surface-offset:#f3f0ec; --color-border:#d4d1ca;
+      --color-text:#28251d; --color-text-muted:#6e6b64; --color-text-faint:#97948e; --color-text-inverse:#f9f8f4;
+      --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#cedcd8;
+      --color-success:#437a22; --color-success-highlight:#d4dfcc; --color-warning:#964219; --color-warning-highlight:#ddcfc6; --color-error:#a12c7b; --color-error-highlight:#e0ced7;
+      --radius-sm:0.375rem; --radius-md:0.75rem; --radius-lg:1rem; --radius-xl:1.25rem;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.05); --shadow-md:0 8px 24px rgba(24,20,15,.08); --shadow-lg:0 20px 48px rgba(24,20,15,.12);
+      --font-body:'Satoshi', Inter, sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d; --color-surface-offset:#22211f; --color-border:#393836;
+      --color-text:#e7e3dc; --color-text-muted:#aaa59d; --color-text-faint:#7a766f; --color-text-inverse:#171614;
+      --color-primary:#4f98a3; --color-primary-hover:#227f8b; --color-primary-highlight:#313b3b;
+      --color-success:#6daa45; --color-success-highlight:#31442a; --color-warning:#d58b61; --color-warning-highlight:#564942; --color-error:#d163a7; --color-error-highlight:#4c3d46;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.2); --shadow-md:0 8px 24px rgba(0,0,0,.28); --shadow-lg:0 20px 48px rgba(0,0,0,.4);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      background: radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 24%), var(--color-bg);
+      color: var(--color-text);
+    }
+    button, input, select { font: inherit; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 76px 1fr;
+      height: 100dvh;
+    }
+    .sidebar {
+      grid-row: 1 / -1;
+      background: color-mix(in srgb, var(--color-surface) 82%, var(--color-primary-highlight));
+      border-right: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      padding: var(--space-5);
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      background: color-mix(in srgb, var(--color-surface-2) 88%, transparent);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .main {
+      overflow-y: auto;
+      padding: var(--space-6);
+    }
+    .brand { display:flex; align-items:center; gap: var(--space-3); margin-bottom: var(--space-8); }
+    .logo {
+      width: 40px; height: 40px; border-radius: 12px; background: var(--color-primary); color: white; display:grid; place-items:center; box-shadow: var(--shadow-md);
+    }
+    .brand h1 { font-size: var(--text-lg); margin: 0; }
+    .brand p, .small { font-size: var(--text-xs); color: var(--color-text-muted); margin: 0; }
+    .nav-group { margin-bottom: var(--space-8); }
+    .nav-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-faint); margin-bottom: var(--space-3); }
+    .nav-item {
+      display:flex; align-items:center; gap: var(--space-3); padding: .8rem .9rem; border-radius: var(--radius-md); color: var(--color-text); text-decoration:none; margin-bottom: var(--space-2);
+      background: transparent; border: 1px solid transparent;
+    }
+    .nav-item.active { background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); border-color: color-mix(in srgb, var(--color-primary) 22%, transparent); }
+    .nav-item:hover { background: color-mix(in srgb, var(--color-text) 4%, var(--color-surface)); }
+    .filters, .card {
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .filters { display:flex; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-4); }
+    .pill, .chip {
+      border-radius: 999px; padding: .5rem .85rem; font-size: var(--text-sm); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface-2);
+    }
+    .topbar-left h2 { font-size: var(--text-xl); margin: 0; }
+    .topbar-left p { margin: .2rem 0 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+    .header-actions { display:flex; gap: var(--space-3); align-items:center; }
+    .theme-toggle, .ghost-btn, .primary-btn {
+      border-radius: 999px; padding: .75rem 1rem; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface-2); color: var(--color-text);
+    }
+    .primary-btn { background: var(--color-primary); color: var(--color-text-inverse); border-color: transparent; }
+    .grid { display:grid; gap: var(--space-5); margin-top: var(--space-5); }
+    .kpi-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .kpi-card { padding: var(--space-5); position: relative; overflow: hidden; }
+    .kpi-label { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .06em; }
+    .kpi-value { font-size: clamp(1.8rem, 1.5rem + 1vw, 2.4rem); font-weight: 700; margin: .4rem 0; font-variant-numeric: tabular-nums lining-nums; }
+    .kpi-sub { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .trend-up { color: var(--color-success); }
+    .trend-down { color: var(--color-error); }
+    .two-col { grid-template-columns: 1.4fr 1fr; }
+    .section-title { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-4); }
+    .section-title h3 { margin: 0; font-size: var(--text-lg); }
+    .section-title p { margin: .3rem 0 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+    .card { padding: var(--space-5); }
+    .heatmap { display:grid; grid-template-columns: 80px repeat(5,1fr); gap: var(--space-2); align-items:stretch; }
+    .axis-label { display:grid; place-items:center; font-size: var(--text-xs); color: var(--color-text-muted); }
+    .heat-cell {
+      min-height: 74px; border-radius: var(--radius-md); padding: var(--space-3); display:flex; flex-direction:column; justify-content:space-between; font-size: var(--text-xs);
+      border: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .risk-low { background: color-mix(in srgb, var(--color-success) 18%, var(--color-surface)); }
+    .risk-med { background: color-mix(in srgb, var(--color-warning) 18%, var(--color-surface)); }
+    .risk-high { background: color-mix(in srgb, var(--color-error) 22%, var(--color-surface)); }
+    .bars { display:grid; gap: var(--space-3); }
+    .bar-row { display:grid; grid-template-columns: 140px 1fr 52px; gap: var(--space-3); align-items:center; }
+    .bar-track { height: 12px; border-radius: 999px; background: color-mix(in srgb, var(--color-text) 8%, transparent); overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, var(--color-success))); }
+    .score { font-size: var(--text-sm); color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+    .spark-wrap { height: 280px; position: relative; }
+    .spark-wrap svg { width:100%; height:100%; }
+    .legend { display:flex; gap: var(--space-3); flex-wrap:wrap; margin-top: var(--space-3); font-size: var(--text-xs); color: var(--color-text-muted); }
+    .legend span::before { content:''; display:inline-block; width:10px; height:10px; border-radius:999px; margin-right:8px; vertical-align:middle; }
+    .l1::before{ background:var(--color-primary);} .l2::before{ background:var(--color-warning);} .l3::before{ background:var(--color-error);} 
+    table { width:100%; border-collapse: collapse; font-size: var(--text-sm); }
+    th, td { text-align:left; padding: .9rem .4rem; border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); }
+    th { color: var(--color-text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; }
+    .status { display:inline-flex; align-items:center; gap:6px; padding: .3rem .55rem; border-radius:999px; font-size: var(--text-xs); }
+    .status.high { background: var(--color-error-highlight); color: var(--color-error); }
+    .status.watch { background: var(--color-warning-highlight); color: var(--color-warning); }
+    .status.good { background: var(--color-success-highlight); color: var(--color-success); }
+    .dot { width:8px; height:8px; border-radius:50%; background: currentColor; }
+    .footer-note { color: var(--color-text-faint); font-size: var(--text-xs); margin-top: var(--space-3); }
+    @media (max-width: 1100px) {
+      .dashboard { grid-template-columns: 90px 1fr; }
+      .brand h1, .brand p, .nav-item span:last-child, .nav-title, .side-note { display:none; }
+      .brand { justify-content:center; }
+      .nav-item { justify-content:center; }
+      .kpi-grid, .two-col { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 760px) {
+      html, body { overflow: auto; }
+      .dashboard { display:block; height:auto; }
+      .sidebar { display:none; }
+      .header { position: static; padding: var(--space-4); }
+      .main { overflow: visible; padding: var(--space-4); }
+      .kpi-grid, .two-col { grid-template-columns: 1fr; }
+      .filters { overflow-x:auto; flex-wrap: nowrap; }
+      .bar-row { grid-template-columns: 100px 1fr 44px; }
+      .topbar-left h2 { font-size: 1.45rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-label="RiskVue logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 18L12 5l7 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M9.5 13h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>RiskVue</h1>
+          <p>Executive IT risk cockpit</p>
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Portfolio</div>
+        <a class="nav-item active" href="#"><span>◉</span><span>Overview</span></a>
+        <a class="nav-item" href="#"><span>◎</span><span>Cyber</span></a>
+        <a class="nav-item" href="#"><span>◌</span><span>Third Party</span></a>
+        <a class="nav-item" href="#"><span>◍</span><span>Controls</span></a>
+        <a class="nav-item" href="#"><span>◔</span><span>Incidents</span></a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-title">Board Lens</div>
+        <div class="card side-note" style="padding:1rem; background:var(--color-surface-2);">
+          <div class="small">This quarter</div>
+          <div style="font-size:1.8rem; font-weight:700; margin:.3rem 0; font-variant-numeric:tabular-nums;">84%</div>
+          <div class="small">Risk within appetite</div>
+        </div>
+      </div>
+    </aside>
+
+    <header class="header">
+      <div class="topbar-left">
+        <h2>IT Risk Executive Overview</h2>
+        <p>Mockup for a Tableau-style financial services dashboard</p>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-btn">Export image</button>
+        <button class="theme-toggle" data-theme-toggle aria-label="Switch theme">◐</button>
+        <button class="primary-btn">Board pack mode</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="filters">
+        <div class="pill">Retail Banking</div>
+        <div class="pill">North America</div>
+        <div class="pill">Quarter: Q2 2026</div>
+        <div class="pill">Residual risk</div>
+        <div class="pill">Last refresh: 8:30 AM</div>
+      </section>
+
+      <section class="grid kpi-grid">
+        <article class="card kpi-card">
+          <div class="kpi-label">Critical risks open</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-sub"><span class="trend-down">+3 vs last quarter</span></div>
+        </article>
+        <article class="card kpi-card">
+          <div class="kpi-label">Within appetite</div>
+          <div class="kpi-value">84%</div>
+          <div class="kpi-sub"><span class="trend-up">+5 pts improvement</span></div>
+        </article>
+        <article class="card kpi-card">
+          <div class="kpi-label">High severity incidents</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-sub">Payments and IAM drive most impact</div>
+        </article>
+        <article class="card kpi-card">
+          <div class="kpi-label">Control effectiveness</div>
+          <div class="kpi-value">91%</div>
+          <div class="kpi-sub">12 issues overdue remediation</div>
+        </article>
+      </section>
+
+      <section class="grid two-col">
+        <article class="card">
+          <div class="section-title">
+            <div>
+              <h3>Residual risk heatmap</h3>
+              <p>Impact × likelihood with exec-friendly color bands</p>
+            </div>
+            <div class="chip">Top driver: third-party concentration</div>
+          </div>
+          <div class="heatmap">
+            <div></div>
+            <div class="axis-label">1</div><div class="axis-label">2</div><div class="axis-label">3</div><div class="axis-label">4</div><div class="axis-label">5</div>
+            <div class="axis-label">5</div>
+            <div class="heat-cell risk-med"><strong>Cloud ops</strong><span>6 items</span></div>
+            <div class="heat-cell risk-med"><strong>Data quality</strong><span>4 items</span></div>
+            <div class="heat-cell risk-high"><strong>IAM gaps</strong><span>3 items</span></div>
+            <div class="heat-cell risk-high"><strong>Vendor risk</strong><span>5 items</span></div>
+            <div class="heat-cell risk-high"><strong>Payments</strong><span>2 items</span></div>
+            <div class="axis-label">4</div>
+            <div class="heat-cell risk-low"><strong>Backup</strong><span>4 items</span></div>
+            <div class="heat-cell risk-med"><strong>Patch</strong><span>7 items</span></div>
+            <div class="heat-cell risk-med"><strong>Change</strong><span>6 items</span></div>
+            <div class="heat-cell risk-high"><strong>Fraud tools</strong><span>3 items</span></div>
+            <div class="heat-cell risk-high"><strong>Core ledger</strong><span>2 items</span></div>
+            <div class="axis-label">3</div>
+            <div class="heat-cell risk-low"><strong>Endpoint</strong><span>5 items</span></div>
+            <div class="heat-cell risk-low"><strong>Branch tech</strong><span>2 items</span></div>
+            <div class="heat-cell risk-med"><strong>API gateway</strong><span>3 items</span></div>
+            <div class="heat-cell risk-med"><strong>Reporting</strong><span>4 items</span></div>
+            <div class="heat-cell risk-high"><strong>Custody ops</strong><span>1 item</span></div>
+          </div>
+          <div class="footer-note">Likelihood increases left to right. Impact increases bottom to top.</div>
+        </article>
+
+        <article class="card">
+          <div class="section-title">
+            <div>
+              <h3>Top risk concentrations</h3>
+              <p>Ranked by residual score</p>
+            </div>
+            <div class="chip">Top 5 shown</div>
+          </div>
+          <div class="bars">
+            <div class="bar-row"><div>Third-party</div><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div><div class="score">92</div></div>
+            <div class="bar-row"><div>Identity</div><div class="bar-track"><div class="bar-fill" style="width:84%"></div></div><div class="score">84</div></div>
+            <div class="bar-row"><div>Payments</div><div class="bar-track"><div class="bar-fill" style="width:79%"></div></div><div class="score">79</div></div>
+            <div class="bar-row"><div>Cloud resilience</div><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><div class="score">71</div></div>
+            <div class="bar-row"><div>Data integrity</div><div class="bar-track"><div class="bar-fill" style="width:66%"></div></div><div class="score">66</div></div>
+          </div>
+          <div class="footer-note">Useful Tableau pattern: one ranked list, one click-through detail panel, one business filter strip.</div>
+        </article>
+      </section>
+
+      <section class="grid two-col">
+        <article class="card">
+          <div class="section-title">
+            <div>
+              <h3>Risk trend vs incidents</h3>
+              <p>Quarterly trajectory for board reporting</p>
+            </div>
+            <div class="chip">12 months</div>
+          </div>
+          <div class="spark-wrap">
+            <svg viewBox="0 0 700 280" preserveAspectRatio="none" aria-label="Trend chart">
+              <defs>
+                <linearGradient id="fill1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g stroke="color-mix(in srgb, var(--color-text) 10%, transparent)" stroke-width="1">
+                <line x1="0" y1="40" x2="700" y2="40"/><line x1="0" y1="90" x2="700" y2="90"/><line x1="0" y1="140" x2="700" y2="140"/><line x1="0" y1="190" x2="700" y2="190"/><line x1="0" y1="240" x2="700" y2="240"/>
+              </g>
+              <path d="M40 190 C100 175, 120 150, 180 148 S280 132, 320 126 S420 110, 460 118 S560 130, 620 98" fill="none" stroke="var(--color-primary)" stroke-width="4" stroke-linecap="round"/>
+              <path d="M40 190 C100 175, 120 150, 180 148 S280 132, 320 126 S420 110, 460 118 S560 130, 620 98 L620 250 L40 250 Z" fill="url(#fill1)"/>
+              <polyline points="40,208 120,198 200,178 280,172 360,148 440,164 520,154 620,126" fill="none" stroke="var(--color-warning)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round"/>
+              <g fill="var(--color-error)">
+                <circle cx="200" cy="178" r="5"/><circle cx="360" cy="148" r="5"/><circle cx="620" cy="126" r="5"/>
+              </g>
+              <g fill="var(--color-text-muted)" font-size="12" font-family="var(--font-body)">
+                <text x="30" y="270">Q3</text><text x="110" y="270">Q4</text><text x="190" y="270">Q1</text><text x="270" y="270">Q2</text><text x="350" y="270">Q3</text><text x="430" y="270">Q4</text><text x="510" y="270">Q1</text><text x="600" y="270">Q2</text>
+              </g>
+            </svg>
+          </div>
+          <div class="legend">
+            <span class="l1">Residual risk index</span>
+            <span class="l2">High-severity incidents</span>
+            <span class="l3">Material event markers</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="section-title">
+            <div>
+              <h3>Control remediation aging</h3>
+              <p>Simple board-level issue view</p>
+            </div>
+            <div class="chip">12 overdue</div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Domain</th><th>Status</th><th>Open issues</th><th>Oldest age</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Privileged access</td><td><span class="status high"><span class="dot"></span>High</span></td><td>5</td><td>143 days</td></tr>
+              <tr><td>Third-party review</td><td><span class="status watch"><span class="dot"></span>Watch</span></td><td>4</td><td>89 days</td></tr>
+              <tr><td>BCP testing</td><td><span class="status watch"><span class="dot"></span>Watch</span></td><td>2</td><td>67 days</td></tr>
+              <tr><td>Endpoint coverage</td><td><span class="status good"><span class="dot"></span>Good</span></td><td>1</td><td>18 days</td></tr>
+              <tr><td>Change approvals</td><td><span class="status good"><span class="dot"></span>Good</span></td><td>0</td><td>-</td></tr>
+            </tbody>
+          </table>
+          <div class="footer-note">If you convert this into Tableau, use color only for exceptions and keep the rest neutral.</div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const toggle = document.querySelector('[data-theme-toggle]');
+      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', theme);
+      toggle.addEventListener('click', () => {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', theme);
+      });
+    })();
+  </script>
+</body>
+</html>

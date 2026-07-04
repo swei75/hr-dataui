@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>M-2 设计 v6：双栏 bar 细分</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#241b15;background:#fbf4e9}
+.page-shell{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:#7b6653;margin:0 0 12px}
+.hero h1{font-size:38px;line-height:1.15;margin:0 0 10px;color:#6b4423}
+.subtitle{font-size:16px;color:#7b6653;margin:0;max-width:780px;line-height:1.7}
+.narrative-head{display:flex;align-items:center;gap:14px;margin:28px 0 14px}
+.module-icon{width:56px;height:56px;border-radius:14px;background:#9f6b44;color:#fbf4e9;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 6px 16px rgba(107,68,35,.18)}
+.narrative-h2{margin:0;font-size:30px;color:#241b15;display:flex;align-items:center;gap:12px}
+.narrative-badge{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:999px;background:#ead9c3;color:#6b4423;font-size:18px;font-weight:800}
+.narrative-card{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:24px 28px;margin-bottom:24px}
+.narrative-card p{font-size:15px;line-height:1.85;color:#3a2e22;margin:0 0 11px}
+.narrative-card strong{color:#9f6b44;font-weight:700}
+.dual-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:24px 0}
+.panel{background:#fefcf7;border:1px solid #e8d8c3;border-radius:14px;padding:26px}
+.panel-tag{display:inline-flex;align-items:center;gap:6px;background:#f4eadb;color:#6b4423;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:10px}
+.panel h3{margin:0 0 4px;font-size:20px;color:#241b15}
+.panel .lede{font-size:13px;color:#7b6653;margin:0 0 20px;line-height:1.6}
+.bar-row-v{display:margin:0 0 16px 0;padding:12px 0;border-bottom:1px dashed #e8d8c3}
+.bar-row-v:last-child{border-bottom:none}
+.bar-row-v .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.bar-row-v .top .name{font-size:14px;color:#241b15;font-weight:600}
+.bar-row-v .top .meta{font-size:12px;color:#7b6653}
+.bar-row-v .top .meta b{color:#9f6b44;font-weight:700;font-size:14px;margin-left:2px}
+.bar-track-v{position:relative;height:32px;background:#f4eadb;border-radius:6px;overflow:hidden}
+.bar-fill-v{position:absolute;top:0;left:0;bottom:0;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;color:#fefcf7;font-weight:700;font-size:13px;border-radius:6px}
+.bf-front{background:#9f6b44}.bf-mid{background:#a04030}.bf-a{background:#6b4423}.bf-b{background:#9f6b44}.bf-c{background:#a04030}.bf-d{background:#c9a883;color:#241b15!important}.bf-e{background:#e8d8c3;color:#6b4423!important}.bf-f{background:#6b4423}
+.panel-ratio{margin-top:18px;padding:14px 16px;background:#f4eadb;border-radius:10px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#6b4423;font-weight:600}
+.panel-ratio .big{font-size:24px;color:#9f6b44;font-variant-numeric:tabular-nums}
+.panel-ratio .big small{font-size:13px;color:#7b6653;font-weight:400;margin-left:4px}
+.design-note{background:#f4eadb;border:1px dashed #c9b299;border-radius:12px;padding:16px 20px;margin-top:22px}
+.design-note h3{font-size:14px;margin:0 0 8px;color:#6b4423}
+.design-note ul{margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#5a4a3a}
+@media(max-width:980px){.dual-col{grid-template-columns:1fr}}
+@media(max-width:640px){.hero h1{font-size:28px}.narrative-h2{font-size:22px}}
+</style>
+</head>
+<body>
+<main class="page-shell">
+<header class="hero">
+<p class="eyebrow">v6 · two-panel · front-back + client-service</p>
+<h1>M-2 设计 v6：双栏 bar 细分</h1>
+<p class="subtitle">左右两栏布局：左栏按前/中后台 2 项拆分；右栏按客户/客服经理 6 项细分。所有维度集中展示。</p>
+</header>
+
+<section class="narrative-head">
+<span class="module-icon">👥</span>
+<h2 class="narrative-h2"><span class="narrative-badge">二</span>员工基本情况（口径：正式员工）</h2>
+</section>
+
+<section class="narrative-card">
+<p>本行正式员工 <strong>5,901 人</strong>（未含劳务派遣人员 688 人，含劳务派遣的合计总人数为 6,589 人）。</p>
+<p>按前中后台划分，<strong>前台部门 3,254 人</strong>，<strong>中后台部门 2,372 人</strong>，<strong>前台与中后台比例为 1:0.73</strong>。</p>
+<p>全行<strong>客户经理共 1,692 人</strong>（含对公 850、个人 390、个贷 359、微贷 93）；<strong>客服经理 1,165 人</strong>（非临柜 163 / 临柜 1002）。</p>
+<p>本行在岗员工平均年龄 36 岁，<strong>30 岁以下 1,526 人</strong>（25.86%），<strong>31-40 岁 2,851 人</strong>（48.31%），<strong>41-50 岁 1,123 人</strong>（19.03%），<strong>51 岁以上 401 人</strong>（6.80%）。</p>
+<p>本行在岗男性员工 2,717 人，<strong>女性员工 3,184 人</strong>，<strong>男女比例为 0.85:1</strong>。</p>
+<p>本行在岗员工硕士研究生及以上共 1,031 人（17.47%），<strong>本科 4,514 人</strong>（76.50%）为最大群体，专科 326 人（5.52%），专科以下 30 人（0.51%）。</p>
+</section>
+
+<section class="dual-col">
+<section class="panel">
+<span class="panel-tag">📊 前中后台</span>
+<h3>按作业性质划分</h3>
+<p class="lede">前台包括分支行网点正副行长、各类客户经理、客服经理、催收业务岗、直营直销中心等。</p>
+
+<div class="bar-row-v">
+<div class="top"><span class="name">前台部门</span><span class="meta">占比 <b>55.16%</b> · 主力群体</span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-front" style="width:55.16%">3,254</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">中后台部门</span><span class="meta">占比 <b>40.20%</b></span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-mid" style="width:40.20%">2,372</div></div>
+</div>
+<div class="panel-ratio">
+<span>前 : 中后台 比</span>
+<span class="big">1 : 0.73<small>（约 1.37 : 1）</small></span>
+</div>
+</section>
+
+<section class="panel">
+<span class="panel-tag">📞 客户/客服条线</span>
+<h3>按业务条线细分</h3>
+<p class="lede">全行客户经理 1,692 人（未含 172 名劳务派遣），客服经理 1,165 人。</p>
+
+<div class="bar-row-v">
+<div class="top"><span class="name">客户经理 — 对公</span><span class="meta">占比 <b>50.24%</b></span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-a" style="width:85.00%">850</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">客户经理 — 个人</span><span class="meta">占比 <b>23.05%</b></span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-b" style="width:39.00%">390</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">客户经理 — 个贷</span><span class="meta">占比 <b>21.22%</b> · 未含派遣</span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-c" style="width:35.90%">359</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">客户经理 — 微贷</span><span class="meta">占比 <b>5.50%</b></span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-d" style="width:9.30%">93</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">客服经理 — 非临柜</span><span class="meta">占比 <b>13.99%</b></span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-e" style="width:16.30%">163</div></div>
+</div>
+<div class="bar-row-v">
+<div class="top"><span class="name">客服经理 — 临柜</span><span class="meta">占比 <b>85.99%</b> · 主力</span></div>
+<div class="bar-track-v"><div class="bar-fill-v bf-f" style="width:100%">1,002</div></div>
+</div>
+</section>
+</section>
+
+<section class="design-note">
+<h3>设计说明</h3>
+<ul>
+<li><b>适用场景</b>：条线人员分布、岗位结构、年度人力预算对比</li>
+<li><b>信息密度</b>：高 — 双栏 8 段细分全部上墙，含百分比与人数</li>
+<li><b>视觉冲击</b>：中 — 双栏对称布局，"主力"高亮显著</li>
+<li><b>读图速度</b>：10 秒 — 多条对比需逐项读</li>
+<li><b>借鉴来源</b>：自创双栏对比 + shanjinki 密度</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

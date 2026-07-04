@@ -1,8 +1,7 @@
 """hr-dataui build entry point. Usage: python build.py"""
-import json
 from pathlib import Path
 
-from extractors.reader import read_config, read_workbook
+from extractors.reader import read_config, read_workbook, write_prev_sheet
 from extractors.mapping import MODULES, TOP_KPIS
 from composer import render_module, render_kpi_strip
 from templates.base import render_page
@@ -26,12 +25,14 @@ def main() -> int:
     data_file = find_data_file()
     config = read_config(data_file)
     raw_data = read_workbook(data_file)
+    prev_data = raw_data.get("prev", {})
 
-    # 拼装 6 模块（extra_sheets 传 raw_data，让模块能取到多列 sheet 如 干部职数表）
+    # 拼装 6 模块（extra_sheets 传 raw_data + v1.4 prev_records）
     modules_html = []
     for module_key, module_cfg in sorted(MODULES.items(), key=lambda x: x[1].get("order", 99)):
         module_data = raw_data.get(module_key, [])
-        modules_html.append(render_module(module_key, module_cfg, module_data, extra_sheets=raw_data))
+        prev_records = prev_data.get(module_key, [])
+        modules_html.append(render_module(module_key, module_cfg, module_data, extra_sheets=raw_data, prev_records=prev_records))
 
     # 顶部 KPI 长条
     kpi_strip = render_kpi_strip(TOP_KPIS)
@@ -44,6 +45,9 @@ def main() -> int:
     output.write_text(html, encoding="utf-8")
     size_kb = output.stat().st_size / 1024
     print(f"Built {output} ({size_kb:.1f} KB)")
+
+    # v1.4: 把当前数据写入 _prev sheet（下一次构建用于 delta 计算）
+    write_prev_sheet(data_file, raw_data)
     return 0
 
 
