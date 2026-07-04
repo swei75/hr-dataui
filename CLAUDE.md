@@ -1,4 +1,4 @@
-# CLAUDE.md — HR-UI 项目指引
+# CLAUDE.md — hr-dataui 项目指引
 
 > **需求文档**：[docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)（v1.1，2026-07-03 调研更新）
 > **行为准则**：参考 `andrej-karpathy-skills:karpathy-guidelines`（强制）

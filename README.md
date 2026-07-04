@@ -1,4 +1,4 @@
-# HR-UI · 月度更新工作流
+# hr-dataui · 月度更新工作流
 
 把 .docx 报告转成单文件 HTML 仪表盘。每月 30 分钟搞定。
 
@@ -7,7 +7,7 @@
 ## 一次性环境准备
 
 ```bash
-cd hr-ui
+cd hr-dataui
 pip install -r requirements.txt   # 装 pandas + openpyxl
 ```
 

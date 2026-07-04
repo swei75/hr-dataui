@@ -1,4 +1,4 @@
-"""HR-UI build entry point. Usage: python build.py"""
+"""hr-dataui build entry point. Usage: python build.py"""
 import json
 from pathlib import Path
 
