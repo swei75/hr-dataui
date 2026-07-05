@@ -541,6 +541,11 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
   /* viz 硬编码宽度兜底（覆盖 viz/*.py 内联 min-width:120） */
   .bar-label,.funnel-row{min-width:0;max-width:100%}
   .donut-svg{width:80px;height:80px;flex-shrink:0}
+  /* mobile 水平滚动条 visible（Android Chrome 支持，iOS Safari 仍隐藏） */
+  *::-webkit-scrollbar{height:6px;width:6px}
+  *::-webkit-scrollbar-track{background:var(--surface-2)}
+  *::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px}
+  *::-webkit-scrollbar-thumb:hover{background:var(--primary-hover)}
 }
 @media (max-width:768px){
   body{font-size:13.5px}
