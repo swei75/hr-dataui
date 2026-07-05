@@ -228,7 +228,7 @@ open output/index.html
 | `output/index.html` 没生成 | 路径权限、Excel 文件名匹配 `MODULE_FILES` |
 | 浏览器空白 | Console 看 inline JS/CSS 是否正确（无 CDN 加载问题） |
 | 数据不显示 | Console 看 `window.HR_DATA` 内容 |
-| 移动端布局错 | 检查 CSS 媒体查询断点（980px/640px） |
+| 移动端布局错 | 检查 CSS 媒体查询断点（1100/768/480） |
 | 图表不渲染 | 检查 CSS 类名是否匹配样式定义 |
 | 某模块 viz 风格不对 | 查 `extractors/mapping.py` 的 `viz_style` 字段 |
 | 文件 > 100KB | 检查 viz 渲染是否漏 `<div class="empty">` 而渲染了大量空数据 |

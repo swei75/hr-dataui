@@ -537,12 +537,58 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
   .bar-row{grid-template-columns:90px 1fr 70px;font-size:.85em}
   .donut-wrap{flex-direction:column;align-items:flex-start;gap:12px}
   .grid-list{grid-template-columns:repeat(2,1fr)}
+  /* v1.5.21.3: 17 个内部 grid 单列重写 — 用户要求"一个接一个" */
+  .kpi-hero{grid-template-columns:repeat(2,1fr)}
+  .kpi-cards-row{grid-template-columns:repeat(2,1fr)}
+  .kpi-row.v11{grid-template-columns:repeat(2,1fr)}
+  .dim-grid{grid-template-columns:1fr}
+  .cs-grid{grid-template-columns:1fr}
+  .gauge-grid{grid-template-columns:1fr}
+  .dual-grid{grid-template-columns:1fr}
+  .dual-bars-area{grid-template-columns:1fr}
+  .rank-grid{grid-template-columns:1fr}
+  .exit-grid{grid-template-columns:1fr}
+  .case-grid{grid-template-columns:1fr}
+  .podium{grid-template-columns:1fr;min-height:auto}
+  .fc-grid{grid-template-columns:1fr}
+  .card-wall-m6{grid-template-columns:repeat(2,1fr)}
+  .tl-grid{grid-template-columns:1fr}
+  .dept-pair{grid-template-columns:1fr}
+  .narrative-grid{grid-template-columns:1fr}
+  .heat-grid{grid-template-columns:60px 1fr;grid-auto-rows:auto}
+  .heat-grid .yl{grid-row:1/13;grid-column:1}
+  .heat-grid .month{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;min-height:32px}
+  .heat-grid .month:nth-child(2){grid-row:1;grid-column:2}
+  .heat-grid .month:nth-child(3){grid-row:2;grid-column:2}
+  .heat-grid .month:nth-child(4){grid-row:3;grid-column:2}
+  .heat-grid .month:nth-child(5){grid-row:4;grid-column:2}
+  .heat-grid .month:nth-child(6){grid-row:5;grid-column:2}
+  .heat-grid .month:nth-child(7){grid-row:6;grid-column:2}
+  .heat-grid .month:nth-child(8){grid-row:7;grid-column:2}
+  .heat-grid .month:nth-child(9){grid-row:8;grid-column:2}
+  .heat-grid .month:nth-child(10){grid-row:9;grid-column:2}
+  .heat-grid .month:nth-child(11){grid-row:10;grid-column:2}
+  .heat-grid .month:nth-child(12){grid-row:11;grid-column:2}
+  .heat-grid .month:nth-child(13){grid-row:12;grid-column:2}
 }
 @media (max-width:480px){
   body{font-size:13px}
   .kpi-strip{grid-template-columns:1fr 1fr}
   .bar-row{grid-template-columns:80px 1fr 60px}
   .grid-list{grid-template-columns:1fr}
+  /* v1.5.21.3: 480px 进一步收紧 — 2 列再降 1fr + 节点填满单列 + viz 兜底 */
+  .kpi-hero{grid-template-columns:1fr}
+  .kpi-cards-row{grid-template-columns:1fr}
+  .kpi-row.v11{grid-template-columns:1fr}
+  .card-wall-m6{grid-template-columns:1fr}
+  .module-body{padding:12px 10px}
+  .module-narrative-card{padding:14px 12px}
+  .tn{min-width:100%;width:100%}
+  .tn.root,.tn.branch.core{min-width:100%;width:100%}
+  /* viz 硬编码宽度 override（覆盖 viz/*.py 内联 min-width:120px） */
+  .bar-label,.funnel-row{min-width:0;max-width:100%}
+  .donut-svg{width:80px;height:80px;flex-shrink:0}
+  .heat-grid{grid-template-columns:50px 1fr;font-size:.8em}
 }
 
 /* ============ v1.4: KPI card (模块内 KPI) + 3px 彩条 + delta + note ============ */
