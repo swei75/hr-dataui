@@ -33,14 +33,7 @@ python build.py                    # 构建 → output/index.html (~98KB)
 | `extractors/reader.py` | `read_workbook()` 读 Excel → dict |
 | `extractors/mapping.py` | sheet→键名 + viz 风格 + 字段映射 |
 | `extractors/drills.py` | 钻取数据加载 |
-| `viz/` | viz 函数（v1.5：每模块独立风格） |
-| `viz/v_hero.py` | Dashboard 顶部数字塔 |
-| `viz/v1.py` | M-1 组织架构 / M-5 考核薪酬 财务大卡 |
-| `viz/v2.py` | M-4 干部队伍 分类树 |
-| `viz/v8.py` | M-6 培训赋能 主体 |
-| `viz/v11.py` | M-2 员工情况 |
-| `viz/v_hr.py` | M-3 人员优化 融合（gauge + flow + dual-bar） |
-| `viz/v_train.py` | M-6 培训赋能 复合 |
+| `viz/` | 通用渲染原子（`bar/funnel/heatmap/hierarchy/kpi/pie/progress/ranking/table`），dispatch 入口在 `composer.py` 内按 `is_v_xxx_style` 分支组合 |
 | `composer.py` | 按 mapping + `is_v_*_style` 分支组合 7 模块 HTML |
 | `templates/` | Python f-string 模板函数 |
 | `output/index.html` | 最终产物 ~98KB（git ignore） |
@@ -98,15 +91,15 @@ python build.py                    # 构建 → output/index.html (~98KB)
 
 ## 6. v1.5 模块 viz 实施位置（必查）
 
-| 模块 | 风格 | composer 风格分支 | viz 文件 |
-|---|---|---|---|
-| Dashboard 顶部 | v_hero 数字塔 | `is_v_hero_style` | `viz/v_hero.py` |
-| M-1 组织架构 | v1（6 KPI + 段落） | `is_v1_style` | `viz/v1.py` |
-| M-2 员工情况 | v11（4 KPI + 5 stacked + 8 grid） | `is_v11_style` | `viz/v11.py` |
-| M-3 人员优化 | v_hr 融合 | `is_v_hr_style` | `viz/v_hr.py` |
-| M-4 干部队伍 | v2 分类树（4 大类 + 中层） | `is_v2_style` | `viz/v2.py` |
-| M-5 考核薪酬 | v1 财务大卡（5 卡 + sparkline） | `is_v1_style` | `viz/v1.py` |
-| M-6 培训赋能 | v_train（v1 顶 + v8 主体） | `is_v_train_style` | `viz/v_train.py` |
+| 模块 | 风格 | composer dispatch（is_v_xxx_style） |
+|---|---|---|
+| Dashboard 顶部 | v_hero 数字塔 | `is_v_hero_style` → `composer.py:363 render_top_kpi_hero` |
+| M-1 组织架构 | v1（6 KPI + 段落） | `is_v1_style`（判断 :487，render :1043） |
+| M-2 员工情况 | v11（4 KPI + 5 stacked + 8 grid） | `is_v11_style`（判断 :493，render :938） |
+| M-3 人员优化 | v_hr 融合 | `is_v_hr_style`（判断 :503，render :760） |
+| M-4 干部队伍 | v2 分类树（4 大类 + 中层） | `is_v2_style` / `is_v_tree_style` |
+| M-5 考核薪酬 | v1 财务大卡（5 卡 + sparkline） | `is_v1_style`（同 M-1） |
+| M-6 培训赋能 | v_train（v1 顶 + v8 主体） | `is_v_train_style`（判断 :516，render :522） |
 
 **实施时**：
 - `extractors/mapping.py` 的每个模块配置项含 `"viz_style": "v_xxx"` 或 `"is_v_xxx_style": True`
