@@ -87,6 +87,19 @@ python build.py                    # 构建 → output/index.html (~98KB)
 - 文档：见 `docs/REQUIREMENTS.md` §3.6；详情 memory `hero-gzbank-style-v1.5.21`
 - 回滚：`cp backup/pre-gzbank-2026-07-05/base.py templates/base.py && python build.py`
 
+#### 5.2 v1.5.21.3 局部补丁（移动端响应式）
+
+- **桌面 ≥1100px 完全不动**（用户原话："不要破坏桌面端浏览器下显示效果"）
+- 3 个断点：1100 / 768 / 480px（CLAUDE.md §13 已与代码一致）
+- <1100px @media 段：17 个内部 grid 用 `repeat(N, minmax(MINpx, 1fr)) + overflow-x: auto`
+  - 桌面：minmax 上限 1fr ≈ 原 `repeat(N, 1fr)` 行为
+  - 移动：MIN 限制 + N×MIN > 容器宽 → 触发横向滚动
+  - **不**强制单列堆叠（用户明确否定 v1.5.21.3 初版的"一个接一个"全部 1fr）
+- 移动 scrollbar visible：`*::-webkit-scrollbar{height:6px}`（Android Chrome 生效；iOS Safari 系统限制仍隐藏）
+- viz/*.py 硬编码宽度（如 `min-width:120px`）通过 CSS override 兜底，不动源码
+- 文档：见 `docs/REQUIREMENTS.md` §3.7；详情 memory `mobile-responsive-v1.5.21.3`
+- 回滚：`cp backup/pre-mobile-2026-07-05/base.py templates/base.py && python build.py`
+
 ---
 
 ## 6. v1.5 模块 viz 实施位置（必查）

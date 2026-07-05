@@ -152,7 +152,7 @@ dashboard 会自动在 M-3 模块的 v_hr 融合 viz 中显示这个新类别。
 | 中文字符乱码 | 确认 Excel 是 .xlsx 格式（不是 .xls），保存时不要转 CSV |
 | 浏览器空白 | Console 看 inline JS/CSS 是否正确（无 CDN 加载问题） |
 | 数据不显示 | Console 看 `window.HR_DATA` 内容 |
-| 移动端布局错 | 检查 CSS 媒体查询断点（980px/640px） |
+| 移动端布局错 | 检查 CSS 媒体查询断点（1100/768/480） + §5.2 v1.5.21.3 响应式补丁（CLAUDE.md）|
 | 图表不渲染 | 检查 CSS 类名是否匹配样式定义 |
 
 ---
