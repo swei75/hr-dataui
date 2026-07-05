@@ -26,3 +26,9 @@ output/
 
 # SDD scratch
 .superpowers/
+
+# Local backups (e.g. backup/pre-gzbank-2026-07-05/)
+backup/
+
+# Reference samples (gzcb_samples/, downloaded images)
+gzcb_samples/
