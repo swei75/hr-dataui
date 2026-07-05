@@ -1,5 +1,28 @@
 # hr-dataui 重新设计调研 — 设计 Spec
 
+> **调研已完成**：3 深研 + 8 广扫描 + 决策映射表（2026-07-04）。
+>
+> ## 实施状态
+>
+> **调研产出**（`research-demos/`）：
+> - 3 份深研 README：`README-deep1.md` / `README-deep2.md` / `README-deep3.md`
+> - 8 个广扫描矩阵：`README-wide-matrix.md`
+> - 决策映射表：`README-decision-mapping.md`
+> - ARCHITECTURE.md 修订建议已落地
+>
+> **调研结论已落地为 v1.5**（详见 [`docs/ARCHITECTURE.md`](../../../ARCHITECTURE.md)）：
+>
+> | ADR | 内容 | 调研触发 |
+> |---|---|---|
+> | ADR-011 | 9/10 列数据契约（+ delta / sub_text / metric_note） | 深 #1 + 深 #3 + 4/8 广扫描 |
+> | ADR-012 | 3 色风险等级（success/warning/danger） | 深 #3 Tableau RiskVue + FineBI 银行 |
+> | ADR-013 | 每模块独立 viz 风格（v1.5 革新） | 调研汇总：表达力最强方案 |
+> | ADR-014 | 米色红棕视觉系统（#9f6b44） | shanjinki Editorial Brief 借鉴 |
+>
+> **当前最新文档**：[`docs/REQUIREMENTS.md`](../../../REQUIREMENTS.md)（v1.5 需求） / [`docs/ARCHITECTURE.md`](../../../ARCHITECTURE.md)（v1.5 架构）
+
+---
+
 > **目的**：在投入重写前，先用 GitHub 调研重新评估现有 10 个 ADR（来自 `docs/ARCHITECTURE.md` §5），给出 KEEP/REVISE/DEPRECATE 判定。
 >
 > **状态**：⏳ 等待用户审阅 spec（草稿）
