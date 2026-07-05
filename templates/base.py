@@ -44,6 +44,8 @@ DESIGN_TOKENS = """
   --danger-soft:#8b2e2e;--danger-light:#e0ced7;
   --info:#5d7b8e;--info-light:#d6e0e6;
   --purple:#8b5e83;--orange:#c47a3d;--cyan:#5d8a8e;--pink:#a45878;
+  /* v1.5.21: 顶部 hero 区广银化（不污染 6 模块） */
+  --hero-red:#c8102e;--hero-red-deep:#a40e25;--hero-gold:#f5b500;--hero-gold-soft:#fff3cd;--hero-text-on-red:#fff;--hero-bg-warm:#fff8e6;
   /* v1.4 8 进制 spacing scale */
   --space-1:8px;--space-2:16px;--space-3:24px;--space-4:32px;--space-5:48px;--space-6:64px;
   --shadow-sm:0 1px 2px 0 rgb(36 27 21 / .06);
@@ -66,14 +68,14 @@ body{
 a{color:var(--primary);text-decoration:none}
 h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
 
-/* ============ Hero ============ */
-.hero{background:linear-gradient(180deg,#fefcf7 0%,var(--bg) 100%);padding:40px 36px 24px;border-bottom:1px solid var(--border)}
+/* ============ Hero（v1.5.21: 广银红+金招牌） ============ */
+.hero{background:linear-gradient(135deg,var(--hero-red) 0%,var(--hero-red-deep) 100%);padding:40px 36px 24px;border-bottom:3px solid var(--hero-gold);color:var(--hero-text-on-red)}
 .hero-inner{max-width:1400px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.hero-title{font-size:3.4em;font-weight:800;letter-spacing:-.03em;color:var(--primary-hover);line-height:1.15}
-.hero-subtitle{color:var(--text-muted);font-size:1.1em;margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hero-subtitle .badge{background:var(--primary-light);color:var(--primary-hover);padding:4px 16px;border-radius:var(--radius-pill);font-size:.95em;font-weight:700}
-.hero-meta{text-align:right;color:var(--text-muted);font-size:1.02em}
-.hero-meta strong{color:var(--text);font-weight:700;font-size:1.15em}
+.hero-title{font-size:3.4em;font-weight:800;letter-spacing:-.03em;color:var(--hero-text-on-red);line-height:1.15;text-shadow:0 2px 8px rgb(0 0 0 / .15)}
+.hero-subtitle{color:var(--hero-gold-soft);font-size:1.1em;margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hero-subtitle .badge{background:var(--hero-gold);color:var(--hero-red-deep);padding:4px 16px;border-radius:var(--radius-pill);font-size:.95em;font-weight:700;border:1px solid rgb(255 255 255 / .3)}
+.hero-meta{text-align:right;color:var(--hero-gold-soft);font-size:1.02em}
+.hero-meta strong{color:var(--hero-text-on-red);font-weight:700;font-size:1.15em}
 
 /* ============ KPI strip ============ */
 .kpi-strip{max-width:1400px;margin:18px auto 0;padding:0 36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
@@ -87,16 +89,16 @@ h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
 
 /* ============ v1.5.19: Dashboard 顶部 v_hero 数字塔（区别于模块内 KPI 卡） ============ */
 .kpi-hero{max-width:1400px;margin:18px auto 0;padding:0 36px;display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
-.kpi-hero-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease}
+.kpi-hero-card{background:var(--hero-text-on-red);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:transform .15s ease, box-shadow .15s ease;color:var(--text)}
 .kpi-hero-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
 .kpi-hero-card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--primary)}
-.kpi-hero-card:nth-child(1)::after{background:var(--primary)}
-.kpi-hero-card:nth-child(2)::after{background:#9f6b44}
-.kpi-hero-card:nth-child(3)::after{background:var(--primary-hover)}
-.kpi-hero-card:nth-child(4)::after{background:var(--warning)}
-.kpi-hero-card:nth-child(5)::after{background:var(--success)}
-.kpi-hero-card:nth-child(6)::after{background:#c9a883}
-.kpi-hero-icon{width:48px;height:48px;background:var(--surface-2);color:var(--primary-hover);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.kpi-hero-card:nth-child(1)::after{background:var(--hero-red)}
+.kpi-hero-card:nth-child(2)::after{background:var(--hero-red-deep)}
+.kpi-hero-card:nth-child(3)::after{background:var(--hero-gold)}
+.kpi-hero-card:nth-child(4)::after{background:#e63946}
+.kpi-hero-card:nth-child(5)::after{background:#d62828}
+.kpi-hero-card:nth-child(6)::after{background:#9d0208}
+.kpi-hero-icon{width:48px;height:48px;background:var(--hero-red-deep);color:var(--hero-text-on-red);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:1px solid var(--hero-gold)}
 .kpi-hero-body{flex:1;min-width:0}
 .kpi-hero-label{font-size:.78em;color:var(--text-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
 .kpi-hero-value{font-size:2em;font-weight:800;color:var(--text);line-height:1;letter-spacing:-.025em;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:4px}
