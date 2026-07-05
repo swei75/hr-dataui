@@ -368,7 +368,7 @@ def render_kpi_strip(kpis: list[dict]) -> str:
         f'<div class="kpi-hero-icon">{k.get("icon","")}</div>'
         f'<div class="kpi-hero-body">'
         f'<div class="kpi-hero-label">{k.get("label","")}</div>'
-        f'<div class="kpi-hero-value">{_fmt(k.get("value",0))}<span class="kpi-hero-unit">{k.get("unit","")}</span></div>'
+        f'<div class="kpi-hero-value"><span class="kpi-hero-num">{_fmt(k.get("value",0))}</span><span class="kpi-hero-unit">{k.get("unit","")}</span></div>'
         f'<div class="kpi-hero-sub">{k.get("sub","")}</div>'
         f'</div>'
         f'<div class="kpi-hero-bar"></div>'

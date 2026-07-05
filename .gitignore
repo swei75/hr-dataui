@@ -32,3 +32,7 @@ backup/
 
 # Reference samples (gzcb_samples/, downloaded images)
 gzcb_samples/
+
+# Plugin-generated artifacts (.playwright-mcp/ + ad-hoc screenshots)
+.playwright-mcp/
+hrdataui-*.png
